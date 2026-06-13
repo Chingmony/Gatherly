@@ -1,0 +1,11 @@
+# Local dev overrides — docker-compose supplies all env vars
+# Connect to services via docker-compose.yml defaults
+spring:
+  jpa:
+    show-sql: true
+
+app:
+  email:
+    enabled: true   # MailHog sink at http://localhost:8025
+  telegram:
+    enabled: false

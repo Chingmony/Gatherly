@@ -1,0 +1,104 @@
+spring:
+  application:
+    name: gatherly
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    hibernate:
+      ddl-auto: validate          # Flyway owns the schema — Hibernate must not touch it
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+    show-sql: false
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: ${MAIL_TLS:true}
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# ── Application-level config ──────────────────────────────────────────────────
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-ttl-seconds: ${JWT_ACCESS_TTL:900}       # 15 min
+    refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:604800}  # 7 days
+
+  email:
+    enabled: ${EMAIL_ENABLED:true}
+    from-address: ${MAIL_FROM_ADDRESS:no-reply@gatherly.app}
+    from-name: ${MAIL_FROM_NAME:Gatherly}
+
+  telegram:
+    enabled: ${TELEGRAM_ENABLED:false}
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    ops-chat-id: ${TELEGRAM_OPS_CHAT_ID:}
+    api-base: ${TELEGRAM_API_BASE:https://api.telegram.org}
+
+  rustfs:
+    endpoint: ${RUSTFS_ENDPOINT}
+    region: ${RUSTFS_REGION:us-east-1}
+    access-key: ${RUSTFS_ACCESS_KEY}
+    secret-key: ${RUSTFS_SECRET_KEY}
+    bucket: ${RUSTFS_BUCKET:gatherly}
+    public-base-url: ${RUSTFS_PUBLIC_BASE_URL:}
+    presign-ttl-seconds: ${RUSTFS_PRESIGN_TTL_SECONDS:300}
+
+  otp:
+    ttl-seconds: ${OTP_TTL_SECONDS:300}
+    max-attempts: ${OTP_MAX_ATTEMPTS:5}
+    resend-cooldown-seconds: ${OTP_RESEND_COOLDOWN_SECONDS:60}
+    length: ${OTP_LENGTH:6}
+
+  public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:3000}
+
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}

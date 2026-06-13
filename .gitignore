@@ -1,0 +1,36 @@
+# ── Frontend ──────────────────────────────────────────────────────────────────
+frontend/.next/
+frontend/out/
+frontend/dist/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env.production
+frontend/.env*.local
+frontend/next-env.d.ts
+
+# ── Backend ───────────────────────────────────────────────────────────────────
+backend/build/
+backend/.gradle/
+backend/out/
+backend/.env
+
+# ── Secrets / env ─────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+
+# ── Project-local Claude overrides ────────────────────────────────────────────
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/settings.json
+.vscode/*.code-workspace
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

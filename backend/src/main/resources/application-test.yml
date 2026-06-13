@@ -1,0 +1,14 @@
+# Test profile — Testcontainers spins up Postgres + Redis; all secrets are stubs
+app:
+  jwt:
+    secret: test-secret-at-least-256-bits-for-hmac-sha256-algorithm-padding
+  email:
+    enabled: false
+  telegram:
+    enabled: false
+  rustfs:
+    endpoint: http://localhost:9000
+    access-key: test
+    secret-key: test
+    bucket: gatherly-test
+    public-base-url: http://localhost:9000/gatherly-test
