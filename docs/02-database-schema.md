@@ -1,0 +1,358 @@
+# 02 — Database Schema
+
+> **Status:** Draft · **Depends on:** [`00`](00-system-overview.md), [`01`](01-architecture-layout.md)
+> PostgreSQL schema: relational integrity for roles/events/materials + **JSONB** for dynamic registration forms. Referenced by [`03`](03-api-routes-security.md) (endpoints) and [`04`](04-external-integrations.md) (Telegram/OTP/Rustfs fields).
+
+---
+
+## 1. Conventions
+
+- **PK:** `uuid` (`gen_random_uuid()` via `pgcrypto`). Non-enumerable, merge-safe.
+- **Timestamps:** `created_at`, `updated_at` (`timestamptz`, UTC) on every table via a shared base; JPA auditing populates them.
+- **Enums:** stored as `varchar` + `CHECK (... IN ...)`, mapped with `@Enumerated(EnumType.STRING)`. Portable, diff-friendly.
+- **Deletes:** users **deactivated** (`status=INACTIVE`) not physically removed when referenced; events support `ARCHIVED` + hard delete (Admin only).
+- **Naming:** snake_case, singular tables.
+- **Migrations:** Flyway, `V<n>__<desc>.sql`, forward-only in shared environments.
+
+## 2. ERD overview
+
+```
+organization (1 row)
+
+user ──< event_assignment >── event ──< material >── material_status_history
+  │           (MANAGER|HANDLER)  │         │
+  │                              │         └──(assigned_to) user
+  │                              ├──< agenda_item        agenda_template (global)
+  │                              ├──< registration_form ──< registration_submission
+  │                              │            (JSONB schema)   (JSONB answers + checkin_token = per-guest QR)
+  │                              └──< event_checkin ──(submission, 1:1) ──(scanned_by) user
+  │
+  ├──< refresh_token
+main_supply_item (global catalog) ──< material.catalog_item_id (RESTRICT)
+```
+
+Legend: `──<` one-to-many; `>──` many-to-one. `event_assignment` is the user×event join that carries the **event-scoped role**.
+
+## 3. Tables
+
+### 3.1 `organization` — single-row global profile
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | singleton (fixed id / partial-unique guard) |
+| name | varchar(200) NOT NULL | company name |
+| logo_key | text | Rustfs object key |
+| banner_key | text | Rustfs background banner key |
+| contact_email | varchar(255) | |
+| contact_phone | varchar(50) | |
+| created_at / updated_at | timestamptz | |
+
+> Editable by Admin only. `logo_key`/`banner_key` reference Rustfs objects (see [`04`](04-external-integrations.md)).
+
+### 3.2 `user`
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| email | varchar(255) NOT NULL UNIQUE | login id |
+| password_hash | varchar(100) NOT NULL | BCrypt; never serialized |
+| full_name | varchar(200) NOT NULL | |
+| phone | varchar(30) | |
+| avatar_key | text | Rustfs object key |
+| global_role | varchar(16) NOT NULL `CHECK IN ('ADMIN','MEMBER')` | coarse RBAC layer |
+| status | varchar(16) NOT NULL `CHECK IN ('ACTIVE','INACTIVE')` default ACTIVE | |
+| created_at / updated_at | timestamptz | |
+
+Indexes: `UNIQUE(email)`, `INDEX(global_role)`.
+
+> `ADMIN` = Super Admin. `MEMBER` is default; a member becomes **Sub-admin or Handler only through `event_assignment`** — there is no global SUB_ADMIN/HANDLER value, because those roles are inherently event-scoped.
+
+### 3.3 `event`
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| title | varchar(200) NOT NULL | |
+| slug | varchar(220) UNIQUE | public URL key |
+| description | text | |
+| venue | varchar(300) | |
+| starts_at / ends_at | timestamptz | |
+| status | varchar(16) NOT NULL `CHECK IN ('DRAFT','PUBLIC','ARCHIVED')` default DRAFT | Public activates guest registration |
+| registration_qr_token | varchar(64) UNIQUE | optional poster QR that links to the **registration** form (discovery only — NOT attendance) |
+| checkin_opens_at / checkin_closes_at | timestamptz | optional window during which organizer attendance scans are accepted |
+| created_by | uuid FK→user | Admin creator |
+| created_at / updated_at | timestamptz | |
+
+Indexes: `UNIQUE(slug)`, `UNIQUE(registration_qr_token)`, `INDEX(status)`.
+
+> `registration_qr_token` is an **optional** discovery aid — a printed/poster QR that opens the public registration form (resolved at `/public/r?token=...`). It is distinct from the **per-guest attendance QR** (see `registration_submission.checkin_token`, §3.10), which is the ticket an organizer scans to confirm attendance. Rotatable by Admin to invalidate printed posters.
+
+### 3.4 `event_assignment` — delegation join (event-scoped role)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| event_id | uuid FK→event `ON DELETE CASCADE` | |
+| user_id | uuid FK→user `ON DELETE CASCADE` | |
+| event_role | varchar(16) NOT NULL `CHECK IN ('MANAGER','HANDLER')` | MANAGER = Sub-admin |
+| assigned_by | uuid FK→user | who granted it |
+| created_at | timestamptz | |
+
+Constraints: `UNIQUE(event_id, user_id)`. Indexes: `INDEX(user_id)`, `INDEX(event_id)`.
+
+> **Heart of event-scoped authorization** ([`03`](03-api-routes-security.md)). `MANAGER` ⇒ Sub-admin powers on that event; `HANDLER` ⇒ task-executor.
+
+### 3.5 `main_supply_item` — global catalog (Admin-owned)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| name | varchar(200) NOT NULL | |
+| description | text | |
+| unit | varchar(50) | "box", "each"… |
+| default_quantity | integer | |
+| active | boolean NOT NULL default true | |
+| created_at / updated_at | timestamptz | |
+
+> CRUD restricted to Admin; Sub-admins read only. Referenced by `material.catalog_item_id` with `ON DELETE RESTRICT` so an in-use item cannot be deleted (supports the "cannot delete main supply list" rule).
+
+### 3.6 `material` — event item/task with workflow state
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| event_id | uuid FK→event `ON DELETE CASCADE` | scoping key |
+| catalog_item_id | uuid FK→main_supply_item NULL `ON DELETE RESTRICT` | optional catalog link |
+| name | varchar(200) NOT NULL | |
+| description | text | |
+| quantity | integer | |
+| status | varchar(16) NOT NULL `CHECK IN ('PENDING','IN_PROGRESS','NEEDS_REVIEW','DONE','ISSUE')` default PENDING | 5-state workflow |
+| assigned_to | uuid FK→user NULL `ON DELETE SET NULL` | the Handler |
+| created_by | uuid FK→user | |
+| created_at / updated_at | timestamptz | |
+
+Indexes: `INDEX(event_id)`, `INDEX(assigned_to)`, `INDEX(status)`.
+
+> `assigned_to` drives Handler-scoped authz (`canUpdateMaterial`). Transition rules below (§5).
+
+### 3.7 `material_status_history` — audit trail
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| material_id | uuid FK→material `ON DELETE CASCADE` | |
+| from_status | varchar(16) NULL | null on creation |
+| to_status | varchar(16) NOT NULL | |
+| changed_by | uuid FK→user | actor |
+| note | text | reason (esp. ISSUE) |
+| created_at | timestamptz | |
+
+Indexes: `INDEX(material_id, created_at)`. Provides real-time, attributable progress visibility.
+
+### 3.8 `agenda_template` & `agenda_item`
+**`agenda_template`** (global, built-in defaults + custom):
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| name | varchar(200) NOT NULL | |
+| items | jsonb NOT NULL default '[]' | `[{title, durationMin, order}]` |
+| is_default | boolean NOT NULL default false | seeded built-ins |
+| created_at / updated_at | timestamptz | |
+
+**`agenda_item`** (per-event, instantiated/edited):
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| event_id | uuid FK→event `ON DELETE CASCADE` | |
+| title | varchar(200) NOT NULL | |
+| starts_at / ends_at | timestamptz | |
+| position | integer NOT NULL | ordering |
+| created_at / updated_at | timestamptz | |
+
+Indexes: `INDEX(event_id, position)`.
+
+### 3.9 `registration_form` — dynamic form definition (JSONB)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| event_id | uuid FK→event `ON DELETE CASCADE` | |
+| title | varchar(200) NOT NULL | |
+| status | varchar(16) NOT NULL `CHECK IN ('DRAFT','ACTIVE','INACTIVE')` default DRAFT | editable while DRAFT (pre-live) |
+| schema | jsonb NOT NULL default '[]' | ordered field-definition array |
+| version | integer NOT NULL default 1 | bump on schema change |
+| created_by | uuid FK→user | |
+| created_at / updated_at | timestamptz | |
+
+Indexes: `INDEX(event_id)`, `GIN(schema)`.
+
+### 3.10 `registration_submission` — guest response + personal QR ticket (JSONB)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| form_id | uuid FK→registration_form `ON DELETE CASCADE` | |
+| event_id | uuid FK→event `ON DELETE CASCADE` | denormalized for fast event queries |
+| answers | jsonb NOT NULL | `{ "<field key>": <value> }` |
+| guest_name | varchar(200) | promoted from answers |
+| guest_email | varchar(255) NOT NULL | **delivery address for the QR ticket** (required) |
+| guest_phone | varchar(30) NOT NULL | **securely collected phone** (required per product req; shown in ops channel) |
+| **checkin_token** | varchar(64) NOT NULL UNIQUE | high-entropy token encoded in the guest's **personal attendance QR** |
+| **qr_status** | varchar(16) NOT NULL `CHECK IN ('PENDING','DELIVERED','CHECKED_IN','REVOKED')` default PENDING | ticket lifecycle |
+| **qr_delivered_at** | timestamptz NULL | when the QR ticket email was sent |
+| form_version | integer NOT NULL | schema version answered |
+| submitted_at | timestamptz NOT NULL | |
+
+Indexes: `INDEX(event_id, submitted_at)`, `INDEX(guest_email)`, `INDEX(guest_phone)`, `UNIQUE(checkin_token)`, `GIN(answers)`. Optional: `UNIQUE(event_id, guest_email)` if one registration per email per event is enforced.
+
+> `answers` validated server-side against the form `schema` before insert. `guest_email` is mandatory and is the address the QR ticket is emailed to; `guest_phone` is also required (product requirement) and appears in the ops-channel notification. On insert the service generates a unique `checkin_token` (the value encoded in the **per-guest QR**); `qr_status` tracks the ticket through `PENDING → DELIVERED` (email sent) `→ CHECKED_IN` (organizer scan). Email delivery mechanics in [`04`](04-external-integrations.md). GIN index powers attendee-discovery queries (`answers @> '{"company":"Acme"}'`).
+
+### 3.11 `event_checkin` — organizer-confirmed attendance record
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| event_id | uuid FK→event `ON DELETE CASCADE` | |
+| submission_id | uuid FK→registration_submission NOT NULL `ON DELETE CASCADE` | the scanned ticket's registration |
+| guest_phone | varchar(30) NOT NULL | snapshot of checked-in identity |
+| guest_name | varchar(200) | snapshot |
+| scanned_by | uuid FK→user NOT NULL | the **organizer** who scanned (Admin/Sub-admin/Handler assigned to the event) |
+| source | varchar(16) NOT NULL `CHECK IN ('QR_SCAN','MANUAL')` default QR_SCAN | manual = staff override without QR |
+| telegram_notified | boolean NOT NULL default false | ops-channel forwarding status |
+| checked_in_at | timestamptz NOT NULL | |
+| created_at | timestamptz | |
+
+Indexes: `INDEX(event_id, checked_in_at)`, `INDEX(submission_id)`, `UNIQUE(submission_id)` — **one attendance row per ticket (idempotent / replay-safe)**.
+
+> Created when an **organizer scans a guest's QR** (resolves `checkin_token` → submission). The `UNIQUE(submission_id)` constraint makes a second scan a no-op conflict (already checked in), satisfying single-use. `scanned_by` attributes the confirmation. `telegram_notified` tracks the ops-channel push (retry source — see [`04`](04-external-integrations.md)).
+
+### 3.12 `refresh_token` — JWT refresh rotation/revocation
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid PK | |
+| user_id | uuid FK→user `ON DELETE CASCADE` | |
+| token_hash | varchar(100) NOT NULL UNIQUE | store hash, not raw |
+| expires_at | timestamptz NOT NULL | |
+| revoked | boolean NOT NULL default false | |
+| replaced_by | uuid NULL | rotation chain |
+| created_at | timestamptz | |
+
+Indexes: `UNIQUE(token_hash)`, `INDEX(user_id)`.
+
+> **OTP codes are NOT in PostgreSQL** — they live in Redis with TTL (see [`01` §6](01-architecture-layout.md) and [`04`](04-external-integrations.md)).
+
+## 4. Enumerations (canonical)
+
+| Enum | Values | Column |
+|------|--------|--------|
+| GlobalRole | `ADMIN`, `MEMBER` | `user.global_role` |
+| EventRole | `MANAGER`, `HANDLER` | `event_assignment.event_role` |
+| EventStatus | `DRAFT`, `PUBLIC`, `ARCHIVED` | `event.status` |
+| **MaterialStatus** | `PENDING`, `IN_PROGRESS`, `NEEDS_REVIEW`, `DONE`, `ISSUE` | `material.status` |
+| FormStatus | `DRAFT`, `ACTIVE`, `INACTIVE` | `registration_form.status` |
+| TicketStatus | `PENDING`, `DELIVERED`, `CHECKED_IN`, `REVOKED` | `registration_submission.qr_status` |
+| CheckinSource | `QR_SCAN`, `MANUAL` | `event_checkin.source` |
+| UserStatus | `ACTIVE`, `INACTIVE` | `user.status` |
+
+## 5. Material state machine
+
+```
+            ┌───────────────────────── ISSUE ◀──────────────┐
+            ▼                                                │ (any active state can raise an issue)
+        PENDING ──▶ IN_PROGRESS ──▶ NEEDS_REVIEW ──▶ DONE
+            ▲             ▲               │
+            │             └───────────────┘  (review sends back)
+            └─ ISSUE can be resolved back to PENDING/IN_PROGRESS
+```
+
+| From → To | Who | Notes |
+|-----------|-----|-------|
+| `*` → IN_PROGRESS / NEEDS_REVIEW / ISSUE | assigned Handler, event MANAGER, Admin | Handler limited to own assigned material |
+| NEEDS_REVIEW → DONE | event MANAGER, Admin | review approval |
+| NEEDS_REVIEW → IN_PROGRESS | event MANAGER, Admin | send back |
+| ISSUE → PENDING/IN_PROGRESS | event MANAGER, Admin | issue resolved |
+| DONE → * | event MANAGER, Admin | reopen |
+
+Every transition writes a `material_status_history` row. Transition legality is enforced in the `material` service; authority in [`03`](03-api-routes-security.md).
+
+## 5b. Per-guest QR ticket lifecycle
+
+```
+ register ──▶ PENDING ──(QR ticket email sent)──▶ DELIVERED
+                 │  (retry / resend on demand)        │ organizer scans QR at venue
+                 ▼                                     ▼
+              PENDING                              CHECKED_IN  (terminal; second scan = no-op)
+
+ REVOKED ◀── Admin/Manager invalidates a ticket (e.g. duplicate/abuse) from PENDING or DELIVERED
+```
+
+| Transition | Trigger | Effect |
+|------------|---------|--------|
+| → `PENDING` | guest submits registration | `checkin_token` generated; QR email not yet sent |
+| `PENDING` → `DELIVERED` | QR ticket emailed to `guest_email` (after commit) | set `qr_delivered_at` |
+| `DELIVERED`/`PENDING` → `CHECKED_IN` | **organizer scans** the guest QR within the check-in window | create `event_checkin` (1:1), terminal |
+| any non-terminal → `REVOKED` | Admin/event MANAGER invalidates | scans rejected |
+| `CHECKED_IN` (re-scan) | organizer scans again | **no-op** — returns existing check-in (UNIQUE on `submission_id`) |
+
+> A guest can still be checked in even if the email never arrived (`PENDING`): the post-registration page shows the QR as a fallback, and `PENDING → CHECKED_IN` is permitted.
+
+> A guest can be checked in **only via an organizer scan**; guests never self-check-in. The terminal `CHECKED_IN` + `UNIQUE(event_checkin.submission_id)` guarantee single-use, replay-safe attendance.
+
+## 6. JSONB document structures (dynamic forms)
+
+### 6.1 `registration_form.schema` — field definitions (one source of truth, consumed by the FE renderer and BE validator)
+```json
+[
+  { "key": "full_name", "label": "Full name", "type": "text",
+    "required": true, "order": 1, "validation": { "minLength": 2, "maxLength": 120 } },
+
+  { "key": "email", "label": "Email", "type": "email",
+    "required": true, "order": 2, "validation": { "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$" } },
+
+  { "key": "phone", "label": "Phone number", "type": "phone",
+    "required": true, "order": 3, "validation": { "pattern": "^[0-9+\\-\\s]{7,20}$" } },
+
+  { "key": "company", "label": "Company", "type": "text",
+    "required": false, "order": 4 },
+
+  { "key": "meal", "label": "Meal preference", "type": "select",
+    "required": false, "order": 5, "options": ["Veg", "Non-veg", "Vegan"] }
+]
+```
+
+**Field object contract**
+| Property | Type | Meaning |
+|----------|------|---------|
+| `key` | string | unique within a form, immutable once submissions exist |
+| `label` | string | display label |
+| `type` | enum | `text · email · phone · number · date · select · multiselect · checkbox · textarea` |
+| `required` | boolean | server-enforced presence |
+| `order` | number | render/sort order |
+| `options` | string[] | for `select`/`multiselect` |
+| `validation` | object | optional: `minLength, maxLength, min, max, pattern` |
+
+> An `email` field (QR-ticket delivery) **and** a `phone` field (product requirement) are **mandatory** in any active event form; the form-builder enforces both before a form can go `ACTIVE`. `guest_email`/`guest_phone` are promoted from these answers.
+
+### 6.2 `registration_submission.answers` — keyed by field `key`
+```json
+{
+  "full_name": "Dara Sok",
+  "email": "dara@example.com",
+  "phone": "+855 12 345 678",
+  "company": "Acme Co",
+  "meal": "Vegan"
+}
+```
+
+**Validation on submit:** the service loads the form's `schema`, then checks (a) all `required` keys present, (b) each value matches its field `type` + `validation`, (c) `select`/`multiselect` values are within `options`, (d) no unknown keys. `guest_email` is promoted from `answers.email` and `guest_phone` from `answers.phone`. Invalid submissions are rejected with field-level errors (no DB write, no migration ever needed for new fields).
+
+## 7. Indexing strategy
+
+- **Scoping/lookup:** B-tree on every filtered FK (`event_id`, `user_id`, `assigned_to`, `status`, `guest_email`, `guest_phone`).
+- **JSONB search:** GIN on `registration_form.schema` and `registration_submission.answers` (`@>` containment) for attendee discovery.
+- **Ticket resolution:** `UNIQUE(registration_submission.checkin_token)` — O(1) lookup when an organizer scans a QR.
+- **Uniqueness:** `user.email`, `event.slug`, `event.registration_qr_token`, `event_assignment(event_id,user_id)`, `registration_submission.checkin_token`, `event_checkin.submission_id` (one attendance per ticket), `refresh_token.token_hash`.
+- **Audit/timeline reads:** composite `(material_id, created_at)`, `(event_id, checked_in_at)`.
+
+## 8. Migration & seed plan (Flyway)
+
+`V1__init.sql` order: extensions (`pgcrypto`) → organization → user → event → event_assignment → main_supply_item → material → material_status_history → agenda_template → agenda_item → registration_form → registration_submission → event_checkin → refresh_token.
+Seed (separate migration): singleton organization row, built-in default agenda templates (`is_default=true`), bootstrap Admin user (credential injected via env, never hard-coded).
+
+## 9. Open questions for review
+
+- **One registration per email per event?** If yes, add `UNIQUE(event_id, guest_email)` on `registration_submission` and re-send the existing QR on re-registration. *(Default: enforce uniqueness — one ticket per email per event.)*
+- **What does the QR encode** — the raw `checkin_token`, or a signed URL `…/scan?t=<token>`? *(Default: opaque `checkin_token`; the authenticated organizer app resolves it server-side.)*
+- **Re-entry:** is a single `CHECKED_IN` enough, or do we need multiple scans (in/out)? *(Default: single terminal check-in in v1.)*
+- Track material `quantity` as required/received split for partial fulfillment? *(Default: single quantity in v1.)*
+- Allow custom agenda templates beyond built-ins in v1? *(Default: yes, `is_default=false` rows.)*
