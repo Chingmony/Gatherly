@@ -23,15 +23,15 @@ user ──< event_assignment >── event ──< material >── material_st
   │           (MANAGER|HANDLER)  │         │
   │                              │         └──(assigned_to) user
   │                              ├──< agenda_item        agenda_template (global)
-  │                              ├──< registration_form ──< registration_submission
-  │                              │            (JSONB schema)   (JSONB answers + checkin_token = per-guest QR)
+  │                              ├──1 registration_form ──< registration_submission
+  │                              │        (1:1, JSONB schema)   (JSONB answers + checkin_token = per-guest QR)
   │                              └──< event_checkin ──(submission, 1:1) ──(scanned_by) user
   │
   ├──< refresh_token
 main_supply_item (global catalog) ──< material.catalog_item_id (RESTRICT)
 ```
 
-Legend: `──<` one-to-many; `>──` many-to-one. `event_assignment` is the user×event join that carries the **event-scoped role**.
+Legend: `──<` one-to-many; `>──` many-to-one; `──1` one-to-one. `event_assignment` is the user×event join that carries the **event-scoped role**. `registration_form` is 1:1 with `event` — one event owns at most one form (`UNIQUE(event_id)`).
 
 ## 3. Tables
 
@@ -40,10 +40,11 @@ Legend: `──<` one-to-many; `>──` many-to-one. `event_assignment` is the 
 |--------|------|-------|
 | id | uuid PK | singleton (fixed id / partial-unique guard) |
 | name | varchar(200) NOT NULL | company name |
+| description | text | short company/org bio |
 | logo_key | text | Rustfs object key |
 | banner_key | text | Rustfs background banner key |
 | contact_email | varchar(255) | |
-| contact_phone | varchar(50) | |
+| contact_phone | varchar(25) | |
 | created_at / updated_at | timestamptz | |
 
 > Editable by Admin only. `logo_key`/`banner_key` reference Rustfs objects (see [`04`](04-external-integrations.md)).
@@ -56,6 +57,9 @@ Legend: `──<` one-to-many; `>──` many-to-one. `event_assignment` is the 
 | password_hash | varchar(100) NOT NULL | BCrypt; never serialized |
 | full_name | varchar(200) NOT NULL | |
 | phone | varchar(30) | |
+| gender | varchar(10) `CHECK IN ('MALE','FEMALE','OTHER')` NULL | optional |
+| date_of_birth | date NULL | optional |
+| address | varchar(500) NULL | optional free-text address |
 | avatar_key | text | Rustfs object key |
 | global_role | varchar(16) NOT NULL `CHECK IN ('ADMIN','MEMBER')` | coarse RBAC layer |
 | status | varchar(16) NOT NULL `CHECK IN ('ACTIVE','INACTIVE')` default ACTIVE | |
@@ -76,7 +80,7 @@ Indexes: `UNIQUE(email)`, `INDEX(global_role)`.
 | starts_at / ends_at | timestamptz | |
 | status | varchar(16) NOT NULL `CHECK IN ('DRAFT','PUBLIC','ARCHIVED')` default DRAFT | Public activates guest registration |
 | registration_qr_token | varchar(64) UNIQUE | optional poster QR that links to the **registration** form (discovery only — NOT attendance) |
-| checkin_opens_at / checkin_closes_at | timestamptz | optional window during which organizer attendance scans are accepted |
+| checkin_opens_at | timestamptz | optional time from which organizer attendance scans are accepted |
 | created_by | uuid FK→user | Admin creator |
 | created_at / updated_at | timestamptz | |
 
@@ -168,7 +172,7 @@ Indexes: `INDEX(event_id, position)`.
 | Column | Type | Notes |
 |--------|------|-------|
 | id | uuid PK | |
-| event_id | uuid FK→event `ON DELETE CASCADE` | |
+| event_id | uuid FK→event `ON DELETE CASCADE` UNIQUE | **one form per event** — enforced at DB level |
 | title | varchar(200) NOT NULL | |
 | status | varchar(16) NOT NULL `CHECK IN ('DRAFT','ACTIVE','INACTIVE')` default DRAFT | editable while DRAFT (pre-live) |
 | schema | jsonb NOT NULL default '[]' | ordered field-definition array |
@@ -176,7 +180,9 @@ Indexes: `INDEX(event_id, position)`.
 | created_by | uuid FK→user | |
 | created_at / updated_at | timestamptz | |
 
-Indexes: `INDEX(event_id)`, `GIN(schema)`.
+Indexes: `UNIQUE(event_id)`, `GIN(schema)`.
+
+> **1:1 with `event`** — `UNIQUE(event_id)` enforces one form per event at the DB level. An event has no form until Admin explicitly creates one; a second creation attempt returns a conflict error. The form is editable while `DRAFT`; once `ACTIVE` the schema is locked (field keys are immutable because existing submissions reference them by key).
 
 ### 3.10 `registration_submission` — guest response + personal QR ticket (JSONB)
 | Column | Type | Notes |
@@ -341,7 +347,7 @@ Every transition writes a `material_status_history` row. Transition legality is 
 - **Scoping/lookup:** B-tree on every filtered FK (`event_id`, `user_id`, `assigned_to`, `status`, `guest_email`, `guest_phone`).
 - **JSONB search:** GIN on `registration_form.schema` and `registration_submission.answers` (`@>` containment) for attendee discovery.
 - **Ticket resolution:** `UNIQUE(registration_submission.checkin_token)` — O(1) lookup when an organizer scans a QR.
-- **Uniqueness:** `user.email`, `event.slug`, `event.registration_qr_token`, `event_assignment(event_id,user_id)`, `registration_submission.checkin_token`, `event_checkin.submission_id` (one attendance per ticket), `refresh_token.token_hash`.
+- **Uniqueness:** `user.email`, `event.slug`, `event.registration_qr_token`, `event_assignment(event_id,user_id)`, `registration_form.event_id` (one form per event), `registration_submission.checkin_token`, `event_checkin.submission_id` (one attendance per ticket), `refresh_token.token_hash`.
 - **Audit/timeline reads:** composite `(material_id, created_at)`, `(event_id, checked_in_at)`.
 
 ## 8. Migration & seed plan (Flyway)
