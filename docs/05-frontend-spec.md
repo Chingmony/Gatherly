@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
 }
 export const config = { matcher: ['/admin/:path*','/events/:path*','/my-tasks/:path*','/organization/:path*'] }
 ```
-- `proxy` only knows the **global** role (`ADMIN`/`MEMBER`). **Event-scoped** access (manager/handler on a specific event) is *not* decided here — the page's server fetch hits the API and renders `403`→a "not authorized for this event" state if denied. This keeps the client honest with the two-layer model in [`04`](04-auth-and-authorization.md)/[`03`](03-api-routes-security.md).
+- `proxy` only knows the **global** role (`ADMIN`/`MEMBER`). **Event-scoped** access (manager/handler on a specific event) is *not* decided here — the page's server fetch hits the API and renders `403`→a "not authorized for this event" state if denied. This keeps the client honest with the two-layer model in [`03`](03-api-routes-security.md).
 - Because `proxy` now runs on the Node.js runtime by default, the refresh/claim-decode can use standard Node crypto/libraries — no edge-runtime constraints. Still treat it as **UX-only**: Server Actions are dispatched as POSTs to the route that uses them, so a `matcher` that excludes a path also skips its Server Functions — always re-verify auth inside each Server Action and server fetch, never rely on `proxy` alone (per Next.js Data Security guidance).
 - **Route-level boundaries:** each route group provides `loading.tsx` (Suspense fallback during server fetch), `error.tsx` (recoverable render/fetch errors with a retry), and `not-found.tsx`. The server fetch's `403` renders the "not authorized for this event" state (a segment-level `forbidden`/not-authorized UI), distinct from `404` not-found — so denied event access and missing resources read differently.
 

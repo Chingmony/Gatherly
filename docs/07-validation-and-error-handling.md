@@ -24,7 +24,7 @@ Every non-2xx response (except opaque infra errors) returns this body, produced 
 ```json
 {
   "timestamp": "2026-06-13T09:02:11Z",
-  "status": 422,
+  "status": 400,
   "error": "VALIDATION_ERROR",
   "message": "One or more fields are invalid.",
   "path": "/api/v1/public/events/{id}/register",
@@ -73,11 +73,11 @@ Stable codes (consumed by FE for messaging/branching). Grouped by HTTP status:
 | 409 | `TICKET_INVALID` | revoked ticket / check-in window closed |
 | 409 | `ILLEGAL_TRANSITION` | disallowed material status change |
 | 409 | `NO_ACTIVE_FORM` | registration attempted with no active form |
-| 422 | `VALIDATION_ERROR` | field-level validation failures (`fieldErrors`) |
+| 400 | `VALIDATION_ERROR` | field-level validation failures (`fieldErrors`) |
 | 429 | `RATE_LIMITED` | throttled (login/OTP/registration/resend) |
 | 500 | `INTERNAL_ERROR` | unexpected; logged with `traceId`, generic message to client |
 
-> **Status convention:** `400` = the request itself is malformed; `422` = well-formed but fails business/field validation. (If the team prefers `400` for all validation, collapse `422`→`400` — one decision, applied consistently.)
+> **Status convention:** `400` for all validation failures — both malformed requests and field-level validation errors. `VALIDATION_ERROR` with `fieldErrors` distinguishes field failures from `MALFORMED_REQUEST`.
 
 ## 5. Exception → response mapping
 
@@ -85,8 +85,8 @@ Stable codes (consumed by FE for messaging/branching). Grouped by HTTP status:
 
 | Exception | → |
 |-----------|---|
-| `MethodArgumentNotValidException` / `ConstraintViolationException` | `422 VALIDATION_ERROR` + `fieldErrors` |
-| `FormValidationException` (custom) | `422 VALIDATION_ERROR` + `fieldErrors` |
+| `MethodArgumentNotValidException` / `ConstraintViolationException` | `400 VALIDATION_ERROR` + `fieldErrors` |
+| `FormValidationException` (custom) | `400 VALIDATION_ERROR` + `fieldErrors` |
 | `AccessDeniedException` | `403 FORBIDDEN` |
 | `AuthenticationException` | `401 UNAUTHENTICATED` |
 | `EntityNotFoundException` / custom `NotFoundException` | `404 NOT_FOUND` |

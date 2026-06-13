@@ -95,7 +95,7 @@ Criticals (T4, T12) are covered by the authorization test matrix ([`09` §2.3](0
 - **In transit:** TLS to SMTP/Telegram/Rustfs/clients.
 - **At rest:** rely on managed Postgres encryption-at-rest; secrets never in DB.
 - **Access control:** ops Telegram channel membership restricted (PII visible there); admin-only exports.
-- **Retention:** define a per-event retention window for submissions/check-ins (e.g. delete N days post-event) — *decision pending (§9)*; cascade deletes on event removal already defined ([`02` §7](02-database-schema.md)).
+- **Retention:** define a per-event retention window for submissions/check-ins (e.g. delete N days post-event) — *decision pending (§9)*; cascade deletes on event removal already defined ([`02` §3](02-database-schema.md)).
 - **Right-to-erasure:** an admin action to delete a guest's submissions by email/phone (supports basic data-subject requests).
 
 ## 8. Secrets & supply chain

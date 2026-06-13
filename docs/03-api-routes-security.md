@@ -231,7 +231,7 @@ The new check-in: an organizer scans the **guest's** QR at the venue.
 - Sub-admin of Event A → `403` on any Event B write; → `403` on delete user/event and supply-item delete.
 - Handler → `403` updating a material not assigned to them; `PATCH status` succeeds only on assigned material and respects the state machine.
 - Refresh rotation: reused refresh token revokes the chain.
-- Public **registration** works only when event PUBLIC + form ACTIVE; rejects missing `email` or `phone`; creates a `PENDING` ticket and **emails the QR** (no `event_checkin` created).
+- Public **registration** works only when event PUBLIC + form ACTIVE; non-PUBLIC event → `404`; no active form → `409 NO_ACTIVE_FORM`; rejects missing `email` or `phone` → `400 VALIDATION_ERROR`; creates a `PENDING` ticket and **emails the QR** (no `event_checkin` created).
 - **QR delivery:** a successful registration sends the QR-ticket email and moves the ticket `PENDING → DELIVERED`; a mail failure leaves it `PENDING` and is retried (the on-screen ticket page still shows the QR).
 - **Organizer scan:** assigned staff can scan; an unassigned user → `403`. Scanning a token from another event → `404/403`. First scan → `CHECKED_IN`; second scan → `409 ALREADY_CHECKED_IN`; revoked/closed-window → `409 TICKET_INVALID`. A `PENDING` (email-not-yet-delivered) ticket can still be scanned.
 - OTP: expired/used/over-attempt codes rejected; successful verify yields a single-use reset grant.

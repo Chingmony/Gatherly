@@ -14,7 +14,7 @@
               ┌─────────────────────────▼──────────────────────────┐
               │  Next.js 16  (App Router · shadcn/ui · Framer Motion)│
               │  • Server Components / Server Actions                │
-              │  • middleware.ts  → JWT cookie guard                 │
+              │  • proxy.ts  → JWT cookie guard (Next.js 16)         │
               │  • lib/api  → typed fetch client                     │
               └───────────┬─────────────────────────┬───────────────┘
                           │ HTTPS/JSON (JWT cookie)  │ presigned URL (direct upload/fetch)
@@ -96,14 +96,14 @@ frontend/
 │   ├── auth/                           # session helpers, role guards
 │   ├── rustfs/                         # presigned-upload helper
 │   └── validation/                     # zod schemas mirroring form field types
-├── middleware.ts                       # JWT cookie check + route-group guards
+├── proxy.ts                            # JWT cookie check + route-group guards (Next.js 16)
 ├── next.config.ts
 └── package.json
 ```
 
 **Conventions**
 - **Route groups by audience** (`(public)`, `(auth)`, `(admin)`, `(event)`, `(handler)`) — the URL stays clean while access context is explicit.
-- **`middleware.ts`** validates the access-token cookie on protected matchers, performs silent refresh, and redirects under-privileged users. It is a **UX guard only** — the API remains the real authority.
+- **`proxy.ts`** validates the access-token cookie on protected matchers, performs silent refresh, and redirects under-privileged users. It is a **UX guard only** — the API remains the real authority.
 - **Server Components / Server Actions** do authenticated reads/writes, forwarding the JWT cookie. Mutations funnel through `lib/api`.
 - **shadcn/ui** provides primitives in `components/ui`; **Framer Motion** lives in `components/motion` (shared variants for page/route transitions and micro-interactions).
 - **Dynamic form rendering** (`components/form-renderer`) consumes the JSONB `schema` array from the API and draws fields generically (see [`02`](02-database-schema.md) §JSONB and [`03`](03-api-routes-security.md)).
@@ -146,7 +146,7 @@ backend/
     └── resources/
         ├── application.yml
         ├── application-{local,prod}.yml
-        └── db/migration/         # Flyway/Liquibase SQL (see 02)
+        └── db/migration/         # Flyway SQL (see 02)
 ```
 
 ### 4.1 Layer responsibilities

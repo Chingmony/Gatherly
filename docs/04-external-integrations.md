@@ -137,7 +137,7 @@ Redis stores **only** ephemeral, time-expiring data: password-reset OTP codes an
 | `pwdreset:grant:{userId}` | random grant id | short (e.g. 300s) | issued after successful OTP verify |
 | `rl:login:{ip}` / `rl:otp:{ip}` / `rl:register:{ip}` | counter | sliding window | brute-force / spam protection |
 
-### 3.4 Lifecycle (maps to [`03` §2.3](03-api-routes-security.md))
+### 3.4 Lifecycle (expands on [`03` §2.3](03-api-routes-security.md) — this section is authoritative for key schema and TTL detail)
 ```
 forgot-password → requestOtp
    ├─ if otp:cooldown:{userId} exists → 429

@@ -75,7 +75,7 @@ M0 Foundations ─┬─▶ M1 Auth & Users ─┬─▶ M2 Org & Events ─┬�
 
 **MVP = M0–M7** (+ minimal M9 hardening). That delivers the full differentiated loop: create/publish event → build form → guest registers → QR emailed → organizer scans to confirm attendance, all under strict RBAC.
 
-**Fast-follow:** M8 Telegram ops feed, richer observability, agenda templating polish, exports, i18n, PWA offline scanner.
+**Fast-follow:** M8 Telegram ops feed, richer observability, agenda templating polish, exports, i18n, offline scan queue (IndexedDB + background sync).
 
 ## 5. Cross-cutting workstreams (run continuously)
 

@@ -72,7 +72,7 @@ Distinct from app logs — an **append-only, queryable** record of who-did-what:
 - **QR emails not arriving:** check `qr_email.failed` + provider status; verify SPF/DKIM/DMARC; confirm sweep running; guests can still use the on-screen ticket page.
 - **Telegram ops channel silent:** check `telegram.ops.failed`, bot token validity, chat id; backlog drains via sweep on recovery.
 - **Check-in disputes:** query `event_checkin` + `material`/submission history by `guest_phone`/`checkin_token` prefix and `traceId`.
-- **Refresh-token reuse detected:** chain auto-revoked ([`04`/`03`](03-api-routes-security.md)); advise user re-login; investigate source IP.
+- **Refresh-token reuse detected:** chain auto-revoked ([`04`](04-external-integrations.md) / [`03`](03-api-routes-security.md)); advise user re-login; investigate source IP.
 - **Migration failed on deploy:** Flyway halts startup; roll back deploy, fix migration, redeploy (see [`12`](12-devops-and-deployment.md)).
 
 ## 9. Open questions
