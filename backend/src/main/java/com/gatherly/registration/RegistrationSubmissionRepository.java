@@ -4,7 +4,10 @@ import com.gatherly.registration.domain.RegistrationSubmission;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +20,16 @@ public interface RegistrationSubmissionRepository extends JpaRepository<Registra
     Page<RegistrationSubmission> findByEventId(UUID eventId, Pageable pageable);
 
     Optional<RegistrationSubmission> findByCheckinToken(String checkinToken);
+
+    /** One grouped count for the public homepage — avoids an N+1 count-per-event loop. */
+    @Query("select s.eventId as eventId, count(s) as cnt from RegistrationSubmission s "
+            + "where s.eventId in :eventIds group by s.eventId")
+    List<EventSubmissionCount> countByEventIds(Collection<UUID> eventIds);
+
+    /** Projection for {@link #countByEventIds}. */
+    interface EventSubmissionCount {
+        UUID getEventId();
+
+        long getCnt();
+    }
 }

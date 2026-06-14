@@ -207,7 +207,7 @@ Indexes: `UNIQUE(event_id)`, `GIN(schema)`.
 | form_version | integer NOT NULL | schema version answered |
 | submitted_at | timestamptz NOT NULL | |
 
-Indexes: `INDEX(event_id, submitted_at)`, `INDEX(guest_email)`, `INDEX(guest_phone)`, `UNIQUE(checkin_token)`, `GIN(answers)`. Optional: `UNIQUE(event_id, guest_email)` if one registration per email per event is enforced.
+Indexes: `INDEX(event_id, submitted_at)`, `INDEX(guest_email)`, `INDEX(guest_phone)`, `UNIQUE(checkin_token)`, `GIN(answers)`. One registration per email per event is enforced **case-insensitively**: `UNIQUE(event_id, lower(guest_email))` (V5 — also serves the per-registration duplicate probe).
 
 > `answers` validated server-side against the form `schema` before insert. `guest_email` is mandatory and is the address the QR ticket is emailed to; `guest_phone` is also required (product requirement) and appears in the ops-channel notification. On insert the service generates a unique `checkin_token` (the value encoded in the **per-guest QR**); `qr_status` tracks the ticket through `PENDING → DELIVERED` (email sent) `→ CHECKED_IN` (organizer scan). Email delivery mechanics in [`04`](04-external-integrations.md). GIN index powers attendee-discovery queries (`answers @> '{"company":"Acme"}'`).
 

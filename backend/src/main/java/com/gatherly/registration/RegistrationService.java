@@ -72,10 +72,20 @@ public class RegistrationService {
 
     @Transactional(readOnly = true)
     public List<PublicEventCard> listPublicEvents() {
-        return events.findByStatusOrderByStartsAtAsc(EventStatus.PUBLIC).stream()
+        List<Event> publicEvents = events.findByStatusOrderByStartsAtAsc(EventStatus.PUBLIC);
+        if (publicEvents.isEmpty()) {
+            return List.of();
+        }
+        // Single grouped count instead of N per-event counts (homepage hot path).
+        Map<UUID, Long> counts = submissions
+                .countByEventIds(publicEvents.stream().map(Event::getId).toList()).stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        RegistrationSubmissionRepository.EventSubmissionCount::getEventId,
+                        RegistrationSubmissionRepository.EventSubmissionCount::getCnt));
+        return publicEvents.stream()
                 .map(e -> new PublicEventCard(e.getId(), e.getSlug(), e.getTitle(), e.getCategory(),
                         e.getVenue(), e.getStartsAt(), e.getCoverGradient(), e.getCoverImageKey(),
-                        submissions.countByEventId(e.getId()), e.getCapacity()))
+                        counts.getOrDefault(e.getId(), 0L), e.getCapacity()))
                 .toList();
     }
 
