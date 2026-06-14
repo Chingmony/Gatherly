@@ -34,11 +34,17 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
 
-    // --- Security (filter chain + method security; full JWT wiring lands in M1) ---
+    // --- Security (filter chain + method security) + JWT (HS256 via jjwt) ---
     implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
-    // --- Redis (OTP + rate-limit counters; used from M1 onward) ---
+    // --- Redis (OTP + rate-limit counters) ---
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
+    // --- Email (OTP + QR-ticket delivery; JavaMailSender → MailHog locally) ---
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 
     // --- Observability (health endpoints + Prometheus scrape, docs/08) ---
     implementation("org.springframework.boot:spring-boot-starter-actuator")

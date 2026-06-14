@@ -6,6 +6,12 @@ spring:
       hibernate:
         format_sql: true
 
+gatherly:
+  auth:
+    cookie:
+      # Local dev is plain http → cookies can't be Secure or the browser drops them.
+      secure: false
+
 logging:
   level:
     com.gatherly: DEBUG

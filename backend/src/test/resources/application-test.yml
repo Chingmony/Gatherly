@@ -8,6 +8,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+gatherly:
+  auth:
+    cookie:
+      secure: false
+
 logging:
   level:
     org.testcontainers: INFO

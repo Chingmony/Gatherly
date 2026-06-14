@@ -2,9 +2,11 @@ package com.gatherly.config;
 
 import com.gatherly.common.error.ApiError;
 import com.gatherly.common.error.ErrorCode;
+import com.gatherly.security.JwtAuthenticationFilter;
 import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -14,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -24,27 +27,30 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Stateless security baseline (docs/03 §2.2). The full JWT filter, {@code @eventSecurity}, and
- * auth endpoints land in M1; M0 establishes the chain, the public surface, and 401/403 rendered
- * in the uniform error contract (docs/07).
+ * Stateless security baseline (docs/03 §2.2): the JWT cookie filter authenticates each request,
+ * {@code @EnableMethodSecurity} runs the {@code @PreAuthorize} gates, and filter-level 401/403 are
+ * rendered in the uniform error contract (docs/07).
  *
  * <p>{@code permitAll}: {@code /actuator/health}, {@code /api/v1/ping}, {@code /api/v1/public/**},
- * {@code /api/v1/auth/**}, and the OpenAPI/Swagger UI. Everything else requires authentication;
- * method-level {@code @PreAuthorize} gates (docs/03 §3) are the second layer added from M1.
+ * {@code /api/v1/auth/**}, and the OpenAPI/Swagger UI. Everything else requires authentication
+ * (layer 1), then a method-level gate (layer 2, docs/03 §3).
  */
 @Configuration
 @EnableMethodSecurity
+@EnableConfigurationProperties(AuthProperties.class)
 public class SecurityConfig {
 
     private final JsonMapper jsonMapper;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Value("${gatherly.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
-    public SecurityConfig(JsonMapper jsonMapper) {
+    public SecurityConfig(JsonMapper jsonMapper, JwtAuthenticationFilter jwtAuthenticationFilter) {
         // Spring Boot 4 auto-configures a Jackson 3 JsonMapper (the Jackson 2 ObjectMapper is
         // no longer a bean). Used to render filter-level auth failures in the uniform contract.
         this.jsonMapper = jsonMapper;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -71,7 +77,8 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, deniedException) ->
                                 writeError(response, ErrorCode.FORBIDDEN,
                                         "You do not have permission to perform this action.",
-                                        request.getRequestURI())));
+                                        request.getRequestURI())))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

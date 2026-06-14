@@ -32,6 +32,18 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:false}
+          starttls:
+            enable: ${SMTP_STARTTLS:false}
+
   jackson:
     # Jackson 3 (Spring Boot 4) already serializes dates as ISO-8601 by default, so no
     # write-dates-as-timestamps flag is needed (that SerializationFeature was removed in v3).
@@ -61,8 +73,32 @@ server:
     whitelabel:
       enabled: false
 
-# Application-scoped settings (consumed via @ConfigurationProperties / @Value in later milestones).
+# Application-scoped settings (bound via @ConfigurationProperties / @Value).
 gatherly:
   api-base-path: /api/v1
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  auth:
+    jwt:
+      secret: ${JWT_SECRET:change-me-to-a-long-random-secret-at-least-32-bytes}
+      access-ttl: ${JWT_ACCESS_TTL:PT15M}     # 15 minutes (docs/03 §2.1)
+      refresh-ttl: ${JWT_REFRESH_TTL:P7D}      # 7 days
+    cookie:
+      secure: ${COOKIE_SECURE:true}            # false only for local http dev
+      same-site: ${COOKIE_SAMESITE:Strict}
+      domain: ${COOKIE_DOMAIN:}
+    otp:                                        # docs/04 §3.2
+      ttl-seconds: ${OTP_TTL_SECONDS:300}
+      max-attempts: ${OTP_MAX_ATTEMPTS:5}
+      resend-cooldown-seconds: ${OTP_RESEND_COOLDOWN_SECONDS:60}
+      length: ${OTP_LENGTH:6}
+      grant-ttl-seconds: ${OTP_GRANT_TTL_SECONDS:300}
+  email:
+    enabled: ${EMAIL_ENABLED:false}
+    from: ${MAIL_FROM:no-reply@gatherly.local}
+    from-name: ${MAIL_FROM_NAME:Gatherly}
+  bootstrap:
+    admin:
+      email: ${BOOTSTRAP_ADMIN_EMAIL:}
+      password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+      name: ${BOOTSTRAP_ADMIN_NAME:Gatherly Admin}
