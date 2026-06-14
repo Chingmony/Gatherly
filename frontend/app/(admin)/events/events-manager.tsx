@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
+import { coverGradient, COVER_KEYS } from "@/lib/covers";
 
 const STATUS_LABEL: Record<EventStatus, string> = {
   DRAFT: "Draft",
@@ -29,6 +30,9 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
   const [title, setTitle] = useState("");
   const [venue, setVenue] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [cover, setCover] = useState("a");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +43,9 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
     setTitle("");
     setVenue("");
     setDescription("");
+    setCategory("");
+    setCapacity("");
+    setCover("a");
     setStartsAt("");
     setEndsAt("");
     setError(null);
@@ -54,6 +61,9 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
         title,
         venue: venue || undefined,
         description: description || undefined,
+        category: category || undefined,
+        capacity: capacity ? Number(capacity) : undefined,
+        coverGradient: cover,
         startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
         endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
       });
@@ -106,8 +116,10 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
             {initialEvents.map((ev) => (
               <tr key={ev.id} className="border-b border-[var(--bo)] last:border-0 transition-colors hover:bg-[var(--sidebar-hover)]">
                 <td className="px-4 py-3 text-[13px] font-medium">
-                  <Link href={`/events/${ev.id}`} className="text-[var(--ac)] hover:underline">
-                    {ev.title}
+                  <Link href={`/events/${ev.id}`} className="flex items-center gap-2.5">
+                    <span aria-hidden className="h-7 w-7 shrink-0 rounded-[8px]"
+                          style={{ background: coverGradient(ev.coverGradient) }} />
+                    <span className="text-[var(--ac)] hover:underline">{ev.title}</span>
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-[13px] text-[var(--t2)]">{ev.venue || "—"}</td>
@@ -153,9 +165,34 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
             <Label htmlFor="title">Title</Label>
             <Input id="title" required value={title} onChange={(e) => setTitle(e.target.value)} />
           </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="venue">Venue</Label>
+              <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Conference" />
+            </div>
+          </div>
           <div>
-            <Label htmlFor="venue">Venue</Label>
-            <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
+            <Label htmlFor="capacity">Capacity</Label>
+            <Input id="capacity" type="number" min={0} value={capacity}
+                   onChange={(e) => setCapacity(e.target.value)} placeholder="Unlimited" />
+          </div>
+          <div>
+            <Label>Cover</Label>
+            <div className="flex gap-2">
+              {COVER_KEYS.map((k) => (
+                <button type="button" key={k} aria-label={`Cover ${k}`} onClick={() => setCover(k)}
+                        className="h-8 w-12 rounded-[8px] transition-transform"
+                        style={{
+                          background: coverGradient(k),
+                          outline: cover === k ? "2px solid var(--primary)" : "none",
+                          outlineOffset: 2,
+                        }} />
+              ))}
+            </div>
           </div>
           <div>
             <Label htmlFor="description">Description</Label>

@@ -83,6 +83,10 @@ export interface EventResponse {
   startsAt?: string;
   endsAt?: string;
   status: EventStatus;
+  category?: string;
+  capacity?: number | null;
+  coverGradient?: string;
+  coverImageKey?: string;
   checkinOpensAt?: string;
   createdBy?: string;
   createdAt: string;
@@ -93,6 +97,10 @@ export interface CreateEventBody {
   title: string;
   description?: string;
   venue?: string;
+  category?: string;
+  capacity?: number;
+  coverGradient?: string;
+  coverImageKey?: string;
   startsAt?: string;
   endsAt?: string;
 }
