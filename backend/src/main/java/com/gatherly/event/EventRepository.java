@@ -1,10 +1,12 @@
 package com.gatherly.event;
 
 import com.gatherly.event.domain.Event;
+import com.gatherly.event.domain.EventStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +15,9 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     boolean existsBySlug(String slug);
 
     Optional<Event> findBySlug(String slug);
+
+    /** Public homepage listing (docs/03 §4.9) — every PUBLIC event, soonest first. */
+    List<Event> findByStatusOrderByStartsAtAsc(EventStatus status);
 
     Page<Event> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 

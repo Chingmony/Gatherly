@@ -56,10 +56,12 @@ M0 Foundations ─┬─▶ M1 Auth & Users ─┬─▶ M2 Org & Events ─┬�
 ### M5 — Dynamic forms
 - Form builder (JSONB schema, drag-reorder, required email+phone guard) + renderer ([`05` §5](05-frontend-spec.md), [`02` §6](02-database-schema.md)); activation rules.
 - **Demo:** sub-admin builds a custom form, previews, activates.
+- **Status:** backend delivered early during the design build (P3): `registration_form` JSONB service, `GET/PUT /events/{id}/form` + `POST .../activate` (server-enforced required email+phone), public `GET /public/events/{slug}/form`. `FormFlowIT` green.
 
 ### M6 — Registration + QR ticket (email)  ◀ core differentiator
 - Public registration; server-side answer validation; `checkin_token` generation; **QR emailed** to guest + on-screen fallback; ticket page ([`06` §6](06-backend-services-spec.md), [`04` §2.1](04-external-integrations.md)).
 - **Demo:** guest registers on a Public event, receives the QR by email (MailHog locally).
+- **Status:** registration backend delivered early during the design build (P4): `registration_submission`, public `GET /public/events`, `POST /public/events/{id}/register` (validate vs schema, capacity + one-per-email, CSPRNG `checkin_token`, `PENDING`), `GET /public/tickets/{token}`, and organizer `GET /events/{id}/submissions` (Manage Guests, canView). `RegistrationFlowIT` green. **Deferred to a later slice:** QR-by-email delivery + the organizer scan (M7) — this slice shows the QR on-screen only.
 
 ### M7 — Attendance (organizer scan)  ◀ core differentiator
 - Organizer QR scanner UI ([`05` §6](05-frontend-spec.md)); `AttendanceService.scan` idempotent via unique constraint; manual override; revoke; live attendance ([`06` §4](06-backend-services-spec.md)).
