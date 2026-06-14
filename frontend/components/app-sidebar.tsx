@@ -8,6 +8,8 @@ import {
   Users,
   Building2,
   ShieldCheck,
+  ListChecks,
+  Boxes,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,7 +26,9 @@ type NavItem = { href: string; label: string; icon: LucideIcon; section: "Main M
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, section: "Main Menu" },
   { href: "/events", label: "Events", icon: CalendarDays, section: "Main Menu" },
+  { href: "/my-tasks", label: "My Tasks", icon: ListChecks, section: "Main Menu" },
   { href: "/users", label: "User Management", icon: Users, section: "Others" },
+  { href: "/supply-items", label: "Supply List", icon: Boxes, section: "Others" },
   { href: "/organization", label: "Organization", icon: Building2, section: "Others" },
 ];
 

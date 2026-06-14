@@ -343,3 +343,81 @@ export interface PresignResponse {
   objectKey: string;
   publicUrl?: string;
 }
+
+// ---- Materials & workflow (docs/03 §4.6/§4.7, docs/02 §5) -----------------
+
+export type MaterialStatus = "PENDING" | "IN_PROGRESS" | "NEEDS_REVIEW" | "DONE" | "ISSUE";
+
+export interface SupplyItemResponse {
+  id: string;
+  name: string;
+  description?: string;
+  unit?: string;
+  defaultQuantity?: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SupplyItemBody {
+  name: string;
+  description?: string;
+  unit?: string;
+  defaultQuantity?: number;
+  active?: boolean;
+}
+
+export interface MaterialResponse {
+  id: string;
+  eventId: string;
+  catalogItemId?: string;
+  name: string;
+  description?: string;
+  quantity?: number;
+  status: MaterialStatus;
+  assignedTo?: string;
+  assignedToName?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMaterialBody {
+  name: string;
+  description?: string;
+  quantity?: number;
+  catalogItemId?: string;
+  assignedTo?: string;
+}
+
+export type UpdateMaterialBody = CreateMaterialBody;
+
+/** Handler's primary action — body `{ toStatus, note? }` (docs/03 §4.7). */
+export interface ChangeStatusBody {
+  toStatus: MaterialStatus;
+  note?: string;
+}
+
+export interface MaterialHistoryResponse {
+  id: string;
+  materialId: string;
+  fromStatus?: MaterialStatus;
+  toStatus: MaterialStatus;
+  changedBy?: string;
+  changedByName?: string;
+  note?: string;
+  createdAt: string;
+}
+
+/** A Handler's assigned task with event context (docs/03 §4.7 — `GET /materials/mine`). */
+export interface MyTaskResponse {
+  id: string;
+  eventId: string;
+  eventTitle?: string;
+  name: string;
+  description?: string;
+  quantity?: number;
+  status: MaterialStatus;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -31,9 +31,10 @@ import java.util.UUID;
  * {@code @EnableMethodSecurity} runs the {@code @PreAuthorize} gates, and filter-level 401/403 are
  * rendered in the uniform error contract (docs/07).
  *
- * <p>{@code permitAll}: {@code /actuator/health}, {@code /api/v1/ping}, {@code /api/v1/public/**},
- * {@code /api/v1/auth/**}, and the OpenAPI/Swagger UI. Everything else requires authentication
- * (layer 1), then a method-level gate (layer 2, docs/03 §3).
+ * <p>{@code permitAll}: {@code /actuator/health}, {@code /actuator/info}, {@code /actuator/prometheus},
+ * {@code /api/v1/ping}, {@code /api/v1/public/**}, {@code /api/v1/auth/**}, and the OpenAPI/Swagger UI.
+ * Everything else requires authentication (layer 1), then a method-level gate (layer 2, docs/03 §3).
+ * The operational/dev paths (info, prometheus, Swagger) are slated for M9 lockdown (docs/03 §2.2).
  */
 @Configuration
 @EnableMethodSecurity

@@ -38,6 +38,11 @@ public class HttpTestClient {
                 .PUT(HttpRequest.BodyPublishers.ofString(json == null ? "" : json)).build());
     }
 
+    public HttpResponse<String> patch(String path, String json) {
+        return send(req(path).header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(json == null ? "" : json)).build());
+    }
+
     public HttpResponse<String> delete(String path) {
         return send(req(path).DELETE().build());
     }

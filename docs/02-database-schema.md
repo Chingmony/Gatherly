@@ -136,7 +136,7 @@ Constraints: `UNIQUE(event_id, user_id)`. Indexes: `INDEX(user_id)`, `INDEX(even
 | created_by | uuid FK→user | |
 | created_at / updated_at | timestamptz | |
 
-Indexes: `INDEX(event_id)`, `INDEX(assigned_to)`, `INDEX(status)`.
+Indexes: `INDEX(event_id, created_at DESC)`, `INDEX(assigned_to, created_at DESC)`, `INDEX(status)`, `INDEX(catalog_item_id)` (the composites — added in V7 — back the event material list and the Handler "My Tasks" reads; `catalog_item_id` backs the supply-item delete reference probe).
 
 > `assigned_to` drives Handler-scoped authz (`canUpdateMaterial`). Transition rules below (§5).
 

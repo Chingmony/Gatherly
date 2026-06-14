@@ -24,7 +24,7 @@
 ### 2.2 Filter chain (Spring Security)
 1. `JwtAuthenticationFilter` reads the access-token cookie, validates signature + `exp`, builds a `UserPrincipal`, and sets `Authentication` with authority `ROLE_<role>`.
 2. `SessionCreationPolicy.STATELESS`; CSRF disabled (cookie auth is `SameSite=Strict`; see §7).
-3. `authorizeHttpRequests`: `permitAll` for `/auth/**`, `/public/**`, `/actuator/health`; all else `authenticated()`.
+3. `authorizeHttpRequests`: `permitAll` for `/auth/**`, `/public/**`, `/actuator/health` (+ `/actuator/health/**`), plus the operational/dev surface `/api/v1/ping`, `/actuator/info`, `/actuator/prometheus`, and the OpenAPI/Swagger UI (`/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs/**`); all else `authenticated()`. **M9 hardening:** lock `/actuator/info`, `/actuator/prometheus`, and the Swagger UI behind auth (or network policy) before launch — see [`08`](08-observability-and-operations.md), [`10`](10-security-and-compliance.md).
 4. Method security (`@EnableMethodSecurity`) runs `@PreAuthorize` gates on **service methods**.
 5. `authenticationEntryPoint` → `401` JSON; `accessDeniedHandler` → `403` JSON.
 
@@ -121,8 +121,9 @@
 | POST | `/events/{eventId}/materials` | `@eventSecurity.canManage(...)` |
 | PUT | `/events/{eventId}/materials/{materialId}` | `@eventSecurity.canManage(...)` |
 | PATCH | `/materials/{materialId}/status` | `@eventSecurity.canUpdateMaterial(#materialId, authentication)` |
-| GET | `/materials/{materialId}/history` | `@eventSecurity.canView(material.eventId)` |
+| GET | `/materials/{materialId}/history` | `@eventSecurity.canViewMaterial(#materialId, authentication)` — resolves the material's event, then `canView` |
 | DELETE | `/events/{eventId}/materials/{materialId}` | `@eventSecurity.canManage(...)` |
+| GET | `/materials/mine` | authenticated — the caller's own assigned tasks across events (Handler "My Tasks", [`13` §M4](13-implementation-roadmap.md)) |
 
 > `PATCH …/status` is the Handler's primary action — body `{ toStatus, note? }`; the service enforces the state machine ([`02` §5](02-database-schema.md)) and writes history.
 

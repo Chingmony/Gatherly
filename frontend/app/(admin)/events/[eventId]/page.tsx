@@ -3,7 +3,7 @@ import { serverFetch } from "@/lib/api/server";
 import { ApiError } from "@/lib/api/client";
 import type {
   AgendaResponse, AgendaTemplateResponse, AssignmentResponse, EventResponse,
-  FormResponse, PageResponse, SubmissionResponse, UserResponse,
+  FormResponse, MaterialResponse, PageResponse, SubmissionResponse, UserResponse,
 } from "@/lib/api/types";
 import { EventWorkspace } from "./event-workspace";
 
@@ -19,15 +19,17 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
   let agenda: AgendaResponse | null = null;
   let templates: AgendaTemplateResponse[] = [];
   let assignments: AssignmentResponse[] = [];
+  let materials: MaterialResponse[] = [];
   let denied = false;
   let missing = false;
 
   try {
-    [event, agenda, templates, assignments] = await Promise.all([
+    [event, agenda, templates, assignments, materials] = await Promise.all([
       serverFetch<EventResponse>(`/events/${eventId}`),
       serverFetch<AgendaResponse>(`/events/${eventId}/agenda`),
       serverFetch<AgendaTemplateResponse[]>(`/agenda-templates`),
       serverFetch<AssignmentResponse[]>(`/events/${eventId}/assignments`),
+      serverFetch<MaterialResponse[]>(`/events/${eventId}/materials`),
     ]);
   } catch (e) {
     if (e instanceof ApiError && (e.status === 403 || e.status === 401)) denied = true;
@@ -60,12 +62,17 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
     );
   }
 
+  // canManage = Admin, or the current user is the event MANAGER (drives material create/delete).
+  const me = await serverFetch<UserResponse>("/me").catch(() => null);
+  const canManage = isAdmin || assignments.some((a) => a.userId === me?.id && a.eventRole === "MANAGER");
+
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       <Link href="/events" className="inline-block text-[12px] font-semibold text-[var(--text-faint)] hover:text-[var(--text)]">← Events</Link>
       <EventWorkspace
         event={event} agenda={agenda} templates={templates} assignments={assignments}
-        submissions={submissions} candidates={candidates} form={form} isAdmin={isAdmin}
+        materials={materials} submissions={submissions} candidates={candidates} form={form}
+        isAdmin={isAdmin} canManage={canManage}
       />
     </div>
   );

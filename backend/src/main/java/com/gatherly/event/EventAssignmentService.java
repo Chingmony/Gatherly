@@ -9,6 +9,7 @@ import com.gatherly.event.dto.AssignMemberRequest;
 import com.gatherly.event.dto.AssignmentResponse;
 import com.gatherly.security.UserPrincipal;
 import com.gatherly.user.UserRepository;
+import com.gatherly.user.domain.GlobalRole;
 import com.gatherly.user.domain.User;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -99,7 +100,10 @@ public class EventAssignmentService {
         }
     }
 
+    // Type-safe global-admin check on the principal's GlobalRole — kept consistent by construction
+    // with EventSecurityService's authority check (UserPrincipal.authority() == "ROLE_" + role.name()),
+    // so the Admin-only MANAGER appoint/remove guards above can never drift on a string mismatch.
     private boolean isAdmin(UserPrincipal actor) {
-        return actor != null && actor.role() != null && "ADMIN".equals(actor.role().name());
+        return actor != null && actor.role() == GlobalRole.ADMIN;
     }
 }
