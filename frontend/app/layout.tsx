@@ -1,19 +1,33 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
+import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] })
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-plus-jakarta",
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: 'Gatherly',
-  description: 'Event management platform',
-  manifest: '/manifest.webmanifest',
-}
+  title: {
+    default: "Gatherly",
+    template: "%s | Gatherly",
+  },
+  description: "Event management platform — registrations, QR check-in, crew tasks and live oversight.",
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#6366f1",
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${plusJakarta.variable} font-sans antialiased`}>
+        {children}
+      </body>
     </html>
-  )
+  );
 }
