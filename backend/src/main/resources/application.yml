@@ -5,9 +5,9 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gartherly}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -35,10 +35,10 @@ spring:
       password: ${REDIS_PASSWORD:}
 
   mail:
-    host: ${MAIL_HOST}
+    host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+    username: ${MAIL_USERNAME:gartherlymail}
+    password: ${MAIL_PASSWORD:yusslalwcrrfodgp}
     properties:
       mail:
         smtp:
@@ -68,7 +68,7 @@ management:
 # ── Application-level config ──────────────────────────────────────────────────
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:uhrjOspscee8/VcVTf+FoztI8Z6v6p6HCbWUyl6jSeE=}
     access-token-ttl-seconds: ${JWT_ACCESS_TTL:900}       # 15 min
     refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:604800}  # 7 days
 
@@ -79,15 +79,15 @@ app:
 
   telegram:
     enabled: ${TELEGRAM_ENABLED:false}
-    bot-token: ${TELEGRAM_BOT_TOKEN:}
-    ops-chat-id: ${TELEGRAM_OPS_CHAT_ID:}
+    bot-token: ${TELEGRAM_BOT_TOKEN:8835580917:AAGLJeYN3Lh-vU9YLxTf8UDsPs7ojonGRiQ}
+    ops-chat-id: ${TELEGRAM_OPS_CHAT_ID:924703989}
     api-base: ${TELEGRAM_API_BASE:https://api.telegram.org}
 
   rustfs:
-    endpoint: ${RUSTFS_ENDPOINT}
+    endpoint: ${RUSTFS_ENDPOINT:http://localhost:9000}
     region: ${RUSTFS_REGION:us-east-1}
-    access-key: ${RUSTFS_ACCESS_KEY}
-    secret-key: ${RUSTFS_SECRET_KEY}
+    access-key: ${RUSTFS_ACCESS_KEY:admin}
+    secret-key: ${RUSTFS_SECRET_KEY:admin123}
     bucket: ${RUSTFS_BUCKET:gatherly}
     public-base-url: ${RUSTFS_PUBLIC_BASE_URL:}
     presign-ttl-seconds: ${RUSTFS_PRESIGN_TTL_SECONDS:300}

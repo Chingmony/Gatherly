@@ -20,7 +20,7 @@
                           │ HTTPS/JSON (JWT cookie)  │ presigned URL (direct upload/fetch)
                           ▼                          ▼
        ┌──────────────────────────────┐     ┌───────────────────────┐
-       │  Spring Boot 4.x (Gradle)    │     │  Rustfs cluster        │
+       │  Spring Boot 4.1.0 (Gradle)  │     │  Rustfs cluster        │
        │  Controller → Service → Repo │     │  (S3-compatible blobs) │
        │  Spring Security (JWT,        │     │  logos/banners/avatars │
        │   @PreAuthorize)             │◀────┤  presign issued by BE  │
@@ -45,7 +45,7 @@
 gatherly/
 ├── docs/                       # these specifications
 ├── frontend/                   # Next.js 16 app
-├── backend/                    # Spring Boot 4.x (Gradle)
+├── backend/                    # Spring Boot 4.1.0 (Gradle 8.14, Groovy DSL)
 ├── docker-compose.yml          # frontend + backend + postgres + redis (+ rustfs for local)
 └── README.md
 ```
@@ -109,20 +109,22 @@ frontend/
 - **Dynamic form rendering** (`components/form-renderer`) consumes the JSONB `schema` array from the API and draws fields generically (see [`02`](02-database-schema.md) §JSONB and [`03`](03-api-routes-security.md)).
 - **QR flow split by audience:** guests only *register* in `(public)` and receive their QR **by email** (with an on-screen fallback); *scanning* a guest QR to confirm attendance is an authenticated **organizer** action under `(event)`/`(handler)` `scan/` pages calling `POST /events/{id}/attendance/scan`.
 
-## 4. Backend — Spring Boot 4.x (Gradle) package architecture
+## 4. Backend — Spring Boot 4.1.0 (Gradle 8.14, Groovy DSL) package architecture
+
+> **Build toolchain (pinned):** Spring Boot **4.1.0** · Java **21 (LTS)** toolchain · **Gradle 8.14** (wrapper committed) · **Groovy** build DSL (`build.gradle`, not Kotlin `.kts`). See [`12` §1](12-devops-and-deployment.md).
 
 Strict **layered architecture**; dependencies point downward only (Controller → Service → Repository). No business logic in controllers; no web concerns in repositories.
 
 ```
 backend/
-├── build.gradle(.kts)            # Gradle build + dependency management
-├── settings.gradle(.kts)
+├── build.gradle                  # Gradle build + dependency management (Groovy DSL)
+├── settings.gradle
 └── src/main/
     ├── java/com/gatherly/
     │   ├── GatherlyApplication.java
     │   ├── config/               # SecurityConfig, CorsConfig, RedisConfig, RustfsConfig, MailConfig, JacksonConfig, OpenApiConfig
     │   ├── security/             # JwtAuthFilter, JwtService, EventSecurityService(@eventSecurity), UserPrincipal
-    │   ├── common/               # error model (@RestControllerAdvice), pagination, BaseEntity, auditing
+    │   ├── common/               # ApiResponse<T> success envelope (07 §2), error model (@RestControllerAdvice), pagination, BaseEntity, auditing
     │   │
     │   ├── controller/           # LAYER 1 — HTTP mapping, @Valid, thin response assembly
     │   │   ├── UserController.java

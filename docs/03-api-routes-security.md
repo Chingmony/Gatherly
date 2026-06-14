@@ -164,6 +164,8 @@ The new check-in: an organizer scans the **guest's** QR at the venue.
 
 ## 5. Representative payloads
 
+> Response objects below are shown **unwrapped** for brevity. On the wire every `2xx` body travels inside the uniform success envelope — `{ "success": true, "message": …, "data": <object|array>, ["pagination": …,] "timestamp": … }` — and every non-2xx inside the error envelope. Both are defined in [`07` §2](07-validation-and-error-handling.md).
+
 **`PATCH /materials/{id}/status`**
 ```json
 // request

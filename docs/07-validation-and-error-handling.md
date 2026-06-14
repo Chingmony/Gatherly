@@ -17,12 +17,58 @@ Defense in depth — three layers, each with a distinct job:
 
 The frontend mirrors layers 1–2 with Zod (derived from the same JSONB schema, [`05` §5.2](05-frontend-spec.md)) for instant feedback — but the server is authoritative.
 
-## 2. Uniform error contract
+## 2. Uniform response envelope
 
-Every non-2xx response (except opaque infra errors) returns this body, produced by a single `@RestControllerAdvice`:
+**Every** API response — success or failure — is wrapped in a single envelope. `success` (boolean) and `timestamp` (ISO-8601 UTC) are **always** present. Success bodies are assembled via a shared `ApiResponse<T>` wrapper; error bodies are produced by a single `@RestControllerAdvice`. This is the one response contract the frontend types against ([`05` §3](05-frontend-spec.md)).
+
+### 2.1 Success envelope (`2xx`)
+
+**Single resource** — `data` is the object:
 
 ```json
 {
+  "success": true,
+  "message": "User retrieved successfully",
+  "data": {
+    "id": 1,
+    "name": "Hongmeng",
+    "email": "hongmeng@example.com"
+  },
+  "timestamp": "2026-08-01T10:30:00Z"
+}
+```
+
+**Collection (paginated)** — `data` is the array and a sibling `pagination` block is added:
+
+```json
+{
+  "success": true,
+  "message": "Users retrieved successfully",
+  "data": [
+    { "id": 1, "name": "John" },
+    { "id": 2, "name": "Jane" }
+  ],
+  "pagination": {
+    "page": 1,
+    "size": 10,
+    "totalElements": 50,
+    "totalPages": 5
+  },
+  "timestamp": "2026-08-01T10:30:00Z"
+}
+```
+
+- `data` carries the resource (object) or collection (array); `null` for no-content successes (e.g. `204`/delete).
+- `pagination` is present **only** for paginated collections. `page` is **1-based**; `size` is the page size; `totalElements`/`totalPages` describe the full result set. Backed directly by Spring Data `Page<T>` ([`06` §8](06-backend-services-spec.md)).
+- `message` is a short human-readable summary (i18n-able); never put error detail here.
+
+### 2.2 Error envelope (non-2xx)
+
+Every non-2xx response (except opaque infra errors) returns `success: false` with the same always-on `timestamp`, plus the error detail below, produced by a single `@RestControllerAdvice`:
+
+```json
+{
+  "success": false,
   "timestamp": "2026-06-13T09:02:11Z",
   "status": 400,
   "error": "VALIDATION_ERROR",

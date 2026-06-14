@@ -1,0 +1,160 @@
+package com.gatherly.service;
+
+import com.gatherly.common.error.ApiException;
+import com.gatherly.common.error.ErrorCode;
+import com.gatherly.domain.User;
+import com.gatherly.domain.UserStatus;
+import com.gatherly.dto.user.ChangePasswordRequest;
+import com.gatherly.dto.user.SelfUpdateRequest;
+import com.gatherly.dto.user.UserCreateRequest;
+import com.gatherly.dto.user.UserResponse;
+import com.gatherly.dto.user.UserUpdateRequest;
+import com.gatherly.mapper.UserMapper;
+import com.gatherly.repository.UserRepository;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * {@link UserService} implementation. {@code @PreAuthorize} gates map directly to the {@code
+ * docs/00} §5 matrix: global CRUD is Admin-only; {@code /me} operations are self-scoped. Sub-admins
+ * cannot reach these CRUD methods at all (no MANAGER path exists here) — satisfying the hard
+ * product rule.
+ */
+@Service
+public class UserServiceImpl implements UserService {
+
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final PasswordEncoder passwordEncoder;
+
+  public UserServiceImpl(
+      UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    this.userRepository = userRepository;
+    this.userMapper = userMapper;
+    this.passwordEncoder = passwordEncoder;
+  }
+
+  @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional(readOnly = true)
+  public Page<UserResponse> search(String query, Pageable pageable) {
+    String q = (query == null || query.isBlank()) ? null : query.trim();
+    return userRepository.search(q, pageable).map(userMapper::toResponse);
+  }
+
+  @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional
+  public UserResponse create(UserCreateRequest request) {
+    if (userRepository.existsByEmailIgnoreCase(request.email())) {
+      throw new ApiException(ErrorCode.CONFLICT, "A user with this email already exists.");
+    }
+    User user = new User();
+    user.setEmail(request.email().toLowerCase());
+    user.setPasswordHash(passwordEncoder.encode(request.password()));
+    user.setFullName(request.fullName());
+    user.setPhone(request.phone());
+    user.setGlobalRole(request.globalRole());
+    user.setStatus(UserStatus.ACTIVE);
+    return userMapper.toResponse(userRepository.save(user));
+  }
+
+  @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional(readOnly = true)
+  public UserResponse get(UUID userId) {
+    return userMapper.toResponse(loadUser(userId));
+  }
+
+  @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional
+  public UserResponse update(UUID userId, UserUpdateRequest request) {
+    User user = loadUser(userId);
+    if (request.fullName() != null) {
+      user.setFullName(request.fullName());
+    }
+    if (request.phone() != null) {
+      user.setPhone(request.phone());
+    }
+    if (request.gender() != null) {
+      user.setGender(request.gender());
+    }
+    if (request.dateOfBirth() != null) {
+      user.setDateOfBirth(request.dateOfBirth());
+    }
+    if (request.address() != null) {
+      user.setAddress(request.address());
+    }
+    if (request.globalRole() != null) {
+      user.setGlobalRole(request.globalRole());
+    }
+    if (request.status() != null) {
+      user.setStatus(request.status());
+    }
+    return userMapper.toResponse(user);
+  }
+
+  @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  @Transactional
+  public void delete(UUID userId, UUID actingUserId) {
+    User user = loadUser(userId);
+    if (user.getId().equals(actingUserId)) {
+      throw new ApiException(ErrorCode.CONFLICT, "You cannot delete your own account.");
+    }
+    userRepository.delete(user);
+  }
+
+  @Override
+  @PreAuthorize("#userId == authentication.principal.id")
+  @Transactional(readOnly = true)
+  public UserResponse getSelf(UUID userId) {
+    return userMapper.toResponse(loadUser(userId));
+  }
+
+  @Override
+  @PreAuthorize("#userId == authentication.principal.id")
+  @Transactional
+  public UserResponse updateSelf(UUID userId, SelfUpdateRequest request) {
+    User user = loadUser(userId);
+    if (request.fullName() != null) {
+      user.setFullName(request.fullName());
+    }
+    if (request.phone() != null) {
+      user.setPhone(request.phone());
+    }
+    if (request.gender() != null) {
+      user.setGender(request.gender());
+    }
+    if (request.dateOfBirth() != null) {
+      user.setDateOfBirth(request.dateOfBirth());
+    }
+    if (request.address() != null) {
+      user.setAddress(request.address());
+    }
+    return userMapper.toResponse(user);
+  }
+
+  @Override
+  @PreAuthorize("#userId == authentication.principal.id")
+  @Transactional
+  public void changePassword(UUID userId, ChangePasswordRequest request) {
+    User user = loadUser(userId);
+    if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+      throw new ApiException(ErrorCode.VALIDATION_ERROR, "Current password is incorrect.");
+    }
+    user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+  }
+
+  private User loadUser(UUID userId) {
+    return userRepository
+        .findById(userId)
+        .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "User not found."));
+  }
+}
