@@ -1,5 +1,6 @@
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
+import { MobileNav } from "./mobile-nav";
 import { ThemeProvider } from "@/components/theme-provider";
 import type { Role } from "@/lib/roles";
 
@@ -22,6 +23,7 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
           </div>
         </div>
       </div>
+      {role === "handler" && <MobileNav />}
     </ThemeProvider>
   );
 }

@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sun, Moon, Bell, ChevronDown, User, Settings, LogOut } from "lucide-react";
 import { AvatarUser } from "@/components/ui/avatar-user";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/cn";
+import { performLogout } from "@/lib/auth/session";
 
 type Role = "admin" | "subadmin" | "handler";
 
@@ -35,6 +37,7 @@ interface TopbarProps {
 }
 
 export function Topbar({ role, title, subtitle }: TopbarProps) {
+  const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const u = USERS[role];
   const r = ROLES[role];
@@ -57,7 +60,7 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
 
   return (
     <header
-      className="flex items-center gap-4 px-[30px] py-4 sticky top-0 z-30 border-b"
+      className="flex items-center gap-4 px-4 md:px-[30px] py-4 sticky top-0 z-30 border-b"
       style={{
         background: "color-mix(in srgb, var(--bg) 78%, transparent)",
         backdropFilter: "saturate(1.4) blur(14px)",
@@ -197,15 +200,19 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
                 </Link>
               ))}
               <div className="border-t" style={{ borderColor: "var(--border-hex, #ecedf4)" }} />
-              <Link
-                href="/login"
-                onClick={() => setUserOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-[var(--danger-soft)]"
+              <button
+                type="button"
+                onClick={async () => {
+                  setUserOpen(false);
+                  await performLogout();
+                  router.push("/login");
+                }}
+                className="flex w-full items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-colors hover:bg-[var(--danger-soft)] cursor-pointer text-left"
                 style={{ color: "var(--danger)" }}
               >
                 <LogOut size={17} />
                 Logout
-              </Link>
+              </button>
             </div>
           )}
         </div>

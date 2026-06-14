@@ -9,6 +9,7 @@ import {
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/cn";
 import type { Role } from "@/lib/roles";
+import { performLogout } from "@/lib/auth/session";
 
 interface NavItem {
   section?: string;
@@ -52,7 +53,7 @@ export function Sidebar({ role }: SidebarProps) {
 
   return (
     <aside
-      className="flex flex-col flex-shrink-0 border-r"
+      className="hidden md:flex flex-col flex-shrink-0 border-r"
       style={{
         width: "var(--sidebar-w, 252px)",
         background: "var(--sidebar)",
@@ -106,8 +107,8 @@ export function Sidebar({ role }: SidebarProps) {
                 key="logout"
                 type="button"
                 className={sharedCls}
-                onClick={() => {
-                  sessionStorage.removeItem("gatherly_role");
+                onClick={async () => {
+                  await performLogout();
                   router.push("/login");
                 }}
               >

@@ -228,6 +228,27 @@
   margin: 0 auto;
 }
 
+/* ── Handler KPI grid: 5-col desktop, 2-col mobile ── */
+.kpi-grid {
+  display: grid;
+  gap: 12px;
+  align-items: stretch;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 768px) {
+  .kpi-grid { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; }
+}
+
+/* ── Mobile shell overrides ── */
+@media (max-width: 767px) {
+  .page-scroll {
+    padding: 14px 16px 96px; /* 96px = 64px mobile nav + 32px breathing room */
+  }
+  .page-inner {
+    max-width: 100%;
+  }
+}
+
 /* ============================================================
    Animations
    ============================================================ */
