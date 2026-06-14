@@ -38,8 +38,10 @@ M0 Foundations ─┬─▶ M1 Auth & Users ─┬─▶ M2 Org & Events ─┬�
 
 ### M2 — Organization & Events
 - Org profile (Admin) + Rustfs presign upload for logo/banner ([`04` §4](04-external-integrations.md)).
-- Event CRUD + lifecycle `DRAFT→PUBLIC→ARCHIVED`; publish/delete (Admin).
-- **Demo:** admin edits org branding, creates and publishes an event.
+- Event CRUD + scheduling (title/venue/description/start/end) + lifecycle `DRAFT→PUBLIC→ARCHIVED`; publish/archive/delete (Admin).
+- **Event agenda** ([`02` §3.8](02-database-schema.md), [`03` §4.4](03-api-routes-security.md) "Events & agenda"): per-event `agenda_item` editing (`GET`/`PUT /events/{id}/agenda`, apply-template/reorder) + global `agenda_template` catalog (`GET /agenda-templates`). Event-scoped gates (`canView`/`canManage`); templates readable by any authenticated user.
+- **Out of scope here (later slices):** members/delegation → M3; materials/tasks → M4; registration form → M5; guests/attendance → M6–M7.
+- **Demo:** admin edits org branding, creates an event, schedules it, applies an agenda template, then publishes.
 
 ### M3 — Delegation (event-scoped roles)
 - `event_assignment`: appoint sub-admin (Admin), add members/delegate handlers (manager); the two-layer authz fully exercised ([`03`](03-api-routes-security.md)).

@@ -12,6 +12,14 @@ gatherly:
       # Local dev is plain http → cookies can't be Secure or the browser drops them.
       secure: false
 
+# Degraded-tolerant readiness (docs/08): a down/misconfigured SMTP relay must not make the app
+# look unhealthy locally — email delivery is best-effort and async. Keep the mail indicator out of
+# the aggregate health used by the container healthcheck.
+management:
+  health:
+    mail:
+      enabled: false
+
 logging:
   level:
     com.gatherly: DEBUG

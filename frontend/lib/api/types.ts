@@ -99,6 +99,46 @@ export interface CreateEventBody {
 
 export type UpdateEventBody = CreateEventBody;
 
+// ---- Agenda (docs/03 §4.4, docs/02 §3.8) ----------------------------------
+
+export interface AgendaItemResponse {
+  id: string;
+  title: string;
+  startsAt?: string;
+  endsAt?: string;
+  position: number;
+}
+
+export interface AgendaResponse {
+  eventId: string;
+  items: AgendaItemResponse[];
+}
+
+/** A single agenda line submitted on replace — order is the array index. */
+export interface AgendaItemInput {
+  title: string;
+  startsAt?: string;
+  endsAt?: string;
+}
+
+export interface UpdateAgendaBody {
+  items: AgendaItemInput[];
+}
+
+/** A built-in/custom agenda template item ([{title, durationMin, order}], docs/02 §6/§3.8). */
+export interface AgendaTemplateItem {
+  title: string;
+  durationMin?: number;
+  order?: number;
+}
+
+export interface AgendaTemplateResponse {
+  id: string;
+  name: string;
+  items: AgendaTemplateItem[];
+  isDefault: boolean;
+}
+
 // ---- Storage presign (docs/04 §4.4) ---------------------------------------
 
 export type StoragePurpose = "ORG_LOGO" | "ORG_BANNER" | "USER_AVATAR";

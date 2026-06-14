@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createEvent, publishEvent, archiveEvent, deleteEvent } from "@/lib/api/events";
 import { ApiError } from "@/lib/api/client";
@@ -28,6 +29,8 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
   const [title, setTitle] = useState("");
   const [venue, setVenue] = useState("");
   const [description, setDescription] = useState("");
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -36,6 +39,8 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
     setTitle("");
     setVenue("");
     setDescription("");
+    setStartsAt("");
+    setEndsAt("");
     setError(null);
     setModalOpen(true);
   }
@@ -45,7 +50,13 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
     setError(null);
     setPending(true);
     try {
-      await createEvent({ title, venue: venue || undefined, description: description || undefined });
+      await createEvent({
+        title,
+        venue: venue || undefined,
+        description: description || undefined,
+        startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
+        endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
+      });
       setModalOpen(false);
       router.refresh();
     } catch (err) {
@@ -94,7 +105,11 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
             )}
             {initialEvents.map((ev) => (
               <tr key={ev.id} className="border-b border-[var(--bo)] last:border-0 transition-colors hover:bg-[var(--sidebar-hover)]">
-                <td className="px-4 py-3 text-[13px] font-medium text-[var(--t1)]">{ev.title}</td>
+                <td className="px-4 py-3 text-[13px] font-medium">
+                  <Link href={`/events/${ev.id}`} className="text-[var(--ac)] hover:underline">
+                    {ev.title}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-[13px] text-[var(--t2)]">{ev.venue || "—"}</td>
                 <td className="px-4 py-3 text-[13px] text-[var(--t2)]">{formatDate(ev.startsAt)}</td>
                 <td className="px-4 py-3">
@@ -151,6 +166,28 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
               rows={3}
               className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
             />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="startsAt">Starts</Label>
+              <input
+                id="startsAt"
+                type="datetime-local"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
+                className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
+              />
+            </div>
+            <div>
+              <Label htmlFor="endsAt">Ends</Label>
+              <input
+                id="endsAt"
+                type="datetime-local"
+                value={endsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+                className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
+              />
+            </div>
           </div>
           {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
           <div className="flex justify-end gap-2 pt-1">
