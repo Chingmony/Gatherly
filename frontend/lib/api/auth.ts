@@ -34,3 +34,11 @@ export function resetPassword(email: string, resetGrant: string, newPassword: st
     body: JSON.stringify({ email, resetGrant, newPassword }),
   });
 }
+
+/** Activate an invited account: set the first password using the emailed token. */
+export function setPassword(token: string, newPassword: string): Promise<void> {
+  return apiFetch<void>("/auth/set-password", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword }),
+  });
+}

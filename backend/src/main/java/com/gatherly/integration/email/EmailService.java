@@ -34,6 +34,24 @@ public class EmailService {
         this.fromName = fromName;
     }
 
+    public void sendActivation(String toEmail, String fullName, String activationLink) {
+        String subject = "You've been added to Gatherly — set your password";
+        String html = """
+                <p>Hi %s,</p>
+                <p>An administrator created a Gatherly account for you (%s).</p>
+                <p>Set your password to activate your account:</p>
+                <p><a href="%s">Set your password</a></p>
+                <p>If the link doesn't work, copy this URL into your browser:<br>%s</p>
+                <p>— Gatherly</p>
+                """.formatted(escape(fullName), escape(toEmail), activationLink, activationLink);
+
+        if (!enabled) {
+            log.warn("EMAIL disabled — activation link for {} is {}", toEmail, activationLink);
+            return;
+        }
+        send(toEmail, subject, html);
+    }
+
     public void sendOtp(String toEmail, String fullName, String otp, int ttlMinutes) {
         String subject = "Your Gatherly password-reset code";
         String html = """

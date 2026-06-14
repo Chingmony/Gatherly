@@ -3,7 +3,7 @@ package com.gatherly.user;
 import com.gatherly.common.PageResponse;
 import com.gatherly.security.UserPrincipal;
 import com.gatherly.user.dto.ChangePasswordRequest;
-import com.gatherly.user.dto.CreateUserRequest;
+import com.gatherly.user.dto.InviteUserRequest;
 import com.gatherly.user.dto.UpdateProfileRequest;
 import com.gatherly.user.dto.UpdateUserRequest;
 import com.gatherly.user.dto.UserResponse;
@@ -41,8 +41,8 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest req) {
-        UserResponse body = UserMapper.toResponse(userService.create(req));
+    public ResponseEntity<UserResponse> invite(@Valid @RequestBody InviteUserRequest req) {
+        UserResponse body = UserMapper.toResponse(userService.invite(req));
         return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 

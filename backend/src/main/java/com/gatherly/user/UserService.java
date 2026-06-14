@@ -4,12 +4,15 @@ import com.gatherly.common.error.AppException;
 import com.gatherly.common.error.DomainConflictException;
 import com.gatherly.common.error.ErrorCode;
 import com.gatherly.common.error.NotFoundException;
+import com.gatherly.user.domain.GlobalRole;
 import com.gatherly.user.domain.User;
 import com.gatherly.user.domain.UserStatus;
 import com.gatherly.user.dto.ChangePasswordRequest;
-import com.gatherly.user.dto.CreateUserRequest;
+import com.gatherly.user.dto.InviteUserRequest;
 import com.gatherly.user.dto.UpdateProfileRequest;
 import com.gatherly.user.dto.UpdateUserRequest;
+import com.gatherly.user.event.UserCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,10 +33,13 @@ public class UserService {
 
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher events;
 
-    public UserService(UserRepository users, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository users, PasswordEncoder passwordEncoder,
+                       ApplicationEventPublisher events) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
+        this.events = events;
     }
 
     // ---- Admin global CRUD (docs/03 §4.2) -----------------------------------
@@ -53,22 +59,25 @@ public class UserService {
         return findOrThrow(userId);
     }
 
+    /**
+     * Invite a user (docs/06 §3a): create a passwordless {@code MEMBER} in {@code PENDING_ACTIVATION}
+     * with the chosen Sub-admin/Handler designation, then publish {@link UserCreatedEvent} so the
+     * activation email is sent after commit. The Admin never sets the user's password.
+     */
     @PreAuthorize("hasRole('ADMIN')")
-    public User create(CreateUserRequest req) {
+    public User invite(InviteUserRequest req) {
         if (users.existsByEmailIgnoreCase(req.email())) {
             throw new DomainConflictException(ErrorCode.CONFLICT, "Email already in use.");
         }
         User u = new User();
         u.setEmail(req.email().toLowerCase());
-        u.setPasswordHash(passwordEncoder.encode(req.password()));
         u.setFullName(req.fullName());
-        u.setPhone(req.phone());
-        u.setGender(req.gender());
-        u.setDateOfBirth(req.dateOfBirth());
-        u.setAddress(req.address());
-        u.setGlobalRole(req.globalRole());
-        u.setStatus(UserStatus.ACTIVE);
-        return users.save(u);
+        u.setGlobalRole(GlobalRole.MEMBER);            // invite never mints a global Admin
+        u.setDefaultEventRole(req.role().toEventRole()); // SUB_ADMIN→MANAGER, HANDLER→HANDLER
+        u.setStatus(UserStatus.PENDING_ACTIVATION);    // no password until activation
+        User saved = users.save(u);
+        events.publishEvent(new UserCreatedEvent(saved.getId(), saved.getEmail(), saved.getFullName()));
+        return saved;
     }
 
     @PreAuthorize("hasRole('ADMIN')")

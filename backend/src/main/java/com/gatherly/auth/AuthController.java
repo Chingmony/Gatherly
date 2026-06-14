@@ -3,6 +3,7 @@ package com.gatherly.auth;
 import com.gatherly.auth.dto.ForgotPasswordRequest;
 import com.gatherly.auth.dto.LoginRequest;
 import com.gatherly.auth.dto.ResetPasswordRequest;
+import com.gatherly.auth.dto.SetPasswordRequest;
 import com.gatherly.auth.dto.VerifyOtpRequest;
 import com.gatherly.auth.dto.VerifyOtpResponse;
 import com.gatherly.user.UserMapper;
@@ -63,5 +64,11 @@ public class AuthController {
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
         authService.resetPassword(req);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/set-password")
+    public ResponseEntity<Void> setPassword(@Valid @RequestBody SetPasswordRequest req) {
+        authService.setPassword(req);
+        return ResponseEntity.noContent().build();
     }
 }

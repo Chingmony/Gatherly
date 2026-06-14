@@ -3,6 +3,8 @@ package com.gatherly.auth;
 import com.gatherly.auth.domain.RefreshToken;
 import com.gatherly.auth.dto.LoginRequest;
 import com.gatherly.auth.dto.ResetPasswordRequest;
+import com.gatherly.auth.dto.SetPasswordRequest;
+import com.gatherly.user.domain.UserStatus;
 import com.gatherly.common.Hashing;
 import com.gatherly.common.error.AppException;
 import com.gatherly.common.error.ErrorCode;
@@ -40,18 +42,21 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final OtpService otpService;
+    private final ActivationService activationService;
     private final EmailService emailService;
     private final AuthCookies cookies;
     private final AuthProperties props;
 
     public AuthService(UserRepository users, RefreshTokenRepository refreshTokens,
                        PasswordEncoder passwordEncoder, JwtService jwtService, OtpService otpService,
-                       EmailService emailService, AuthCookies cookies, AuthProperties props) {
+                       ActivationService activationService, EmailService emailService,
+                       AuthCookies cookies, AuthProperties props) {
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.otpService = otpService;
+        this.activationService = activationService;
         this.emailService = emailService;
         this.cookies = cookies;
         this.props = props;
@@ -132,6 +137,27 @@ public class AuthService {
         User user = users.findByEmailIgnoreCase(email).filter(User::isActive)
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID, "Incorrect code."));
         return otpService.verifyOtp(user.getId(), code);
+    }
+
+    /**
+     * Activate an invited account (docs/06 §3a): consume the single-use activation token, set the
+     * first password, and flip {@code PENDING_ACTIVATION → ACTIVE}.
+     */
+    public void setPassword(SetPasswordRequest req) {
+        java.util.UUID userId = activationService.verify(req.token());
+        if (userId == null) {
+            throw new AppException(ErrorCode.ACTIVATION_INVALID, "This link is invalid or has expired.");
+        }
+        User user = users.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.ACTIVATION_INVALID,
+                        "This link is invalid or has expired."));
+        if (user.getStatus() != UserStatus.PENDING_ACTIVATION) {
+            throw new AppException(ErrorCode.ACTIVATION_INVALID, "This account is already active.");
+        }
+        user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
+        user.setStatus(UserStatus.ACTIVE);
+        users.save(user);
+        activationService.consume(req.token());
     }
 
     public void resetPassword(ResetPasswordRequest req) {

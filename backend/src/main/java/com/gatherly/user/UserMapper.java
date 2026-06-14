@@ -23,6 +23,7 @@ public final class UserMapper {
                 u.getAddress(),
                 u.getAvatarKey(),
                 u.getGlobalRole(),
+                u.getDefaultEventRole(),
                 u.getStatus(),
                 u.getCreatedAt(),
                 u.getUpdatedAt());

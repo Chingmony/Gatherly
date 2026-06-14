@@ -1,5 +1,6 @@
 package com.gatherly.user.dto;
 
+import com.gatherly.event.domain.EventRole;
 import com.gatherly.user.domain.Gender;
 import com.gatherly.user.domain.GlobalRole;
 import com.gatherly.user.domain.UserStatus;
@@ -19,6 +20,7 @@ public record UserResponse(
         String address,
         String avatarKey,
         GlobalRole globalRole,
+        EventRole defaultEventRole,
         UserStatus status,
         Instant createdAt,
         Instant updatedAt

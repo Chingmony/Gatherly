@@ -78,11 +78,16 @@ gatherly:
   api-base-path: /api/v1
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  app:
+    # Base URL of the frontend, used to build emailed links (e.g. set-password). docs/04 §2.1.
+    public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:3000}
   auth:
     jwt:
       secret: ${JWT_SECRET:change-me-to-a-long-random-secret-at-least-32-bytes}
       access-ttl: ${JWT_ACCESS_TTL:PT15M}     # 15 minutes (docs/03 §2.1)
       refresh-ttl: ${JWT_REFRESH_TTL:P7D}      # 7 days
+    activation:
+      ttl-seconds: ${ACTIVATION_TTL_SECONDS:259200}   # 72h set-password invite validity (docs/04 §3.2)
     cookie:
       secure: ${COOKIE_SECURE:true}            # false only for local http dev
       same-site: ${COOKIE_SAMESITE:Strict}

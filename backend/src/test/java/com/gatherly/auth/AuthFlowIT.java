@@ -89,16 +89,29 @@ class AuthFlowIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void adminCreatesUser() {
+    void adminInvitesUserAsPendingActivation() {
         HttpTestClient c = new HttpTestClient(port);
         login(c, "admin@gatherly.test", ADMIN_PW);
+        // Invite: no password; role is the Sub-admin/Handler designation (docs/03 §4.2).
         String body = """
-                {"email":"new.user@gatherly.test","password":"NewUser123!","fullName":"New User","globalRole":"MEMBER"}
+                {"fullName":"New User","email":"new.user@gatherly.test","role":"SUB_ADMIN"}
                 """;
         HttpResponse<String> res = c.post("/api/v1/users", body);
         assertThat(res.statusCode()).isEqualTo(201);
-        assertThat(res.body()).contains("new.user@gatherly.test").doesNotContain("passwordHash");
-        assertThat(users.existsByEmailIgnoreCase("new.user@gatherly.test")).isTrue();
+        assertThat(res.body())
+                .contains("new.user@gatherly.test")
+                .contains("PENDING_ACTIVATION")
+                .contains("MANAGER")     // SUB_ADMIN → default_event_role MANAGER
+                .doesNotContain("passwordHash");
+
+        User invited = users.findByEmailIgnoreCase("new.user@gatherly.test").orElseThrow();
+        assertThat(invited.getStatus()).isEqualTo(UserStatus.PENDING_ACTIVATION);
+        assertThat(invited.getGlobalRole()).isEqualTo(GlobalRole.MEMBER); // never a global admin
+        assertThat(invited.getPasswordHash()).isNull();
+
+        // The invited user cannot log in until they activate (no password).
+        HttpResponse<String> attempt = login(new HttpTestClient(port), "new.user@gatherly.test", "anything12");
+        assertThat(attempt.statusCode()).isEqualTo(401);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.gatherly.user.domain;
 
 import com.gatherly.common.domain.BaseEntity;
+import com.gatherly.event.domain.EventRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,7 +23,8 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    // Nullable: an invited user has no password until activation (docs/02 §5c).
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "full_name", nullable = false)
@@ -47,6 +49,11 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "global_role", nullable = false)
     private GlobalRole globalRole;
+
+    /** Sub-admin(MANAGER)/Handler designation chosen at invite; pre-fills event assignment (M3). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "default_event_role")
+    private EventRole defaultEventRole;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -126,6 +133,14 @@ public class User extends BaseEntity {
 
     public void setGlobalRole(GlobalRole globalRole) {
         this.globalRole = globalRole;
+    }
+
+    public EventRole getDefaultEventRole() {
+        return defaultEventRole;
+    }
+
+    public void setDefaultEventRole(EventRole defaultEventRole) {
+        this.defaultEventRole = defaultEventRole;
     }
 
     public UserStatus getStatus() {
