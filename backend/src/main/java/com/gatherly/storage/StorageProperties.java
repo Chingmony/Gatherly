@@ -13,7 +13,11 @@ public class StorageProperties {
 
     /** When false, presign still works (offline signing) but object existence is not verified. */
     private boolean enabled = false;
+    /** Endpoint baked into presigned URLs — must be reachable by the uploading client (browser). */
     private String endpoint = "http://localhost:9000";
+    /** Endpoint the backend uses for bucket ops (create/policy/CORS); defaults to {@link #endpoint}.
+     *  In docker this is the internal compose host (e.g. http://minio:9000). */
+    private String internalEndpoint;
     private String region = "us-east-1";
     private String accessKey = "rustfs";
     private String secretKey = "rustfs";
@@ -38,6 +42,15 @@ public class StorageProperties {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    /** Backend-side endpoint for bucket operations; falls back to {@link #endpoint} when unset. */
+    public String getInternalEndpoint() {
+        return (internalEndpoint == null || internalEndpoint.isBlank()) ? endpoint : internalEndpoint;
+    }
+
+    public void setInternalEndpoint(String internalEndpoint) {
+        this.internalEndpoint = internalEndpoint;
     }
 
     public String getRegion() {

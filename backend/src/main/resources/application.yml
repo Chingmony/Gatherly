@@ -106,6 +106,20 @@ gatherly:
     enabled: ${EMAIL_ENABLED:false}
     from: ${MAIL_FROM:no-reply@gatherly.local}
     from-name: ${MAIL_FROM_NAME:Gatherly}
+  # Rustfs / S3-compatible object store (docs/04 §4.2). Env-driven; local default is MinIO.
+  # The endpoint host is baked into the presigned URL, so it must be reachable by the uploading
+  # client (the browser) — use a host the client can resolve, not the internal compose hostname.
+  storage:
+    enabled: ${RUSTFS_ENABLED:false}
+    endpoint: ${RUSTFS_ENDPOINT:http://localhost:9000}
+    # Backend-side endpoint for bucket ops (defaults to endpoint); in docker → http://minio:9000
+    internal-endpoint: ${RUSTFS_INTERNAL_ENDPOINT:${RUSTFS_ENDPOINT:http://localhost:9000}}
+    region: ${RUSTFS_REGION:us-east-1}
+    access-key: ${RUSTFS_ACCESS_KEY:minioadmin}
+    secret-key: ${RUSTFS_SECRET_KEY:minioadmin}
+    bucket: ${RUSTFS_BUCKET:gatherly}
+    public-base-url: ${RUSTFS_PUBLIC_BASE_URL:http://localhost:9000/gatherly}
+    presign-ttl-seconds: ${RUSTFS_PRESIGN_TTL_SECONDS:300}
   bootstrap:
     admin:
       email: ${BOOTSTRAP_ADMIN_EMAIL:}
