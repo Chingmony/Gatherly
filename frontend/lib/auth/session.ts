@@ -9,6 +9,7 @@
  */
 import { logout as logoutRequest, type GlobalRole, type UserResponse } from '@/lib/api/auth'
 import type { Role } from '@/lib/roles'
+import { LANDING } from '@/lib/auth/route-access'
 
 const ROLE_KEY = 'gatherly_role'
 const USER_KEY = 'gatherly_user'
@@ -36,18 +37,28 @@ export function startSession(user: UserResponse): Role {
   const role = toUiRole(user.globalRole)
   sessionStorage.setItem(ROLE_KEY, role)
   sessionStorage.setItem(USER_KEY, JSON.stringify(user))
+  // Mirror the role into a cookie so the server-side proxy (which can't read
+  // sessionStorage) can route by role. 7-day Max-Age matches the refresh token,
+  // so it survives hard refresh and new tabs. UX-only — see proxy.ts.
+  if (typeof document !== 'undefined') {
+    const secure = location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `${ROLE_KEY}=${role}; Path=/; SameSite=Lax; Max-Age=604800${secure}`
+  }
   return role
 }
 
 /** Where to land after login. Everyone has a dashboard; the shell adapts per role. */
-export function landingFor(_role: Role): string {
-  return '/dashboard'
+export function landingFor(role: Role): string {
+  return LANDING[role]
 }
 
 /** Drop all client session state (call alongside the logout API). */
 export function clearSession(): void {
   sessionStorage.removeItem(ROLE_KEY)
   sessionStorage.removeItem(USER_KEY)
+  if (typeof document !== 'undefined') {
+    document.cookie = `${ROLE_KEY}=; Path=/; SameSite=Lax; Max-Age=0`
+  }
   clearResetFlow()
 }
 

@@ -127,6 +127,43 @@ Response: UserResponse  (with profileImageUrl populated)
 
 ---
 
+## GAP-004 — Proxy role guard relies on a client-set cookie (no server-readable role signal)
+
+**Severity:** Low (UX guard hardening; not a security hole — API `@PreAuthorize` is the real authority)
+**Frontend page:** `proxy.ts` (role-based route guarding for all authenticated routes)
+**Affected endpoint:** `POST /auth/login`, `POST /auth/refresh`
+
+### Context
+
+`proxy.ts` now routes each UI role (`admin` / `subadmin` / `handler`) to its allowed routes and
+redirects away from the rest. The proxy runs server-side and can only read cookies, but:
+
+- The httpOnly `access_token` cookie is scoped `Path=/api/v1`, so it is **not sent on page-route
+  requests** — the proxy never sees it.
+- The UI role otherwise lives only in `sessionStorage`, which is not readable server-side.
+
+### Frontend workaround (applied)
+
+`lib/auth/session.ts` writes a **non-httpOnly** `gatherly_role` cookie (`Path=/`, `SameSite=Lax`,
+7-day `Max-Age`) on login and clears it on logout. The proxy reads this cookie. Because it is a UX
+guard only, a tampered cookie merely changes which UI shell renders — the backend still gates all
+data via `@PreAuthorize`.
+
+### Recommended backend change (optional hardening)
+
+To make the guard non-spoofable, provide a server-trusted role signal the proxy can read at `Path=/`:
+
+1. **Signed, readable role cookie** — on login/refresh, set a cookie at `Path=/` (e.g.
+   `gatherly_role`) signed/HMAC'd by the backend (or a short-lived JWT containing only the global
+   role), which the proxy verifies; **or**
+2. **Session/role verify endpoint** — a lightweight `GET /auth/session` (or widen the `access_token`
+   cookie path) the proxy can consult to obtain the authenticated role.
+
+Either removes the reliance on a client-writable cookie. No backend work required for the current
+UX-only behaviour to function.
+
+---
+
 ## Already matched — no changes needed
 
 | Endpoint | Frontend use | Status |
