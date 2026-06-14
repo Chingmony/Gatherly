@@ -42,6 +42,14 @@ public interface RegistrationSubmissionRepository extends JpaRepository<Registra
     List<RegistrationSubmission> findByQrStatusAndSubmittedAtBeforeOrderBySubmittedAtAsc(
             TicketStatus qrStatus, Instant before, Pageable pageable);
 
+    /**
+     * Telegram ops retry sweep source (docs/04 §2.2, docs/06 §7): registrations not yet forwarded to
+     * the ops channel, past a grace window so the after-commit immediate push goes first. Bounded by
+     * {@link Pageable}; backed by the partial index {@code idx_submission_ops_sweep} (docs/02 §7).
+     */
+    List<RegistrationSubmission> findByTelegramNotifiedFalseAndSubmittedAtBeforeOrderBySubmittedAtAsc(
+            Instant before, Pageable pageable);
+
     /** One grouped count for the public homepage — avoids an N+1 count-per-event loop. */
     @Query("select s.eventId as eventId, count(s) as cnt from RegistrationSubmission s "
             + "where s.eventId in :eventIds group by s.eventId")

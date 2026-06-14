@@ -206,8 +206,9 @@ Indexes: `UNIQUE(event_id)`, `GIN(schema)`.
 | **qr_delivered_at** | timestamptz NULL | when the QR ticket email was sent |
 | form_version | integer NOT NULL | schema version answered |
 | submitted_at | timestamptz NOT NULL | |
+| **telegram_notified** | boolean NOT NULL default false | ops-channel forwarding status; retry source (V9) |
 
-Indexes: `INDEX(event_id, submitted_at)`, `INDEX(guest_email)`, `INDEX(guest_phone)`, `UNIQUE(checkin_token)`, `GIN(answers)`. One registration per email per event is enforced **case-insensitively**: `UNIQUE(event_id, lower(guest_email))` (V5 — also serves the per-registration duplicate probe).
+Indexes: `INDEX(event_id, submitted_at)`, `INDEX(guest_email)`, `INDEX(guest_phone)`, `UNIQUE(checkin_token)`, `GIN(answers)`. One registration per email per event is enforced **case-insensitively**: `UNIQUE(event_id, lower(guest_email))` (V5 — also serves the per-registration duplicate probe). Partial index `idx_submission_ops_sweep (submitted_at ASC) WHERE telegram_notified = false` (V9) keeps the Telegram retry sweep bounded.
 
 > `answers` validated server-side against the form `schema` before insert. `guest_email` is mandatory and is the address the QR ticket is emailed to; `guest_phone` is also required (product requirement) and appears in the ops-channel notification. On insert the service generates a unique `checkin_token` (the value encoded in the **per-guest QR**); `qr_status` tracks the ticket through `PENDING → DELIVERED` (email sent) `→ CHECKED_IN` (organizer scan). Email delivery mechanics in [`04`](04-external-integrations.md). GIN index powers attendee-discovery queries (`answers @> '{"company":"Acme"}'`).
 
@@ -225,7 +226,7 @@ Indexes: `INDEX(event_id, submitted_at)`, `INDEX(guest_email)`, `INDEX(guest_pho
 | checked_in_at | timestamptz NOT NULL | |
 | created_at | timestamptz | |
 
-Indexes: `INDEX(event_id, checked_in_at)`, `INDEX(submission_id)`, `UNIQUE(submission_id)` — **one attendance row per ticket (idempotent / replay-safe)**.
+Indexes: `INDEX(event_id, checked_in_at)`, `INDEX(submission_id)`, `UNIQUE(submission_id)` — **one attendance row per ticket (idempotent / replay-safe)**. Partial index `idx_event_checkin_ops_sweep (checked_in_at ASC) WHERE telegram_notified = false` (V9) keeps the Telegram ops retry sweep bounded.
 
 > Created when an **organizer scans a guest's QR** (resolves `checkin_token` → submission). The `UNIQUE(submission_id)` constraint makes a second scan a no-op conflict (already checked in), satisfying single-use. `scanned_by` attributes the confirmation. `telegram_notified` tracks the ops-channel push (retry source — see [`04`](04-external-integrations.md)).
 
@@ -383,6 +384,7 @@ Admin-created accounts are **invited**, not given a password by the Admin (docs/
 - **Uniqueness:** `user.email`, `event.slug`, `event.registration_qr_token`, `event_assignment(event_id,user_id)`, `registration_form.event_id` (one form per event), `registration_submission.checkin_token`, `event_checkin.submission_id` (one attendance per ticket), `refresh_token.token_hash`.
 - **Audit/timeline reads:** composite `(material_id, created_at)`, `(event_id, checked_in_at)`.
 - **Dashboard aggregates (V6, docs/03 §4.13):** composite `(registration_submission.event_id, qr_status)` for org-wide/grouped check-in counts; `(event_assignment.event_id, event_role)` for managers-per-event; `(event.starts_at DESC NULLS LAST)` for the bounded most-recent-first control feed.
+- **Telegram ops retry sweeps (V9, docs/04 §2.2, docs/06 §7):** partial indexes `idx_submission_ops_sweep (registration_submission.submitted_at ASC) WHERE telegram_notified = false` and `idx_event_checkin_ops_sweep (event_checkin.checked_in_at ASC) WHERE telegram_notified = false` keep both org-wide retry sweeps to a tiny working set (only un-notified rows are indexed; rows disappear from the index within seconds of a successful push).
 
 ## 8. Migration & seed plan (Flyway)
 

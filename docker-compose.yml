@@ -96,7 +96,12 @@ services:
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-minioadmin}
       RUSTFS_BUCKET: ${RUSTFS_BUCKET:-gatherly}
       RUSTFS_PUBLIC_BASE_URL: ${RUSTFS_PUBLIC_BASE_URL:-http://localhost:9000/gatherly}
+      # Telegram ops-channel forwarding (docs/04 §2.2). Disabled by default; set TELEGRAM_ENABLED=true
+      # plus the bot token + ops chat id in .env (git-ignored) to push registrations/check-ins.
       TELEGRAM_ENABLED: ${TELEGRAM_ENABLED:-false}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_OPS_CHAT_ID: ${TELEGRAM_OPS_CHAT_ID:-}
+      TELEGRAM_API_BASE: ${TELEGRAM_API_BASE:-https://api.telegram.org}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     ports:
       - "8080:8080"

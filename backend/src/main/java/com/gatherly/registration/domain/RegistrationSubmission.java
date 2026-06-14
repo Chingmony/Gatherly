@@ -64,6 +64,9 @@ public class RegistrationSubmission {
     @Column(name = "form_version", nullable = false)
     private int formVersion;
 
+    @Column(name = "telegram_notified", nullable = false)
+    private boolean telegramNotified = false;
+
     @CreatedDate
     @Column(name = "submitted_at", updatable = false, nullable = false)
     private Instant submittedAt;
@@ -154,6 +157,14 @@ public class RegistrationSubmission {
 
     public void setFormVersion(int formVersion) {
         this.formVersion = formVersion;
+    }
+
+    public boolean isTelegramNotified() {
+        return telegramNotified;
+    }
+
+    public void setTelegramNotified(boolean telegramNotified) {
+        this.telegramNotified = telegramNotified;
     }
 
     public Instant getSubmittedAt() {

@@ -106,6 +106,20 @@ gatherly:
     enabled: ${EMAIL_ENABLED:false}
     from: ${MAIL_FROM:no-reply@gatherly.local}
     from-name: ${MAIL_FROM_NAME:Gatherly}
+  # Telegram ops-channel forwarding (docs/04 §2.2). Outbound-only; disabled by default so
+  # local/CI never call the real Bot API. Secrets come from env, never hard-coded.
+  telegram:
+    enabled: ${TELEGRAM_ENABLED:false}
+    bot-token: ${TELEGRAM_BOT_TOKEN:}
+    ops-chat-id: ${TELEGRAM_OPS_CHAT_ID:}
+    api-base: ${TELEGRAM_API_BASE:https://api.telegram.org}
+    timeout-seconds: ${TELEGRAM_TIMEOUT_SECONDS:5}
+  # Telegram ops retry sweep (docs/06 §7): re-push rows with telegram_notified=false past the grace
+  # window, so the after-commit immediate push goes first and the sweep only mops up failures.
+  ops-retry:
+    grace-seconds: ${OPS_RETRY_GRACE_SECONDS:120}
+    interval-ms: ${OPS_RETRY_INTERVAL_MS:90000}
+    batch-size: ${OPS_RETRY_BATCH_SIZE:100}
   # Rustfs / S3-compatible object store (docs/04 §4.2). Env-driven; local default is MinIO.
   # The endpoint host is baked into the presigned URL, so it must be reachable by the uploading
   # client (the browser) — use a host the client can resolve, not the internal compose hostname.

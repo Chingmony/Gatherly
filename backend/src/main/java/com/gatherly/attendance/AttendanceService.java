@@ -7,6 +7,7 @@ import com.gatherly.attendance.dto.AttendanceResponse;
 import com.gatherly.attendance.dto.CheckinResult;
 import com.gatherly.attendance.dto.ManualCheckinRequest;
 import com.gatherly.attendance.dto.ScanRequest;
+import com.gatherly.attendance.event.GuestCheckedInEvent;
 import com.gatherly.common.error.DomainConflictException;
 import com.gatherly.common.error.ErrorCode;
 import com.gatherly.common.error.NotFoundException;
@@ -18,6 +19,7 @@ import com.gatherly.registration.domain.TicketStatus;
 import com.gatherly.security.UserPrincipal;
 import com.gatherly.user.UserRepository;
 import com.gatherly.user.domain.User;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,13 +54,16 @@ public class AttendanceService {
     private final RegistrationSubmissionRepository submissions;
     private final EventCheckinRepository checkins;
     private final UserRepository users;
+    private final ApplicationEventPublisher eventPublisher;
 
     public AttendanceService(EventRepository events, RegistrationSubmissionRepository submissions,
-                             EventCheckinRepository checkins, UserRepository users) {
+                             EventCheckinRepository checkins, UserRepository users,
+                             ApplicationEventPublisher eventPublisher) {
         this.events = events;
         this.submissions = submissions;
         this.checkins = checkins;
         this.users = users;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -178,8 +183,10 @@ public class AttendanceService {
         sub.setQrStatus(TicketStatus.CHECKED_IN);
         submissions.save(sub);
 
-        // Ops-channel push is queued via telegram_notified=false for the M8 forwarding sweep
-        // (docs/06 §7); no synchronous Telegram call lands in this slice.
+        // After-commit: push to the Telegram ops channel and flip telegram_notified (docs/04 §2.2,
+        // docs/06 §4,§7). Fired after commit so a slow/failing Telegram can't roll back the scan; a
+        // failed push leaves telegram_notified=false for the retry sweep.
+        eventPublisher.publishEvent(new GuestCheckedInEvent(checkin.getId()));
         return new CheckinResult(checkin.getId(), sub.getId(), sub.getGuestName(), sub.getGuestPhone(),
                 checkin.getCheckedInAt(), TicketStatus.CHECKED_IN.name(), scanner.id(), source, true);
     }
