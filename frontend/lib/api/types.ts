@@ -139,6 +139,121 @@ export interface AgendaTemplateResponse {
   isDefault: boolean;
 }
 
+// ---- Dynamic form schema (docs/02 §6) -------------------------------------
+
+export type FieldType =
+  | "text" | "textarea" | "email" | "phone" | "number" | "date"
+  | "select" | "multiselect" | "checkbox";
+
+export interface FormFieldValidation {
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+  pattern?: string;
+}
+
+export interface FormField {
+  key: string;
+  label: string;
+  type: FieldType;
+  required?: boolean;
+  order?: number;
+  options?: string[];
+  validation?: FormFieldValidation;
+  placeholder?: string;
+  /** Email field is locked (required-for-ticket, undeletable) in the builder (docs/05 §5.1). */
+  locked?: boolean;
+}
+
+export type FormStatus = "DRAFT" | "ACTIVE" | "INACTIVE";
+
+export interface FormResponse {
+  id: string;
+  eventId: string;
+  title: string;
+  status: FormStatus;
+  schema: FormField[];
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateFormBody {
+  title?: string;
+  schema: FormField[];
+}
+
+// ---- Public guest surface (docs/03 §4.9) ----------------------------------
+
+export interface PublicEventCard {
+  id: string;
+  slug: string;
+  title: string;
+  category?: string;
+  venue?: string;
+  startsAt?: string;
+  coverGradient?: string;
+  coverImageKey?: string;
+  registered: number;
+  capacity?: number | null;
+}
+
+export interface PublicFormResponse {
+  eventId: string;
+  eventTitle: string;
+  formTitle: string;
+  schema: FormField[];
+  version: number;
+}
+
+export interface RegisterResponse {
+  submissionId: string;
+  ticketStatus: string;
+  checkinToken: string;
+  ticketUrl: string;
+  message: string;
+}
+
+export interface PublicTicket {
+  checkinToken: string;
+  guestName?: string;
+  eventTitle: string;
+  venue?: string;
+  startsAt?: string;
+  qrStatus: string;
+}
+
+// ---- Event delegation / members (docs/03 §4.5) ----------------------------
+
+export interface AssignmentResponse {
+  id: string;
+  userId: string;
+  fullName?: string;
+  email?: string;
+  eventRole: EventRole;
+  assignedBy?: string;
+  createdAt: string;
+}
+
+export interface AssignMemberBody {
+  userId: string;
+  role: InviteRole;
+}
+
+// ---- Submissions / manage guests (docs/03 §4.8) ---------------------------
+
+export type TicketStatus = "PENDING" | "DELIVERED" | "CHECKED_IN" | "REVOKED";
+
+export interface SubmissionResponse {
+  id: string;
+  guestName?: string;
+  guestEmail: string;
+  guestPhone: string;
+  qrStatus: TicketStatus;
+  submittedAt: string;
+}
+
 // ---- Storage presign (docs/04 §4.4) ---------------------------------------
 
 export type StoragePurpose = "ORG_LOGO" | "ORG_BANNER" | "USER_AVATAR";
