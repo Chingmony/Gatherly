@@ -68,12 +68,33 @@ function toFieldMap(fieldErrors: ErrorEnvelope['fieldErrors']): Record<string, s
 }
 
 /**
+ * In a Server Component, browser cookies are NOT auto-forwarded to outbound
+ * fetch — `credentials: 'include'` is a browser-only mechanism. So on the server
+ * we read the incoming request cookies via next/headers and forward them as a
+ * Cookie header, letting the backend's httpOnly access_token reach the API during
+ * SSR. Dynamically imported + guarded so client bundles never pull in next/headers.
+ */
+async function serverCookieHeader(): Promise<string | undefined> {
+  if (typeof window !== 'undefined') return undefined
+  try {
+    const { cookies } = await import('next/headers')
+    const jar = await cookies()
+    const header = jar.toString()
+    return header || undefined
+  } catch {
+    // Outside a request scope (e.g. build-time prerender) — no cookies to forward.
+    return undefined
+  }
+}
+
+/**
  * Single boundary between the UI and the backend. Sends/receives JSON, attaches
- * cookies (`credentials: 'include'` — auth rides on the backend's httpOnly
- * access/refresh cookies), and normalizes the uniform envelope: returns
- * `data` on success, throws `ApiError` on failure.
+ * cookies (browser: `credentials: 'include'`; server: forwarded Cookie header so
+ * auth rides on the backend's httpOnly access/refresh cookies), and normalizes
+ * the uniform envelope: returns `data` on success, throws `ApiError` on failure.
  */
 export async function apiFetch<T>(path: string, options?: FetchOptions): Promise<T> {
+  const cookieHeader = await serverCookieHeader()
   let res: Response
   try {
     res = await fetch(`${API_BASE_URL}${API_PREFIX}${path}`, {
@@ -81,6 +102,7 @@ export async function apiFetch<T>(path: string, options?: FetchOptions): Promise
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(cookieHeader ? { cookie: cookieHeader } : {}),
         ...options?.headers,
       },
     })

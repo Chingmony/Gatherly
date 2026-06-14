@@ -2,7 +2,7 @@ import type { FormField, RegistrationForm } from './validation/form-schema'
 import { events, guests, type EventRow, type Guest } from './mock-data'
 
 export interface EventMember {
-  id: number
+  id: string
   name: string
   ini: string
   col: string
@@ -33,7 +33,7 @@ export function getTicket(token: string): Guest | undefined {
 
 export const eventMembers: EventMember[] = [
   {
-    id: 1,
+    id: '1',
     name: 'Sarah Chen',
     ini: 'SC',
     col: '#7C3AED',
@@ -42,7 +42,7 @@ export const eventMembers: EventMember[] = [
     assignedMaterials: 0,
   },
   {
-    id: 2,
+    id: '2',
     name: 'Alex Kim',
     ini: 'AK',
     col: '#C026D3',
@@ -51,7 +51,7 @@ export const eventMembers: EventMember[] = [
     assignedMaterials: 2,
   },
   {
-    id: 3,
+    id: '3',
     name: 'Carlos M.',
     ini: 'CM',
     col: '#2B2A3F',
@@ -60,7 +60,7 @@ export const eventMembers: EventMember[] = [
     assignedMaterials: 1,
   },
   {
-    id: 4,
+    id: '4',
     name: 'Lena Cruz',
     ini: 'LC',
     col: '#7C3AED',
@@ -69,7 +69,7 @@ export const eventMembers: EventMember[] = [
     assignedMaterials: 1,
   },
   {
-    id: 5,
+    id: '5',
     name: 'Jo Walsh',
     ini: 'JW',
     col: '#C026D3',

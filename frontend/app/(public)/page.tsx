@@ -1,8 +1,18 @@
 import { PublicEventCard } from '@/components/public/public-event-card'
 import { listEvents } from '@/lib/api'
+import type { EventRow } from '@/lib/api'
 
-export default function HomePage() {
-  const events = listEvents().filter((e) => e.status === 'Public')
+export default async function HomePage() {
+  // Public landing — anonymous visitors have no token, and there is no public
+  // events endpoint yet (GET /events requires auth). Degrade gracefully to an
+  // empty list rather than crashing the page on a 401.
+  // TODO(backend): expose a public published-events endpoint for this page.
+  let events: EventRow[] = []
+  try {
+    events = (await listEvents()).filter((e) => e.status === 'Public')
+  } catch {
+    events = []
+  }
 
   return (
     <div style={{ width: '100%', maxWidth: 1100 }}>

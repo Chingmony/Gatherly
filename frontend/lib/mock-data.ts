@@ -5,12 +5,12 @@
 
 export type MaterialStatus = 'Pending' | 'In Progress' | 'Needs Review' | 'Done' | 'Issue'
 export type Priority = 'High' | 'Medium' | 'Low'
-export type EventStatus = 'Public' | 'Draft'
+export type EventStatus = 'Public' | 'Draft' | 'Archived'
 export type GuestStatus = 'Checked-in' | 'Registered' | 'Cancelled'
 export type Role = 'Sub-admin' | 'Handler'
 
 export interface EventRow {
-  id: number
+  id: string
   name: string
   date: string
   venue: string
@@ -81,7 +81,7 @@ export interface Org {
 
 export const events: EventRow[] = [
   {
-    id: 1,
+    id: '1',
     name: 'TechConf 2026',
     date: '2026-07-15',
     venue: 'Grand Hall A, Metro Center',
@@ -91,7 +91,7 @@ export const events: EventRow[] = [
     cap: 500,
   },
   {
-    id: 2,
+    id: '2',
     name: 'Product Launch Q3',
     date: '2026-07-28',
     venue: 'Innovation Hub, Floor 12',
@@ -101,7 +101,7 @@ export const events: EventRow[] = [
     cap: 200,
   },
   {
-    id: 3,
+    id: '3',
     name: 'Annual Gala 2026',
     date: '2026-08-10',
     venue: 'Skyline Ballroom',
@@ -111,7 +111,7 @@ export const events: EventRow[] = [
     cap: 300,
   },
   {
-    id: 4,
+    id: '4',
     name: 'Dev Summit Fall',
     date: '2026-08-22',
     venue: 'Tech Campus B',
@@ -121,7 +121,7 @@ export const events: EventRow[] = [
     cap: 150,
   },
   {
-    id: 5,
+    id: '5',
     name: 'Founders Dinner',
     date: '2026-09-05',
     venue: 'The Rooftop, 42F',

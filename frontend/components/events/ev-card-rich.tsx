@@ -10,18 +10,18 @@ import { fd, initials } from '@/lib/format'
 import { materialsForEvent } from '@/lib/api'
 import type { EventRow } from '@/lib/api'
 
-const EV_META: Record<number, { cat: string; grad: string }> = {
-  1: { cat: 'Conference', grad: 'linear-gradient(135deg,#7C3AED 0%,#C026D3 100%)' },
-  2: { cat: 'Launch', grad: 'linear-gradient(135deg,#6D28D9 0%,#A855F7 100%)' },
-  3: { cat: 'Gala', grad: 'linear-gradient(135deg,#C026D3 0%,#7C3AED 100%)' },
-  4: { cat: 'Summit', grad: 'linear-gradient(135deg,#2B2A3F 0%,#7C3AED 100%)' },
-  5: { cat: 'Dinner', grad: 'linear-gradient(135deg,#7C3AED 0%,#2B2A3F 100%)' },
+const EV_META: Record<string, { cat: string; grad: string }> = {
+  '1': { cat: 'Conference', grad: 'linear-gradient(135deg,#7C3AED 0%,#C026D3 100%)' },
+  '2': { cat: 'Launch', grad: 'linear-gradient(135deg,#6D28D9 0%,#A855F7 100%)' },
+  '3': { cat: 'Gala', grad: 'linear-gradient(135deg,#C026D3 0%,#7C3AED 100%)' },
+  '4': { cat: 'Summit', grad: 'linear-gradient(135deg,#2B2A3F 0%,#7C3AED 100%)' },
+  '5': { cat: 'Dinner', grad: 'linear-gradient(135deg,#7C3AED 0%,#2B2A3F 100%)' },
 }
 
 export function EvCardRich({ ev }: { ev: EventRow }) {
   const [hov, setHov] = useState(false)
   const pct = ev.guests > 0 ? Math.round((ev.guests / ev.cap) * 100) : 0
-  const meta = EV_META[ev.id] ?? EV_META[1]
+  const meta = EV_META[ev.id] ?? EV_META['1']!
   const mats = materialsForEvent(ev.name)
   const doneMats = mats.filter((m) => m.s === 'Done').length
   const ini = initials(ev.sa)

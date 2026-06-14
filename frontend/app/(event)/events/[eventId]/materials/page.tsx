@@ -1,10 +1,15 @@
+'use client'
+
+import { notFound, useParams } from 'next/navigation'
 import { Kanban } from '@/components/kanban/kanban'
 import { cardStyle } from '@/components/ui/primitives'
-import { getEvent, materialsForEvent } from '@/lib/api'
+import { getEvent, materialsForEvent, useApiData } from '@/lib/api'
 
-export default async function MaterialsPage({ params }: { params: Promise<{ eventId: string }> }) {
-  const { eventId } = await params
-  const event = getEvent(eventId)!
+export default function MaterialsPage() {
+  const { eventId } = useParams<{ eventId: string }>()
+  const { data: event, loading } = useApiData(() => getEvent(eventId), [eventId])
+  if (loading) return null
+  if (!event) notFound()
   const evMats = materialsForEvent(event.name)
 
   return (

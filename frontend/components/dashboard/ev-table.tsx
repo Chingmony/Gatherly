@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button'
 import { CreateEventDialog } from '@/components/events/create-event-dialog'
 import { EvBadge } from '@/components/badges'
 import { fd, initials } from '@/lib/format'
-import type { EventRow } from '@/lib/api'
+import { listEvents, useApiData } from '@/lib/api'
 
-export function EvTable({ events }: { events: EventRow[] }) {
+export function EvTable() {
+  const { data } = useApiData(() => listEvents(), [])
+  const events = data ?? []
   const [filt, setFilt] = useState<'All' | 'Public' | 'Draft'>('All')
-  const [hov, setHov] = useState<number | null>(null)
+  const [hov, setHov] = useState<string | null>(null)
   const list = filt === 'All' ? events : events.filter((e) => e.status === filt)
 
   return (

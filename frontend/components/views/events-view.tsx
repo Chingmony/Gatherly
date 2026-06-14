@@ -15,15 +15,14 @@ import { CreateEventDialog } from '@/components/events/create-event-dialog'
 import { EvBadge } from '@/components/badges'
 import { EvCardRich } from '@/components/events/ev-card-rich'
 import { fd, initials } from '@/lib/format'
-import { listEvents } from '@/lib/api'
-import type { EventRow } from '@/lib/api'
-
-const ALL = listEvents()
+import { listEvents, useApiData, type EventRow } from '@/lib/api'
 
 type SortKey = 'name' | 'date' | 'guests'
 type Filt = 'All' | 'Public' | 'Draft'
 
 export function EventsView() {
+  const { data } = useApiData(() => listEvents(), [])
+  const ALL = data ?? []
   const [filt, setFilt] = useState<Filt>('All')
   const [mode, setMode] = useState<'grid' | 'table'>('grid')
   const [sort, setSort] = useState<{ k: SortKey; dir: 'asc' | 'desc' }>({ k: 'date', dir: 'asc' })

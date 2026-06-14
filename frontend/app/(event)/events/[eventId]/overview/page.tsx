@@ -1,18 +1,34 @@
+'use client'
+
 import Link from 'next/link'
+import { notFound, useParams } from 'next/navigation'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { Ic, type IconName } from '@/components/ui/icon'
 import { CardHead, cardStyle } from '@/components/ui/primitives'
 import { MatBadge } from '@/components/badges'
-import { getEvent, guestsForEvent, listEventMembers, getAgenda, materialsForEvent } from '@/lib/api'
+import {
+  getEvent,
+  guestsForEvent,
+  listEventMembers,
+  getAgenda,
+  materialsForEvent,
+  useApiData,
+} from '@/lib/api'
 import { STS, SM } from '@/lib/status'
 
-export default async function OverviewPage({ params }: { params: Promise<{ eventId: string }> }) {
-  const { eventId } = await params
-  const event = getEvent(eventId)!
+export default function OverviewPage() {
+  const { eventId } = useParams<{ eventId: string }>()
+  const { data: event, loading: eventLoading } = useApiData(() => getEvent(eventId), [eventId])
+  const { data: members, loading: membersLoading } = useApiData(
+    () => listEventMembers(eventId),
+    [eventId]
+  )
+  if (eventLoading || membersLoading) return null
+  if (!event) notFound()
+  const eventMembers = members ?? []
   const evGuests = guestsForEvent(event.name)
   const checkedIn = evGuests.filter((g) => g.st === 'Checked-in').length
   const evMats = materialsForEvent(event.name)
-  const eventMembers = listEventMembers(eventId)
   const eventAgenda = getAgenda(eventId)
   const doneMats = evMats.filter((m) => m.s === 'Done').length
   const pct = event.cap > 0 ? Math.round((event.guests / event.cap) * 100) : 0

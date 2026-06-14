@@ -1,18 +1,19 @@
+'use client'
+
+import { notFound, useParams } from 'next/navigation'
 import { Ic } from '@/components/ui/icon'
 import { GuestBadge } from '@/components/badges'
 import { StatCard } from '@/components/dashboard/stat-card'
 import { ToastButton } from '@/components/ui/toast-button'
 import { cardStyle } from '@/components/ui/primitives'
 import { fd } from '@/lib/format'
-import { getEvent, guestsForEvent } from '@/lib/api'
+import { getEvent, guestsForEvent, useApiData } from '@/lib/api'
 
-export default async function EventGuestsPage({
-  params,
-}: {
-  params: Promise<{ eventId: string }>
-}) {
-  const { eventId } = await params
-  const event = getEvent(eventId)!
+export default function EventGuestsPage() {
+  const { eventId } = useParams<{ eventId: string }>()
+  const { data: event, loading } = useApiData(() => getEvent(eventId), [eventId])
+  if (loading) return null
+  if (!event) notFound()
   const list = guestsForEvent(event.name)
   const checked = list.filter((g) => g.st === 'Checked-in').length
   const rate = list.length ? Math.round((checked / list.length) * 100) : 0

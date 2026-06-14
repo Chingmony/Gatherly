@@ -25,9 +25,10 @@ export const PC: Record<Priority, string> = {
 }
 
 export function eventStatusStyle(s: EventStatus): StatusStyle {
-  return s === 'Public'
-    ? { bg: 'var(--ad)', c: 'var(--ac)', dot: 'var(--ac)' }
-    : { bg: '#EFEDF4', c: '#6B6478', dot: '#B6B0C8' }
+  if (s === 'Public') return { bg: 'var(--ad)', c: 'var(--ac)', dot: 'var(--ac)' }
+  if (s === 'Archived') return { bg: '#EAE8F0', c: '#3A3550', dot: '#2B2A3F' }
+  // Draft
+  return { bg: '#EFEDF4', c: '#6B6478', dot: '#B6B0C8' }
 }
 
 export const GUEST_ST: Record<GuestStatus, StatusStyle> = {

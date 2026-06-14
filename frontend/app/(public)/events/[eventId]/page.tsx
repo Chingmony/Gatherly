@@ -13,7 +13,7 @@ export default async function PublicEventDetailPage({
   params: Promise<{ eventId: string }>
 }) {
   const { eventId } = await params
-  const event = getEvent(eventId)
+  const event = await getEvent(eventId)
   if (!event) notFound()
 
   const p = presentationFor(event.id)

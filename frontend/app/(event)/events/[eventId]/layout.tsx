@@ -1,20 +1,17 @@
-import { notFound } from 'next/navigation'
+'use client'
+
+import { notFound, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Ic } from '@/components/ui/icon'
 import { EvBadge } from '@/components/badges'
 import { EventTabs } from '@/components/events/event-tabs'
 import { fd, initials } from '@/lib/format'
-import { getEvent } from '@/lib/api'
+import { getEvent, useApiData } from '@/lib/api'
 
-export default async function EventWorkspaceLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode
-  params: Promise<{ eventId: string }>
-}) {
-  const { eventId } = await params
-  const event = getEvent(eventId)
+export default function EventWorkspaceLayout({ children }: { children: React.ReactNode }) {
+  const { eventId } = useParams<{ eventId: string }>()
+  const { data: event, loading } = useApiData(() => getEvent(eventId), [eventId])
+  if (loading) return null
   if (!event) notFound()
 
   return (

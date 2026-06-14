@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { Ic } from '@/components/ui/icon'
 import { TicketView } from '@/components/public/ticket-view'
 import { cardStyle } from '@/components/ui/primitives'
-import { getTicket, getEvent, listEvents } from '@/lib/api'
+import { getTicket, listEvents } from '@/lib/api'
 
 export default async function TicketPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
@@ -54,6 +54,15 @@ export default async function TicketPage({ params }: { params: Promise<{ token: 
     )
   }
 
-  const event = listEvents().find((e) => e.name === guest.ev) ?? getEvent('1')!
-  return <TicketView guest={guest} eventDate={event.date} venue={event.venue} />
+  // Public ticket page — no auth. listEvents (auth-required) is best-effort here;
+  // fall back to the ticket's own event metadata if it can't be resolved.
+  // TODO(backend): expose a public event lookup so this doesn't depend on the
+  // authenticated listing.
+  let event: { date: string; venue: string } | undefined
+  try {
+    event = (await listEvents()).find((e) => e.name === guest.ev)
+  } catch {
+    event = undefined
+  }
+  return <TicketView guest={guest} eventDate={event?.date ?? guest.ev} venue={event?.venue ?? ''} />
 }

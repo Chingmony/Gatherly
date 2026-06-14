@@ -9,10 +9,9 @@ import { Ticker } from '@/components/dashboard/ticker'
 import { ImgEventCard, UpcomingHero } from '@/components/dashboard/photo-cards'
 import { cardStyle } from '@/components/ui/primitives'
 import { STS, SM } from '@/lib/status'
-import { listEvents, listMaterials, listRecentCheckIns, listFeaturedEvents } from '@/lib/api'
+import { listMaterials, listRecentCheckIns, listFeaturedEvents } from '@/lib/api'
 
-export default function DashboardPage() {
-  const events = listEvents()
+export default async function DashboardPage() {
   const materials = listMaterials()
   const checkIns = listRecentCheckIns()
   const featured = listFeaturedEvents()
@@ -94,7 +93,7 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
-        <EvTable events={events} />
+        <EvTable />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t1)', letterSpacing: '-.01em' }}>

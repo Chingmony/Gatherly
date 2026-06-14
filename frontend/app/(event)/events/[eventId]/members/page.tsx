@@ -1,12 +1,18 @@
+'use client'
+
+import { useParams } from 'next/navigation'
 import { Ic } from '@/components/ui/icon'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ActionDialog, Field } from '@/components/ui/action-dialog'
 import { ToastButton } from '@/components/ui/toast-button'
 import { cardStyle } from '@/components/ui/primitives'
-import { listEventMembers } from '@/lib/api'
+import { listEventMembers, useApiData } from '@/lib/api'
 
 export default function MembersPage() {
+  const { eventId } = useParams<{ eventId: string }>()
+  const { data } = useApiData(() => listEventMembers(eventId), [eventId])
+  const members = data ?? []
   return (
     <div style={{ ...cardStyle, padding: 0, overflow: 'hidden' }}>
       <div
@@ -45,7 +51,7 @@ export default function MembersPage() {
           </Field>
         </ActionDialog>
       </div>
-      {listEventMembers().map((u) => (
+      {members.map((u) => (
         <div
           key={u.id}
           style={{
