@@ -90,6 +90,7 @@
 | GET | `/events/{eventId}` | `@eventSecurity.canView(#eventId, authentication)` |
 | PUT | `/events/{eventId}` | `@eventSecurity.canManage(#eventId, authentication)` |
 | POST | `/events/{eventId}/publish` | `hasRole('ADMIN')` — Draft→Public |
+| POST | `/events/{eventId}/archive` | `hasRole('ADMIN')` — Draft/Public→Archived (completes the `DRAFT→PUBLIC→ARCHIVED` lifecycle, docs/02 §3.3) |
 | DELETE | `/events/{eventId}` | `hasRole('ADMIN')` — **Sub-admin forbidden** |
 | POST | `/events/{eventId}/registration-qr/rotate` | `hasRole('ADMIN')` — new `registration_qr_token` (poster) |
 | GET | `/events/{eventId}/registration-qr` | `@eventSecurity.canManage(...)` — **registration poster** QR (discovery only, not attendance) |

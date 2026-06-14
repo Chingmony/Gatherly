@@ -46,3 +46,71 @@ export interface InviteUserBody {
   email: string;
   role: InviteRole;
 }
+
+// ---- Organization (docs/03 §4.3) ------------------------------------------
+
+export interface OrganizationResponse {
+  id: string;
+  name: string;
+  description?: string;
+  logoKey?: string;
+  bannerKey?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateOrganizationBody {
+  name: string;
+  description?: string;
+  logoKey?: string;
+  bannerKey?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+// ---- Events (docs/03 §4.4) ------------------------------------------------
+
+export type EventStatus = "DRAFT" | "PUBLIC" | "ARCHIVED";
+
+export interface EventResponse {
+  id: string;
+  title: string;
+  slug?: string;
+  description?: string;
+  venue?: string;
+  startsAt?: string;
+  endsAt?: string;
+  status: EventStatus;
+  checkinOpensAt?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEventBody {
+  title: string;
+  description?: string;
+  venue?: string;
+  startsAt?: string;
+  endsAt?: string;
+}
+
+export type UpdateEventBody = CreateEventBody;
+
+// ---- Storage presign (docs/04 §4.4) ---------------------------------------
+
+export type StoragePurpose = "ORG_LOGO" | "ORG_BANNER" | "USER_AVATAR";
+
+export interface PresignBody {
+  purpose: StoragePurpose;
+  contentType: string;
+  sizeBytes: number;
+}
+
+export interface PresignResponse {
+  uploadUrl: string;
+  objectKey: string;
+  publicUrl?: string;
+}

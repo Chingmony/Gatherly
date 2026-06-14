@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "./logout-button";
 
-const NAV = [{ href: "/users", label: "Users" }];
+const NAV = [
+  { href: "/events", label: "Events" },
+  { href: "/users", label: "Users" },
+  { href: "/organization", label: "Organization" },
+];
 
 /** Flat white sidebar (docs/05 §2/§4). Active nav uses the --ad fill / --ac text treatment. */
 export function AdminSidebar() {

@@ -46,6 +46,7 @@ export const config = {
     "/organization/:path*",
     "/supply-list",
     "/supply-list/:path*",
+    "/events",
     "/events/:path*",
     "/my-tasks/:path*",
   ],

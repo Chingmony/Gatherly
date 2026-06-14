@@ -46,6 +46,12 @@ dependencies {
     // --- Email (OTP + QR-ticket delivery; JavaMailSender → MailHog locally) ---
     implementation("org.springframework.boot:spring-boot-starter-mail")
 
+    // --- Object storage (Rustfs, S3-compatible) — presigned PUT URLs only; binaries
+    //     never stream through the Java heap (docs/04 §4, docs/01 §5). Presigning is
+    //     offline (SigV4 crypto), so no live cluster is needed at request time.
+    implementation(platform("software.amazon.awssdk:bom:2.29.20"))
+    implementation("software.amazon.awssdk:s3")
+
     // --- Observability (health endpoints + Prometheus scrape, docs/08) ---
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
