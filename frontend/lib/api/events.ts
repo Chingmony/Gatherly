@@ -5,6 +5,39 @@ import type { EventRow, FeaturedEvent, AgendaItem } from './types'
 import type { EventMember } from '@/lib/event-data'
 
 // ---------------------------------------------------------------------------
+// Mutation request types (verbatim field names from backend DTOs)
+// ---------------------------------------------------------------------------
+
+/**
+ * Mirrors backend EventCreateRequest.
+ * - title is the only @NotBlank field; all others are optional.
+ * - Instant fields must be ISO-8601 strings (e.g. "2027-06-14T09:00:00Z").
+ * - capacity is NOT a backend field — do not pass it here (see UI gap note).
+ */
+export interface EventCreatePayload {
+  title: string
+  description?: string | null
+  venue?: string | null
+  startsAt?: string | null
+  endsAt?: string | null
+  checkinOpensAt?: string | null
+}
+
+/**
+ * Mirrors backend EventUpdateRequest.
+ * All fields are nullable/optional — null means "leave unchanged".
+ * Instant fields must be ISO-8601 strings.
+ */
+export interface EventUpdatePayload {
+  title?: string | null
+  description?: string | null
+  venue?: string | null
+  startsAt?: string | null
+  endsAt?: string | null
+  checkinOpensAt?: string | null
+}
+
+// ---------------------------------------------------------------------------
 // Backend DTO types (verbatim field names from EventResponse / AssignmentResponse)
 // ---------------------------------------------------------------------------
 
@@ -171,6 +204,92 @@ export async function getEvent(id: string): Promise<EventRow | undefined> {
 export async function listEventMembers(eventId: string): Promise<EventMember[]> {
   const dtos = await apiFetch<BackendAssignmentResponse[]>(`/events/${eventId}/assignments`)
   return dtos.map(mapAssignmentResponse)
+}
+
+// ---------------------------------------------------------------------------
+// Mutation accessors — invoked from client components
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a new event.
+ * POST /events — returns the newly created event mapped to EventRow.
+ * The backend auto-generates the slug and sets status to DRAFT.
+ *
+ * UI form gaps in create-event-dialog.tsx (reported — do not silently default):
+ *   - endsAt: no end date/time field in the dialog — add one.
+ *   - checkinOpensAt: no check-in opens field — add one.
+ *   - startsAt: dialog has a date-only <Input type="date">; caller must
+ *     convert to a full ISO-8601 Instant string (e.g. append "T00:00:00Z").
+ *   - capacity: dialog collects a number input but EventCreateRequest has no
+ *     capacity field — remove that input or defer to a future DTO update.
+ */
+export async function createEvent(payload: EventCreatePayload): Promise<EventRow> {
+  const dto = await apiFetch<BackendEventResponse>('/events', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  return mapEventResponse(dto)
+}
+
+/**
+ * Update an existing event's details.
+ * PUT /events/{eventId} — null fields are left unchanged by the backend.
+ * Returns the updated event mapped to EventRow.
+ */
+export async function updateEvent(eventId: string, payload: EventUpdatePayload): Promise<EventRow> {
+  const dto = await apiFetch<BackendEventResponse>(`/events/${eventId}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  })
+  return mapEventResponse(dto)
+}
+
+/**
+ * Transition a DRAFT event to PUBLIC status.
+ * POST /events/{eventId}/publish — no request body.
+ * Returns the updated event mapped to EventRow.
+ */
+export async function publishEvent(eventId: string): Promise<EventRow> {
+  const dto = await apiFetch<BackendEventResponse>(`/events/${eventId}/publish`, {
+    method: 'POST',
+  })
+  return mapEventResponse(dto)
+}
+
+/**
+ * Transition a PUBLIC event to ARCHIVED status.
+ * POST /events/{eventId}/archive — no request body.
+ * Returns the updated event mapped to EventRow.
+ */
+export async function archiveEvent(eventId: string): Promise<EventRow> {
+  const dto = await apiFetch<BackendEventResponse>(`/events/${eventId}/archive`, {
+    method: 'POST',
+  })
+  return mapEventResponse(dto)
+}
+
+/**
+ * Permanently delete an event (ADMIN only; sub-admins cannot delete — hard RBAC gate).
+ * DELETE /events/{eventId} — backend returns ApiResponse<Void> with no data payload.
+ * Returns void; callers should remove the row from local state on success.
+ */
+export async function deleteEvent(eventId: string): Promise<void> {
+  // Backend returns ApiResponse<Void>; apiFetch unwraps data which will be null/undefined.
+  await apiFetch<null>(`/events/${eventId}`, { method: 'DELETE' })
+}
+
+/**
+ * Rotate the registration QR token for an event.
+ * POST /events/{eventId}/registration-qr/rotate — no request body.
+ * Returns the updated event (with the new registrationQrToken) mapped to EventRow.
+ * Note: EventRow does not surface registrationQrToken; callers that need the new
+ * token should call apiFetch<BackendEventResponse> directly or extend EventRow.
+ */
+export async function rotateRegistrationQr(eventId: string): Promise<EventRow> {
+  const dto = await apiFetch<BackendEventResponse>(`/events/${eventId}/registration-qr/rotate`, {
+    method: 'POST',
+  })
+  return mapEventResponse(dto)
 }
 
 // ---------------------------------------------------------------------------
