@@ -35,3 +35,7 @@ Thumbs.db
 # ---- Logs ----
 *.log
 logs/
+
+# ---- Local-only compose overrides / runtime artifacts ----
+docker-compose.override.yml
+backend/bootrun.log
