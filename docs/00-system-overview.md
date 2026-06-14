@@ -113,7 +113,7 @@ Legend: **✓** allowed · **own** only for events the user is assigned to (Sub-
 
 | Decision | Choice |
 |----------|--------|
-| Backend | Spring Boot **4.x**, Java, **Gradle**, strict layered architecture (Controller → Service → Repository) |
+| Backend | Spring Boot **4.1.0**, Java **21 (LTS)**, **Gradle 8.14 (Groovy DSL)**, strict layered architecture (Controller → Service → Repository) |
 | Security | Spring Security, **JWT**, method-level `@PreAuthorize` mapped to the matrix above |
 | OTP | **Redis** with time-expiring (TTL) keys |
 | File storage | **Rustfs** cluster (profile pictures, org logo, banners) |

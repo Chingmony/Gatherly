@@ -5,9 +5,9 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gartherly}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -35,21 +35,23 @@ spring:
       password: ${REDIS_PASSWORD:}
 
   mail:
-    host: ${MAIL_HOST}
+    host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+
+    username: ${MAIL_USERNAME:gartherlyteam@gmail.com}
+    password: ${MAIL_PASSWORD:yusslalwcrrfodgp}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
-            enable: ${MAIL_TLS:true}
+            enable: true
+            required: true
 
 server:
   port: 8080
-  servlet:
-    context-path: /api/v1
+  # No servlet context-path: the /api/v1 prefix is applied to controllers via WebMvcConfig so that
+  # Swagger UI (springdoc, outside the controller package) stays at the root (/swagger-ui/...).
 
 management:
   endpoints:
@@ -60,6 +62,16 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+  health:
+    mail:
+      # Don't let health polls dial SMTP — a missing mail server must not mark the app DOWN
+      # (email is a non-critical after-commit side effect). Enable per-env if you want it monitored.
+      enabled: false
+    redis:
+      # Redis backs OTP + rate limiting (needed only for those flows, not the core loop). Health
+      # check off so a not-yet-running local Redis doesn't mark the app DOWN. Re-enable where Redis
+      # is a hard runtime dependency you want monitored.
+      enabled: false
   metrics:
     export:
       prometheus:
@@ -68,7 +80,7 @@ management:
 # ── Application-level config ──────────────────────────────────────────────────
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:uhrjOspscee8/VcVTf+FoztI8Z6v6p6HCbWUyl6jSeE=}
     access-token-ttl-seconds: ${JWT_ACCESS_TTL:900}       # 15 min
     refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:604800}  # 7 days
 
@@ -79,15 +91,15 @@ app:
 
   telegram:
     enabled: ${TELEGRAM_ENABLED:false}
-    bot-token: ${TELEGRAM_BOT_TOKEN:}
-    ops-chat-id: ${TELEGRAM_OPS_CHAT_ID:}
+    bot-token: ${TELEGRAM_BOT_TOKEN:8835580917:AAGLJeYN3Lh-vU9YLxTf8UDsPs7ojonGRiQ}
+    ops-chat-id: ${TELEGRAM_OPS_CHAT_ID:924703989}
     api-base: ${TELEGRAM_API_BASE:https://api.telegram.org}
 
   rustfs:
-    endpoint: ${RUSTFS_ENDPOINT}
+    endpoint: ${RUSTFS_ENDPOINT:http://localhost:9000}
     region: ${RUSTFS_REGION:us-east-1}
-    access-key: ${RUSTFS_ACCESS_KEY}
-    secret-key: ${RUSTFS_SECRET_KEY}
+    access-key: ${RUSTFS_ACCESS_KEY:admin}
+    secret-key: ${RUSTFS_SECRET_KEY:admin123}
     bucket: ${RUSTFS_BUCKET:gatherly}
     public-base-url: ${RUSTFS_PUBLIC_BASE_URL:}
     presign-ttl-seconds: ${RUSTFS_PRESIGN_TTL_SECONDS:300}
@@ -99,6 +111,18 @@ app:
     length: ${OTP_LENGTH:6}
 
   public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:3000}
+
+  # ShedLock-guarded scheduled jobs (retry sweeps + cleanup). Needs Redis; the local profile
+  # disables it so dev without Redis stays quiet.
+  scheduling:
+    enabled: ${SCHEDULING_ENABLED:true}
+
+  # Per-IP rate limiting (Redis, 60s windows, fails open). Disabled where Redis isn't running.
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    login-per-minute: ${RATE_LIMIT_LOGIN:10}
+    otp-per-minute: ${RATE_LIMIT_OTP:5}
+    register-per-minute: ${RATE_LIMIT_REGISTER:20}
 
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}

@@ -14,7 +14,7 @@ The monorepo is in the specification phase. Code will be added as:
 gatherly/
 ├── docs/               # Architecture specs (source of truth)
 ├── frontend/           # Next.js 16 (not yet merged)
-├── backend/            # Spring Boot 4.x (not yet merged)
+├── backend/            # Spring Boot 4.1.0 (not yet merged)
 └── docker-compose.yml  # Postgres, Redis, MailHog, MinIO
 ```
 
@@ -53,7 +53,7 @@ Flyway migrations run automatically on backend startup. Files go in `backend/src
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Spring Boot 4.x, Java 21, Gradle |
+| Backend | Spring Boot 4.1.0, Java 21, Gradle 8.14 (Groovy DSL) |
 | Frontend | Next.js 16 App Router, React 19, TypeScript 5 strict |
 | UI | shadcn/ui + Tailwind CSS (no custom component lib) |
 | Database | PostgreSQL 16 + JSONB (Flyway migrations) |

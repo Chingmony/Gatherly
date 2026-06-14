@@ -1,10 +1,19 @@
-# Test profile — Testcontainers spins up Postgres + Redis; all secrets are stubs
+# Test profile — Testcontainers spins up Postgres (datasource injected via @DynamicPropertySource);
+# all secrets are stubs. Datasource URL/username/password come from the container at runtime.
+spring:
+  mail:
+    host: localhost   # stub host; email sending is disabled (app.email.enabled=false)
+
 app:
   jwt:
     secret: test-secret-at-least-256-bits-for-hmac-sha256-algorithm-padding
   email:
     enabled: false
   telegram:
+    enabled: false
+  scheduling:
+    enabled: false
+  rate-limit:
     enabled: false
   rustfs:
     endpoint: http://localhost:9000
