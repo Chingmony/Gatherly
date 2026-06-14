@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveForm, activateForm } from "@/lib/api/forms";
 import { ApiError } from "@/lib/api/client";
-import type { FieldType, FormField, FormResponse } from "@/lib/api/types";
+import type { FieldType, FormField, FormFieldValidation, FormResponse } from "@/lib/api/types";
 import { FormFields } from "@/components/form-renderer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,10 @@ const FIELD =
 
 function slug(s: string): string {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "_").replace(/(^_+|_+$)/g, "");
+}
+
+function numOrUndef(s: string): number | undefined {
+  return s.trim() === "" ? undefined : Number(s);
 }
 
 function seedFields(): FormField[] {
@@ -52,6 +56,19 @@ export function FormBuilder({ eventId, initial }: { eventId: string; initial: Fo
 
   function patch(i: number, p: Partial<FormField>) {
     setFields((fs) => fs.map((f, idx) => (idx === i ? { ...f, ...p } : f)));
+  }
+  /** Merge per-field validation rules; an empty value clears the key, an empty object clears validation. */
+  function patchValidation(i: number, p: Partial<FormFieldValidation>) {
+    setFields((fs) =>
+      fs.map((f, idx) => {
+        if (idx !== i) return f;
+        const validation: FormFieldValidation = { ...(f.validation ?? {}), ...p };
+        (Object.keys(validation) as (keyof FormFieldValidation)[]).forEach((k) => {
+          if (validation[k] === undefined) delete validation[k];
+        });
+        return { ...f, validation: Object.keys(validation).length ? validation : undefined };
+      }),
+    );
   }
   function move(i: number, dir: -1 | 1) {
     setFields((fs) => {
@@ -147,10 +164,11 @@ export function FormBuilder({ eventId, initial }: { eventId: string; initial: Fo
               <div key={i} className="rounded-[var(--radius-md)] border border-[var(--border)] p-3">
                 <div className="flex items-start gap-2">
                   <div className="flex-1 space-y-2">
-                    <input className={FIELD} value={f.label} disabled={locked}
+                    <input className={FIELD} value={f.label} disabled={locked} aria-label="Question label"
                       onChange={(e) => patch(i, { label: e.target.value })} placeholder="Question label" />
                     <div className="flex flex-wrap items-center gap-2">
                       <select className={`${FIELD} w-auto`} value={f.type} disabled={locked || isEmail}
+                        aria-label={`Field type for ${f.label || "field"}`}
                         onChange={(e) => patch(i, { type: e.target.value as FieldType })}>
                         {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -166,6 +184,29 @@ export function FormBuilder({ eventId, initial }: { eventId: string; initial: Fo
                         value={(f.options ?? []).join(", ")}
                         onChange={(e) => patch(i, { options: e.target.value.split(",").map((o) => o.trim()).filter(Boolean) })} />
                     )}
+                    {(f.type === "text" || f.type === "textarea") && !isEmail && (
+                      <div className="flex flex-wrap gap-2">
+                        <input className={`${FIELD} w-24`} type="number" min={0} disabled={locked} placeholder="Min len"
+                          value={f.validation?.minLength ?? ""}
+                          onChange={(e) => patchValidation(i, { minLength: numOrUndef(e.target.value) })} aria-label="Minimum length" />
+                        <input className={`${FIELD} w-24`} type="number" min={0} disabled={locked} placeholder="Max len"
+                          value={f.validation?.maxLength ?? ""}
+                          onChange={(e) => patchValidation(i, { maxLength: numOrUndef(e.target.value) })} aria-label="Maximum length" />
+                        <input className={`${FIELD} min-w-[140px] flex-1`} disabled={locked} placeholder="Pattern (regex)"
+                          value={f.validation?.pattern ?? ""}
+                          onChange={(e) => patchValidation(i, { pattern: e.target.value.trim() || undefined })} aria-label="Pattern" />
+                      </div>
+                    )}
+                    {f.type === "number" && (
+                      <div className="flex flex-wrap gap-2">
+                        <input className={`${FIELD} w-24`} type="number" disabled={locked} placeholder="Min"
+                          value={f.validation?.min ?? ""}
+                          onChange={(e) => patchValidation(i, { min: numOrUndef(e.target.value) })} aria-label="Minimum value" />
+                        <input className={`${FIELD} w-24`} type="number" disabled={locked} placeholder="Max"
+                          value={f.validation?.max ?? ""}
+                          onChange={(e) => patchValidation(i, { max: numOrUndef(e.target.value) })} aria-label="Maximum value" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1">
                     <Button type="button" variant="ghost" size="sm" disabled={locked || i === 0} onClick={() => move(i, -1)} aria-label="Up">↑</Button>
@@ -180,7 +221,7 @@ export function FormBuilder({ eventId, initial }: { eventId: string; initial: Fo
           <Button variant="ghost" size="sm" disabled={locked} onClick={addField}>+ Add question</Button>
           {msg && (
             <p role={msg.ok ? "status" : "alert"} className={`text-[13px] font-semibold ${msg.ok ? "text-[var(--green-600)]" : "text-[var(--danger)]"}`}>
-              {msg.text}
+              <span aria-hidden="true">{msg.ok ? "✓ " : "✕ "}</span>{msg.text}
             </p>
           )}
         </div>

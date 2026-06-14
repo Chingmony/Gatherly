@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { registerForEvent } from "@/lib/api/public";
 import { ApiError } from "@/lib/api/client";
+import { validateAnswers } from "@/lib/forms/build-zod-schema";
 import type { FormField, RegisterResponse } from "@/lib/api/types";
 import { FormFields } from "@/components/form-renderer";
 import { QrTicket } from "@/components/qr-ticket";
@@ -31,6 +32,16 @@ export function PublicRegisterForm({
     e.preventDefault();
     setErrors({});
     setFormError(null);
+
+    // Client-side mirror of the server schema validation (docs/05 §5.2) — instant inline feedback
+    // before the round-trip; the server stays authoritative on submit.
+    const clientErrors = validateAnswers(schema, values);
+    if (Object.keys(clientErrors).length) {
+      setErrors(clientErrors);
+      setFormError("Please fix the highlighted fields.");
+      return;
+    }
+
     setPending(true);
     try {
       const res = await registerForEvent(eventId, values);
