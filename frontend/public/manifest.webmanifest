@@ -1,0 +1,23 @@
+{
+  "name": "Gatherly",
+  "short_name": "Gatherly",
+  "description": "Event management and check-in for handlers",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/api/pwa-icon/192", "sizes": "192x192", "type": "image/png" },
+    { "src": "/api/pwa-icon/512", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Check-in Scanner",
+      "short_name": "Scanner",
+      "description": "Open the QR check-in scanner",
+      "url": "/scanner",
+      "icons": [{ "src": "/api/pwa-icon/192", "sizes": "192x192" }]
+    }
+  ]
+}

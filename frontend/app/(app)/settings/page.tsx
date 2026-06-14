@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AvatarUser } from "@/components/ui/avatar-user";
-import { apiFetch } from "@/lib/api";
-import type { ApiResponse, UserResponse } from "@/lib/types";
+import { apiFetch } from "@/lib/api/client";
+import type { UserResponse } from "@/lib/types";
 
 export default function SettingsPage() {
   const [me, setMe]               = useState<UserResponse | null>(null);
@@ -26,10 +26,10 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    apiFetch<ApiResponse<UserResponse>>("/me")
+    apiFetch<UserResponse>("/me")
       .then((res) => {
-        setMe(res.data);
-        setName(res.data?.fullName ?? "");
+        setMe(res);
+        setName(res?.fullName ?? "");
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -45,11 +45,11 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaveError("");
     try {
-      const res = await apiFetch<ApiResponse<UserResponse>>("/me", {
+      const res = await apiFetch<UserResponse>("/me", {
         method: "PUT",
-        body: JSON.stringify({ fullName: name }),
+        body: { fullName: name },
       });
-      setMe(res.data);
+      setMe(res);
       setSaved(true);
       setTimeout(() => setSaved(false), 2200);
     } catch (err) {
@@ -65,7 +65,7 @@ export default function SettingsPage() {
     try {
       await apiFetch("/me/password", {
         method: "PUT",
-        body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.next }),
+        body: { currentPassword: pwForm.current, newPassword: pwForm.next },
       });
       setPwSaved(true);
       setPwForm({ current: "", next: "", confirm: "" });
