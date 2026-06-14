@@ -6,6 +6,11 @@ spring:
       hibernate:
         format_sql: true
 
+# Local dev runs the backend on 9090 (override the 8080 default). `SERVER_PORT` env still wins
+# if set, since OS env outranks profile yml in Spring's property precedence.
+server:
+  port: 9090
+
 gatherly:
   auth:
     cookie:

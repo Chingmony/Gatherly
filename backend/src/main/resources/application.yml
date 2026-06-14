@@ -70,7 +70,7 @@ management:
         enabled: true
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   error:
     # The uniform error contract (docs/07) is produced by our @RestControllerAdvice,
     # not the default whitelabel page.
