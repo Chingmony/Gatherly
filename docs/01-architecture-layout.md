@@ -14,7 +14,7 @@
               ┌─────────────────────────▼──────────────────────────┐
               │  Next.js 16  (App Router · shadcn/ui · Framer Motion)│
               │  • Server Components / Server Actions                │
-              │  • proxy.ts  → JWT cookie guard (Next.js 16)         │
+              │  • middleware.ts  → JWT cookie guard                 │
               │  • lib/api  → typed fetch client                     │
               └───────────┬─────────────────────────┬───────────────┘
                           │ HTTPS/JSON (JWT cookie)  │ presigned URL (direct upload/fetch)
@@ -96,14 +96,14 @@ frontend/
 │   ├── auth/                           # session helpers, role guards
 │   ├── rustfs/                         # presigned-upload helper
 │   └── validation/                     # zod schemas mirroring form field types
-├── proxy.ts                            # JWT cookie check + route-group guards (Next.js 16)
+├── middleware.ts                       # JWT cookie check + route-group guards
 ├── next.config.ts
 └── package.json
 ```
 
 **Conventions**
 - **Route groups by audience** (`(public)`, `(auth)`, `(admin)`, `(event)`, `(handler)`) — the URL stays clean while access context is explicit.
-- **`proxy.ts`** validates the access-token cookie on protected matchers, performs silent refresh, and redirects under-privileged users. It is a **UX guard only** — the API remains the real authority.
+- **`middleware.ts`** validates the access-token cookie on protected matchers, performs silent refresh, and redirects under-privileged users. It is a **UX guard only** — the API remains the real authority.
 - **Server Components / Server Actions** do authenticated reads/writes, forwarding the JWT cookie. Mutations funnel through `lib/api`.
 - **shadcn/ui** provides primitives in `components/ui`; **Framer Motion** lives in `components/motion` (shared variants for page/route transitions and micro-interactions).
 - **Dynamic form rendering** (`components/form-renderer`) consumes the JSONB `schema` array from the API and draws fields generically (see [`02`](02-database-schema.md) §JSONB and [`03`](03-api-routes-security.md)).
@@ -123,30 +123,109 @@ backend/
     │   ├── config/               # SecurityConfig, CorsConfig, RedisConfig, RustfsConfig, MailConfig, JacksonConfig, OpenApiConfig
     │   ├── security/             # JwtAuthFilter, JwtService, EventSecurityService(@eventSecurity), UserPrincipal
     │   ├── common/               # error model (@RestControllerAdvice), pagination, BaseEntity, auditing
-    │   ├── user/
+    │   │
+    │   ├── controller/           # LAYER 1 — HTTP mapping, @Valid, thin response assembly
     │   │   ├── UserController.java
-    │   │   ├── UserService.java
-    │   │   ├── UserRepository.java
-    │   │   ├── domain/User.java
-    │   │   └── dto/…
-    │   ├── auth/                 # login, refresh, logout, forgot-password, OTP verify
     │   │   ├── AuthController.java
+    │   │   ├── OrganizationController.java
+    │   │   ├── EventController.java
+    │   │   ├── MaterialController.java
+    │   │   ├── FormController.java
+    │   │   ├── RegistrationController.java
+    │   │   ├── AttendanceController.java
+    │   │   └── StorageController.java    # POST /api/storage/presign
+    │   │
+    │   ├── service/              # LAYER 2 — business rules, @Transactional, @PreAuthorize gates
+    │   │   ├── UserService.java
+    │   │   ├── UserServiceImpl.java
     │   │   ├── AuthService.java
-    │   │   ├── OtpService.java          # Redis-backed (see §6)
-    │   │   └── dto/…
-    │   ├── organization/         # org profile (logo/banner → Rustfs)
-    │   ├── event/                # event + event_assignment (delegation) + agenda
-    │   ├── material/             # material, status history, main supply list
-    │   ├── form/                 # registration_form (JSONB schema), submission, dynamic validation
-    │   ├── registration/        # public registration, checkin_token + QR generation, emails ticket, lifecycle
-    │   ├── attendance/          # organizer QR scan → event_checkin (1:1), manual override, revoke
-    │   ├── storage/              # RustfsClient, presign service
-    │   ├── integration/email/    # EmailClient (JavaMailSender), QR-ticket + OTP templates, sender
-    │   └── integration/telegram/ # TelegramClient (ops sendMessage only), notifier
+    │   │   ├── AuthServiceImpl.java
+    │   │   ├── OtpService.java           # Redis-backed OTP (see §6)
+    │   │   ├── OrganizationService.java
+    │   │   ├── OrganizationServiceImpl.java
+    │   │   ├── EventService.java
+    │   │   ├── EventServiceImpl.java
+    │   │   ├── MaterialService.java
+    │   │   ├── MaterialServiceImpl.java
+    │   │   ├── FormService.java
+    │   │   ├── FormServiceImpl.java
+    │   │   ├── RegistrationService.java  # checkin_token + QR generation, email ticket
+    │   │   ├── RegistrationServiceImpl.java
+    │   │   ├── AttendanceService.java    # QR scan, manual override, revoke
+    │   │   ├── AttendanceServiceImpl.java
+    │   │   ├── StorageService.java       # presign logic + size/type validation
+    │   │   └── StorageServiceImpl.java
+    │   │
+    │   ├── repository/           # LAYER 3 — Spring Data JPA; custom JSONB / event-scoped queries
+    │   │   ├── UserRepository.java
+    │   │   ├── OrganizationRepository.java
+    │   │   ├── EventRepository.java
+    │   │   ├── EventAssignmentRepository.java
+    │   │   ├── MaterialRepository.java
+    │   │   ├── FormRepository.java       # registration_form (JSONB schema)
+    │   │   ├── SubmissionRepository.java
+    │   │   ├── RegistrationRepository.java
+    │   │   └── AttendanceRepository.java # event_checkin (1:1 with submission)
+    │   │
+    │   ├── domain/               # JPA entities — no business logic, no DTOs
+    │   │   ├── User.java
+    │   │   ├── Organization.java
+    │   │   ├── Event.java
+    │   │   ├── EventAssignment.java      # delegation / event-scoped roles
+    │   │   ├── AgendaItem.java
+    │   │   ├── Material.java
+    │   │   ├── MaterialStatusHistory.java
+    │   │   ├── RegistrationForm.java     # JSONB schema field
+    │   │   ├── FormSubmission.java
+    │   │   ├── Registration.java
+    │   │   └── EventCheckin.java         # 1:1 with FormSubmission
+    │   │
+    │   ├── dto/                  # Request / response POJOs; no JPA annotations
+    │   │   ├── user/
+    │   │   │   ├── UserCreateRequest.java
+    │   │   │   ├── UserUpdateRequest.java
+    │   │   │   └── UserResponse.java
+    │   │   ├── auth/
+    │   │   │   ├── LoginRequest.java
+    │   │   │   ├── TokenResponse.java
+    │   │   │   ├── OtpRequest.java
+    │   │   │   └── ResetPasswordRequest.java
+    │   │   ├── organization/
+    │   │   │   ├── OrganizationUpdateRequest.java
+    │   │   │   └── OrganizationResponse.java
+    │   │   ├── event/
+    │   │   │   ├── EventCreateRequest.java
+    │   │   │   ├── EventUpdateRequest.java
+    │   │   │   └── EventResponse.java
+    │   │   ├── material/
+    │   │   │   ├── MaterialRequest.java
+    │   │   │   └── MaterialResponse.java
+    │   │   ├── form/
+    │   │   │   ├── FormSchemaRequest.java
+    │   │   │   ├── SubmissionRequest.java
+    │   │   │   └── SubmissionResponse.java
+    │   │   ├── registration/
+    │   │   │   ├── RegistrationRequest.java
+    │   │   │   └── RegistrationResponse.java
+    │   │   ├── attendance/
+    │   │   │   ├── ScanRequest.java
+    │   │   │   └── CheckinResponse.java
+    │   │   └── storage/
+    │   │       ├── PresignRequest.java
+    │   │       └── PresignResponse.java
+    │   │
+    │   └── integration/          # Third-party infrastructure clients (no business logic)
+    │       ├── email/
+    │       │   ├── EmailService.java     # JavaMailSender + Thymeleaf
+    │       │   └── templates/…           # QR-ticket + OTP HTML templates
+    │       ├── telegram/
+    │       │   └── TelegramService.java  # outbound ops sendMessage only
+    │       └── rustfs/
+    │           └── RustfsClient.java     # S3 SDK wrapper, called by StorageServiceImpl
     └── resources/
         ├── application.yml
         ├── application-{local,prod}.yml
-        └── db/migration/         # Flyway SQL (see 02)
+        └── db/migration/                 # Flyway SQL (see 02)
 ```
 
 ### 4.1 Layer responsibilities
