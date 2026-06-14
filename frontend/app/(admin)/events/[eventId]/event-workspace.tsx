@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { publishEvent, archiveEvent, deleteEvent } from "@/lib/api/events";
 import type {
-  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, EventResponse, EventStatus,
-  FormResponse, MaterialResponse, SubmissionResponse, UserResponse,
+  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, AttendanceResponse, EventResponse,
+  EventStatus, FormResponse, MaterialResponse, SubmissionResponse, UserResponse,
 } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,15 +14,16 @@ import { AgendaEditor } from "./agenda-editor";
 import { MembersTab } from "./members-tab";
 import { MaterialsTab } from "./materials-tab";
 import { GuestsTab } from "./guests-tab";
+import { AttendanceTab } from "./attendance-tab";
 import { FormBuilder } from "@/components/form-builder";
 
 const STATUS_LABEL: Record<EventStatus, string> = { DRAFT: "Draft", PUBLIC: "Public", ARCHIVED: "Archived" };
-type Tab = "details" | "agenda" | "members" | "materials" | "guests" | "form";
+type Tab = "details" | "agenda" | "members" | "materials" | "guests" | "attendance" | "form";
 const CARD = "rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-card)]";
 
 /** Event workspace (docs/05 §7): tabbed detail view — Details · Agenda · Members · Guests · Form. */
 export function EventWorkspace({
-  event, agenda, templates, assignments, materials, submissions, candidates, form, isAdmin, canManage,
+  event, agenda, templates, assignments, materials, submissions, attendance, candidates, form, isAdmin, canManage,
 }: {
   event: EventResponse;
   agenda: AgendaResponse;
@@ -30,6 +31,7 @@ export function EventWorkspace({
   assignments: AssignmentResponse[];
   materials: MaterialResponse[];
   submissions: SubmissionResponse[];
+  attendance: AttendanceResponse;
   candidates: UserResponse[];
   form: FormResponse | null;
   isAdmin: boolean;
@@ -45,6 +47,7 @@ export function EventWorkspace({
     { id: "members", label: "Members", count: assignments.length },
     { id: "materials", label: "Materials", count: materials.length },
     { id: "guests", label: "Guests", count: submissions.length },
+    { id: "attendance", label: "Attendance", count: attendance.checkedInCount },
     { id: "form", label: "Form" },
   ];
 
@@ -83,7 +86,8 @@ export function EventWorkspace({
       {tab === "agenda" && <div className={CARD}><AgendaEditor event={event} agenda={agenda} templates={templates} /></div>}
       {tab === "members" && <MembersTab eventId={event.id} assignments={assignments} candidates={candidates} canPickUsers={isAdmin} />}
       {tab === "materials" && <MaterialsTab eventId={event.id} materials={materials} crew={assignments} canManage={canManage} />}
-      {tab === "guests" && <GuestsTab submissions={submissions} />}
+      {tab === "guests" && <GuestsTab eventId={event.id} submissions={submissions} canManage={canManage} />}
+      {tab === "attendance" && <AttendanceTab eventId={event.id} initial={attendance} />}
       {tab === "form" && <div className={CARD}><FormBuilder eventId={event.id} initial={form} /></div>}
     </div>
   );

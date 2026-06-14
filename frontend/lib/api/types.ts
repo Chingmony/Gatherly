@@ -262,6 +262,48 @@ export interface SubmissionResponse {
   submittedAt: string;
 }
 
+// ---- Attendance / organizer scan (docs/03 §4.10, docs/06 §4) --------------
+
+export type CheckinSource = "QR_SCAN" | "MANUAL";
+
+/** Organizer scan body — the opaque checkin_token decoded from the guest QR. */
+export interface ScanBody {
+  checkinToken: string;
+}
+
+/** Manual staff override — check in by submission id without a QR. */
+export interface ManualCheckinBody {
+  submissionId: string;
+}
+
+export interface CheckinResult {
+  checkinId: string;
+  submissionId: string;
+  guestName?: string;
+  guestPhone?: string;
+  checkedInAt: string;
+  ticketStatus: string;
+  scannedBy?: string;
+  source: CheckinSource;
+  telegramQueued: boolean;
+}
+
+export interface AttendanceRecord {
+  checkinId: string;
+  submissionId: string;
+  guestName?: string;
+  guestPhone: string;
+  checkedInAt: string;
+  source: CheckinSource;
+  scannedByName?: string;
+}
+
+export interface AttendanceResponse {
+  registeredCount: number;
+  checkedInCount: number;
+  records: AttendanceRecord[];
+}
+
 // ---- Admin Command Center dashboard (docs/03 §4.13, docs/06 §11) ----------
 
 export interface CommandCenterLifecycle {

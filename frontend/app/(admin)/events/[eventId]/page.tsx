@@ -2,7 +2,7 @@ import Link from "next/link";
 import { serverFetch } from "@/lib/api/server";
 import { ApiError } from "@/lib/api/client";
 import type {
-  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, EventResponse,
+  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, AttendanceResponse, EventResponse,
   FormResponse, MaterialResponse, PageResponse, SubmissionResponse, UserResponse,
 } from "@/lib/api/types";
 import { EventWorkspace } from "./event-workspace";
@@ -40,12 +40,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
   // Optional/role-dependent fetches — degrade gracefully.
   let form: FormResponse | null = null;
   let submissions: SubmissionResponse[] = [];
+  let attendance: AttendanceResponse = { registeredCount: 0, checkedInCount: 0, records: [] };
   let candidates: UserResponse[] = [];
   let isAdmin = false;
   if (event) {
     form = await serverFetch<FormResponse>(`/events/${eventId}/form`).catch(() => null);
     submissions = (await serverFetch<PageResponse<SubmissionResponse>>(`/events/${eventId}/submissions?size=100`)
       .catch(() => null))?.content ?? [];
+    attendance = (await serverFetch<AttendanceResponse>(`/events/${eventId}/attendance`).catch(() => null))
+      ?? attendance;
     const users = await serverFetch<PageResponse<UserResponse>>(`/users?size=100`).catch(() => null);
     if (users) { candidates = users.content; isAdmin = true; }
   }
@@ -71,7 +74,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
       <Link href="/events" className="inline-block text-[12px] font-semibold text-[var(--text-faint)] hover:text-[var(--text)]">← Events</Link>
       <EventWorkspace
         event={event} agenda={agenda} templates={templates} assignments={assignments}
-        materials={materials} submissions={submissions} candidates={candidates} form={form}
+        materials={materials} submissions={submissions} attendance={attendance} candidates={candidates} form={form}
         isAdmin={isAdmin} canManage={canManage}
       />
     </div>
