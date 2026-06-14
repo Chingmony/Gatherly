@@ -62,7 +62,7 @@ export function Dialog({ open, onClose, titleId, children }: DialogProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[rgba(24,16,48,0.35)]" onClick={onClose} aria-hidden />
+      <div className="absolute inset-0 bg-[var(--overlay)]" onClick={onClose} aria-hidden />
       <div
         ref={ref}
         role="dialog"

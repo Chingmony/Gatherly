@@ -28,7 +28,7 @@ export function EventCover({
         position: "relative",
         overflow: "hidden",
         background: imageUrl
-          ? `#222 url("${imageUrl}") center/cover no-repeat`
+          ? `var(--cover-fallback) url("${imageUrl}") center/cover no-repeat`
           : coverGradient(gradient),
       }}
     >
