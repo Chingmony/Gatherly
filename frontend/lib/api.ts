@@ -1,4 +1,8 @@
-const BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
+// Backend lives under the /api/v1 prefix. The httpOnly access_token cookie is scoped to
+// Path=/api/v1, so calls MUST include this prefix or the cookie is never sent → 401.
+const BASE =
+  (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080").replace(/\/+$/, "") +
+  "/api/v1";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
