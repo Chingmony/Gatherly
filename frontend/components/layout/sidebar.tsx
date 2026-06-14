@@ -9,6 +9,7 @@ import {
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/cn";
 import type { Role } from "@/lib/roles";
+import { performLogout } from "@/lib/auth/session";
 
 interface NavItem {
   section?: string;
@@ -106,8 +107,8 @@ export function Sidebar({ role }: SidebarProps) {
                 key="logout"
                 type="button"
                 className={sharedCls}
-                onClick={() => {
-                  sessionStorage.removeItem("gatherly_role");
+                onClick={async () => {
+                  await performLogout();
                   router.push("/login");
                 }}
               >
