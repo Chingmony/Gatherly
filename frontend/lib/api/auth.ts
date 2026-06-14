@@ -80,6 +80,18 @@ export function forgotPassword(email: string): Promise<void> {
 }
 
 /**
+ * Resend the OTP for an in-progress reset (the verify-otp "resend code" action).
+ * Mirrors {@link forgotPassword}: always 202 with a neutral message; a 60s per-account
+ * cooldown and the per-IP OTP limit throttle abuse. Errors: 429 `RATE_LIMITED`.
+ */
+export function resendOtp(email: string): Promise<void> {
+  return apiFetch<void>("/auth/resend-otp", {
+    method: "POST",
+    body: { email },
+  });
+}
+
+/**
  * Verify the emailed OTP and receive a short-lived, single-use reset grant token
  * to pass to {@link resetPassword}.
  * Errors: 401 `OTP_INVALID` (wrong code / too many attempts), `OTP_EXPIRED`.
