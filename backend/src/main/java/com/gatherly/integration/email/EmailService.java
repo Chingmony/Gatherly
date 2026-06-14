@@ -41,6 +41,7 @@ public class EmailService {
    */
   @Async("sideEffectExecutor")
   public void sendOtp(String toEmail, String fullName, String otp, int ttlMinutes) {
+      System.out.println(props);
     if (!props.enabled()) {
       log.info("[email disabled] OTP for {} = {} (valid {} min)", toEmail, otp, ttlMinutes);
       return;

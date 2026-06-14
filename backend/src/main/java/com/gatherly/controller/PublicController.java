@@ -1,15 +1,26 @@
 package com.gatherly.controller;
 
 import com.gatherly.common.ApiResponse;
+import com.gatherly.common.PageMeta;
+import com.gatherly.common.paging.PageRequests;
+import com.gatherly.dto.event.EventSort;
+import com.gatherly.dto.event.PublicEventResponse;
 import com.gatherly.dto.registration.PublicFormResponse;
 import com.gatherly.dto.registration.RegistrationRequest;
 import com.gatherly.dto.registration.RegistrationResponse;
 import com.gatherly.dto.registration.TicketResponse;
+import com.gatherly.service.EventService;
 import com.gatherly.service.RegistrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,9 +46,35 @@ import org.springframework.web.bind.annotation.RestController;
 public class PublicController {
 
   private final RegistrationService registrationService;
+  private final EventService eventService;
 
-  public PublicController(RegistrationService registrationService) {
+  public PublicController(RegistrationService registrationService, EventService eventService) {
     this.registrationService = registrationService;
+    this.eventService = eventService;
+  }
+
+  @Operation(
+      summary = "List public events",
+      description =
+          "Unauthenticated discovery list of PUBLIC events. Query params: `search` (matches event"
+              + " title, case-insensitive), `from` / `to` (ISO-8601 instants bounding the event"
+              + " start time, e.g. 2026-06-14T00:00:00Z), `page` (default 0), `size` (default 20,"
+              + " max 100), `sort` = DATE | NAME | STATUS | CREATED_AT (default DATE = start time),"
+              + " `direction` = ASC | DESC (default ASC). Only PUBLIC events are returned.")
+  @GetMapping("/events")
+  public ApiResponse<List<PublicEventResponse>> listEvents(
+      @RequestParam(required = false) String search,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          Instant from,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(defaultValue = "DATE") EventSort sort,
+      @RequestParam(defaultValue = "ASC") Sort.Direction direction) {
+    Pageable pageable = PageRequests.of(page, size, sort, direction);
+    Page<PublicEventResponse> result = eventService.listPublic(search, from, to, pageable);
+    return ApiResponse.page(
+        "Events retrieved successfully.", result.getContent(), PageMeta.from(result));
   }
 
   @Operation(

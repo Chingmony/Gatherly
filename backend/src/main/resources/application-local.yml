@@ -10,7 +10,7 @@ app:
     # OTP + QR-ticket emails via the SMTP in application.yml. Set EMAIL_ENABLED=false to log instead.
     enabled: ${EMAIL_ENABLED:true}
     # Gmail rewrites From to the authenticated account, so this must match spring.mail.username.
-    from-address: ${MAIL_FROM_ADDRESS:diffdb.official@gmail.com}
+    from-address: ${MAIL_FROM_ADDRESS:gartherlyteam@gmail.com}
     from-name: ${MAIL_FROM_NAME:Gatherly}
   telegram:
     enabled: true
