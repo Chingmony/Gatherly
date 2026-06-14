@@ -45,7 +45,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
     Cookie[] cookies = login(ADMIN_EMAIL, ADMIN_PASSWORD);
 
     mockMvc
-        .perform(get("/me").cookie(named(cookies, "access_token")))
+        .perform(get("/api/v1/me").cookie(named(cookies, "access_token")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.data.email").value(ADMIN_EMAIL))
@@ -55,7 +55,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
   @Test
   void unauthenticatedRequestIsRejectedWith401() throws Exception {
     mockMvc
-        .perform(get("/me"))
+        .perform(get("/api/v1/me"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.success").value(false))
         .andExpect(jsonPath("$.error").value("UNAUTHENTICATED"));
@@ -67,7 +67,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
 
     // Admin lists users — allowed, paginated envelope.
     mockMvc
-        .perform(get("/users").cookie(adminAccess))
+        .perform(get("/api/v1/users").cookie(adminAccess))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.pagination.page").value(1));
 
@@ -82,7 +82,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
                 "globalRole", "MEMBER"));
     mockMvc
         .perform(
-            post("/users")
+            post("/api/v1/users")
                 .cookie(adminAccess)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createBody))
@@ -92,7 +92,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
     // That MEMBER is forbidden from the Admin-only list endpoint.
     Cookie memberAccess = named(login(email, "Password123"), "access_token");
     mockMvc
-        .perform(get("/users").cookie(memberAccess))
+        .perform(get("/api/v1/users").cookie(memberAccess))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error").value("FORBIDDEN"));
   }
@@ -105,7 +105,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
     // Rotate once → new refresh; refresh1 is now revoked.
     MvcResult r2 =
         mockMvc
-            .perform(post("/auth/refresh").cookie(refresh1))
+            .perform(post("/api/v1/auth/refresh").cookie(refresh1))
             .andExpect(status().isOk())
             .andReturn();
     Cookie refresh2 = r2.getResponse().getCookie("refresh_token");
@@ -113,11 +113,11 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
     assertThat(refresh2.getValue()).isNotEqualTo(refresh1.getValue());
 
     // The fresh token still works.
-    mockMvc.perform(post("/auth/refresh").cookie(refresh2)).andExpect(status().isOk());
+    mockMvc.perform(post("/api/v1/auth/refresh").cookie(refresh2)).andExpect(status().isOk());
 
     // Reusing the original (revoked) token → 401 and the chain is revoked.
     mockMvc
-        .perform(post("/auth/refresh").cookie(refresh1))
+        .perform(post("/api/v1/auth/refresh").cookie(refresh1))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error").value("UNAUTHENTICATED"));
   }
@@ -127,7 +127,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
     String body =
         objectMapper.writeValueAsString(Map.of("email", ADMIN_EMAIL, "password", "wrong-password"));
     mockMvc
-        .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+        .perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error").value("UNAUTHENTICATED"));
   }
@@ -136,7 +136,8 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
     String body = objectMapper.writeValueAsString(Map.of("email", email, "password", password));
     MvcResult result =
         mockMvc
-            .perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+            .perform(
+                post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
             .andExpect(status().isOk())
             .andReturn();
     return result.getResponse().getCookies();

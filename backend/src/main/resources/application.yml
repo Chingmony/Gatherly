@@ -48,8 +48,8 @@ spring:
 
 server:
   port: 8080
-  servlet:
-    context-path: /api/v1
+  # No servlet context-path: the /api/v1 prefix is applied to controllers via WebMvcConfig so that
+  # Swagger UI (springdoc, outside the controller package) stays at the root (/swagger-ui/...).
 
 management:
   endpoints:
@@ -60,6 +60,16 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+  health:
+    mail:
+      # Don't let health polls dial SMTP — a missing mail server must not mark the app DOWN
+      # (email is a non-critical after-commit side effect). Enable per-env if you want it monitored.
+      enabled: false
+    redis:
+      # Redis backs OTP + rate limiting (needed only for those flows, not the core loop). Health
+      # check off so a not-yet-running local Redis doesn't mark the app DOWN. Re-enable where Redis
+      # is a hard runtime dependency you want monitored.
+      enabled: false
   metrics:
     export:
       prometheus:

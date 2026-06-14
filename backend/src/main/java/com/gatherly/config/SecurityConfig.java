@@ -43,11 +43,15 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
-                        "/auth/**",
-                        "/public/**",
-                        "/ping",
+                        // API public surface (controllers carry the /api/v1 prefix — see
+                        // WebMvcConfig)
+                        "/api/v1/auth/**",
+                        "/api/v1/public/**",
+                        "/api/v1/ping",
+                        // actuator + Swagger now live at the root (no servlet context-path)
                         "/actuator/health",
                         "/actuator/health/**",
+                        "/v3/api-docs",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html")
