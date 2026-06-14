@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {
   Users, Calendar, QrCode, CheckSquare,
   TrendingUp, AlertTriangle, Clock, Zap,
-  ArrowRight, ScanLine,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 import { StatTile } from "@/components/ui/stat-tile";
@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChipIco } from "@/components/ui/chip-ico";
 import type { Role } from "@/lib/roles";
+import { HandlerDashboard } from "./_components/handler-dashboard";
 
 const EVENTS = [
   { id: "ev1", name: "NorthStar Leadership Summit", status: "live",      date: "Jun 18, 2026", registered: 842,  capacity: 1000, fillPct: 84 },
@@ -42,12 +43,6 @@ const MANAGER_TASKS = [
   { id: "t2", title: "Confirm A/V vendor",       event: "NorthStar Summit", status: "todo",        due: "Jun 17" },
   { id: "t3", title: "Review registration form", event: "Lumen Festival",   status: "done",        due: "Jun 12" },
   { id: "t4", title: "Assign scanner handlers",  event: "NorthStar Summit", status: "todo",        due: "Jun 17" },
-];
-
-const HANDLER_TASKS = [
-  { id: "h1", title: "Set up check-in stations", event: "NorthStar Summit", status: "in-progress", due: "Jun 18" },
-  { id: "h2", title: "Badge printer test",        event: "NorthStar Summit", status: "todo",        due: "Jun 17" },
-  { id: "h3", title: "Verify QR scanner app",    event: "NorthStar Summit", status: "done",        due: "Jun 15" },
 ];
 
 const TASK_VARIANT: Record<string, "blue" | "orange" | "green"> = { "in-progress": "blue", todo: "orange", done: "green" };
@@ -224,68 +219,6 @@ function ManagerDashboard() {
             ))}
           </CardContent>
         </Card>
-      </div>
-    </div>
-  );
-}
-
-/* ── Handler: Tasks + Scanner CTA ── */
-function HandlerDashboard() {
-  return (
-    <div className="flex flex-col gap-6 view-anim">
-      <PageHeader title="My Dashboard" sub="Your tasks and scanner for today" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {[
-          { label: "Tasks Pending",  value: String(HANDLER_TASKS.filter((t) => t.status !== "done").length), icon: CheckSquare, iconColor: "var(--orange)",    iconBg: "var(--orange-soft)", delta: "Needs action",     trend: "neutral" as const },
-          { label: "Completed",      value: String(HANDLER_TASKS.filter((t) => t.status === "done").length), icon: CheckSquare, iconColor: "var(--green-600)", iconBg: "var(--green-soft)",  delta: "Today",            trend: "up"      as const },
-          { label: "Check-ins Done", value: "842",                                                            icon: QrCode,      iconColor: "var(--blue)",      iconBg: "var(--blue-soft)",   delta: "NorthStar Summit", trend: "up"      as const },
-          { label: "Assigned Event", value: "Jun 18",                                                         icon: Calendar,    iconColor: "var(--primary-hex,#6366f1)", iconBg: "var(--primary-soft)", delta: "NorthStar Summit", trend: "neutral" as const },
-        ].map((s) => <StatTile key={s.label} {...s} />)}
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5">
-        <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle>My Tasks</CardTitle>
-            <Button asChild variant="ghost" size="sm" className="ml-auto"><Link href="/tasks">View all</Link></Button>
-          </CardHeader>
-          <CardContent className="px-5 pb-5 pt-0 flex flex-col">
-            {HANDLER_TASKS.map((t) => (
-              <div key={t.id} className="flex items-center gap-3 py-3.5 border-b last:border-0" style={{ borderColor: "var(--border-hex,#ecedf4)" }}>
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: t.status === "done" ? "var(--green)" : t.status === "in-progress" ? "var(--blue)" : "var(--orange)" }} />
-                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                  <span className="text-sm font-bold" style={{ color: t.status === "done" ? "var(--text-muted)" : "var(--text-strong)", textDecoration: t.status === "done" ? "line-through" : "none" }}>{t.title}</span>
-                  <span className="text-xs" style={{ color: "var(--text-faint)" }}>{t.event} · Due {t.due}</span>
-                </div>
-                <StatusBadge variant={TASK_VARIANT[t.status]}>{TASK_LABEL[t.status]}</StatusBadge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <div className="flex flex-col gap-4">
-          <div className="rounded-[var(--radius-xl)] p-6 flex flex-col gap-4 relative overflow-hidden" style={{ background: "linear-gradient(135deg, var(--primary-hex,#6366f1) 0%, #8b5cf6 100%)", color: "#fff", boxShadow: "var(--shadow-glow)" }}>
-            <div className="absolute inset-0 opacity-10" style={{ background: "radial-gradient(circle at 80% 20%, #fff, transparent 60%)" }} />
-            <div className="relative flex flex-col gap-3">
-              <div className="w-11 h-11 rounded-[var(--radius-md)] flex items-center justify-center" style={{ background: "rgba(255,255,255,0.2)" }}>
-                <ScanLine size={22} />
-              </div>
-              <div>
-                <span className="text-lg font-extrabold block">Check-in Scanner</span>
-                <span className="text-sm opacity-80">Scan guest QR codes for NorthStar Summit</span>
-              </div>
-              <Button asChild size="sm" className="self-start" style={{ background: "#fff", color: "var(--primary-hex,#6366f1)", fontWeight: 700 }}>
-                <Link href="/events/ev1/scanner">Launch scanner <ArrowRight size={14} /></Link>
-              </Button>
-            </div>
-          </div>
-          <Card>
-            <CardContent className="px-5 py-4 flex flex-col gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>Next event</span>
-              <span className="text-sm font-extrabold" style={{ color: "var(--text-strong)" }}>NorthStar Leadership Summit</span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>Jun 18, 2026 · Grand Hall A</span>
-              <StatusBadge variant="primary">Live</StatusBadge>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );

@@ -52,7 +52,7 @@ export function Sidebar({ role }: SidebarProps) {
 
   return (
     <aside
-      className="flex flex-col flex-shrink-0 border-r"
+      className="hidden md:flex flex-col flex-shrink-0 border-r"
       style={{
         width: "var(--sidebar-w, 252px)",
         background: "var(--sidebar)",

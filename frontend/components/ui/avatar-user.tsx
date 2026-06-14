@@ -3,13 +3,14 @@ import { cn } from "@/lib/cn";
 interface AvatarUserProps {
   name?: string;
   initials?: string;
+  imageUrl?: string;
   hue?: number;
   size?: number;
   ring?: boolean;
   className?: string;
 }
 
-export function AvatarUser({ name, initials, hue = 230, size = 38, ring = false, className }: AvatarUserProps) {
+export function AvatarUser({ name, initials, imageUrl, hue = 230, size = 38, ring = false, className }: AvatarUserProps) {
   const ini =
     initials ||
     (name
@@ -20,7 +21,15 @@ export function AvatarUser({ name, initials, hue = 230, size = 38, ring = false,
           .join("")
       : "?");
 
-  const avatar = (
+  const avatar = imageUrl ? (
+    <div
+      className={cn("flex-shrink-0 overflow-hidden", className)}
+      style={{ width: size, height: size, borderRadius: "50%" }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={imageUrl} alt={name ?? "avatar"} width={size} height={size} style={{ width: size, height: size, objectFit: "cover" }} />
+    </div>
+  ) : (
     <div
       className={cn("flex items-center justify-center flex-shrink-0 font-extrabold text-white select-none", className)}
       style={{

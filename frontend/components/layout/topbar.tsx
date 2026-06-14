@@ -57,7 +57,7 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
 
   return (
     <header
-      className="flex items-center gap-4 px-[30px] py-4 sticky top-0 z-30 border-b"
+      className="flex items-center gap-4 px-4 md:px-[30px] py-4 sticky top-0 z-30 border-b"
       style={{
         background: "color-mix(in srgb, var(--bg) 78%, transparent)",
         backdropFilter: "saturate(1.4) blur(14px)",
