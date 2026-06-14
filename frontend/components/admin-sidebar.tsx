@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 import { LogoutButton } from "./logout-button";
 
 const NAV = [
@@ -16,9 +17,8 @@ export function AdminSidebar() {
   const pathname = usePathname();
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-[var(--bo)] bg-[var(--sidebar)] p-4">
-      <div className="mb-8 flex items-center gap-2 px-2 pt-1">
-        <span aria-hidden className="inline-block h-6 w-6 rounded-[8px]" style={{ background: "var(--ac)" }} />
-        <span className="text-[16px] font-bold tracking-[-0.01em] text-[var(--t1)]">Gatherly</span>
+      <div className="mb-8 px-2 pt-1">
+        <Logo size={28} />
       </div>
 
       <div className="px-3 pb-2 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-[var(--t3)]">
