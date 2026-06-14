@@ -50,6 +50,22 @@ public class Event extends BaseEntity {
     @Column(name = "checkin_opens_at")
     private Instant checkinOpensAt;
 
+    /** Free-text label (Conference, Festival, Workshop, …) for cards/filters (docs/02 §3.3). */
+    @Column
+    private String category;
+
+    /** Max registrations; {@code null} = unlimited. */
+    @Column
+    private Integer capacity;
+
+    /** Cover gradient preset key {@code a–f}; used when {@link #coverImageKey} is unset. */
+    @Column(name = "cover_gradient", nullable = false)
+    private String coverGradient = "a";
+
+    /** Rustfs object key for an uploaded cover image (overrides the gradient). */
+    @Column(name = "cover_image_key")
+    private String coverImageKey;
+
     @Column(name = "created_by")
     private UUID createdBy;
 
@@ -127,6 +143,38 @@ public class Event extends BaseEntity {
 
     public void setCheckinOpensAt(Instant checkinOpensAt) {
         this.checkinOpensAt = checkinOpensAt;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
+    public String getCoverGradient() {
+        return coverGradient;
+    }
+
+    public void setCoverGradient(String coverGradient) {
+        this.coverGradient = coverGradient;
+    }
+
+    public String getCoverImageKey() {
+        return coverImageKey;
+    }
+
+    public void setCoverImageKey(String coverImageKey) {
+        this.coverImageKey = coverImageKey;
     }
 
     public UUID getCreatedBy() {

@@ -70,6 +70,10 @@ public class EventService {
         e.setVenue(req.venue());
         e.setStartsAt(req.startsAt());
         e.setEndsAt(req.endsAt());
+        e.setCategory(req.category());
+        e.setCapacity(req.capacity());
+        e.setCoverGradient(normalizeGradient(req.coverGradient()));
+        e.setCoverImageKey(req.coverImageKey());
         e.setStatus(EventStatus.DRAFT);
         e.setSlug(uniqueSlug(req.title()));
         e.setCreatedBy(creator == null ? null : creator.id());
@@ -83,6 +87,10 @@ public class EventService {
         e.setTitle(req.title());
         e.setDescription(req.description());
         e.setVenue(req.venue());
+        e.setCategory(req.category());
+        e.setCapacity(req.capacity());
+        e.setCoverGradient(normalizeGradient(req.coverGradient()));
+        e.setCoverImageKey(req.coverImageKey());
         e.setStartsAt(req.startsAt());
         e.setEndsAt(req.endsAt());
         return events.save(e);
@@ -121,6 +129,11 @@ public class EventService {
     }
 
     // ---- Helpers -------------------------------------------------------------
+
+    /** Default the cover gradient to preset {@code a} when none is supplied. */
+    private static String normalizeGradient(String gradient) {
+        return (gradient == null || gradient.isBlank()) ? "a" : gradient;
+    }
 
     private void validateTimes(java.time.Instant startsAt, java.time.Instant endsAt) {
         if (startsAt != null && endsAt != null && endsAt.isBefore(startsAt)) {

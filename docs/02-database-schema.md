@@ -82,6 +82,10 @@ Indexes: `UNIQUE(email)`, `INDEX(global_role)`.
 | venue | varchar(300) | |
 | starts_at / ends_at | timestamptz | |
 | status | varchar(16) NOT NULL `CHECK IN ('DRAFT','PUBLIC','ARCHIVED')` default DRAFT | Public activates guest registration |
+| category | varchar(60) | free-text label (Conference, Festival, Workshop…) for cards/filters (added V4) |
+| capacity | integer NULL `CHECK (capacity IS NULL OR capacity >= 0)` | max registrations; **NULL = unlimited** (added V4) |
+| cover_gradient | varchar(10) NOT NULL default 'a' `CHECK IN ('a'..'f')` | cover gradient preset key used when no cover image (added V4) |
+| cover_image_key | text | Rustfs object key for an uploaded cover image; overrides the gradient (added V4) |
 | registration_qr_token | varchar(64) UNIQUE | optional poster QR that links to the **registration** form (discovery only — NOT attendance) |
 | checkin_opens_at | timestamptz | optional time from which organizer attendance scans are accepted |
 | created_by | uuid FK→user | Admin creator |
