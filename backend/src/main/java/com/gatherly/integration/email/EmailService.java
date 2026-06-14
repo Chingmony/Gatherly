@@ -66,6 +66,35 @@ public class EmailService {
   }
 
   /**
+   * Welcome a newly-created member with a one-click link to set their own password (single-use grant
+   * baked into the URL). Runs off the request thread; failures are logged only.
+   */
+  @Async("sideEffectExecutor")
+  public void sendWelcome(String toEmail, String fullName, String setupUrl) {
+    if (!props.enabled()) {
+      log.info("[email disabled] Welcome for {} — set-password link = {}", toEmail, setupUrl);
+      return;
+    }
+    Context ctx = new Context();
+    ctx.setVariable("fullName", fullName);
+    ctx.setVariable("email", toEmail);
+    ctx.setVariable("setupUrl", setupUrl);
+    String html = templateEngine.process("email/welcome", ctx);
+    try {
+      MimeMessage message = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+      helper.setFrom(props.fromAddress(), props.fromName());
+      helper.setTo(toEmail);
+      helper.setSubject("Welcome to Gatherly — your account is ready");
+      helper.setText(html, true);
+      mailSender.send(message);
+      log.info("Welcome email sent to {}", toEmail);
+    } catch (MessagingException | UnsupportedEncodingException | RuntimeException ex) {
+      log.error("Failed to send welcome email to {}", toEmail, ex);
+    }
+  }
+
+  /**
    * Send a QR-ticket email with the QR PNG embedded inline (CID). Returns true on success so the
    * caller can flip the ticket to {@code DELIVERED}. Called after commit by {@link
    * com.gatherly.service.QrTicketDispatcher}; never throws.
