@@ -46,6 +46,7 @@ M0 Foundations ─┬─▶ M1 Auth & Users ─┬─▶ M2 Org & Events ─┬�
 ### M3 — Delegation (event-scoped roles)
 - `event_assignment`: appoint sub-admin (Admin), add members/delegate handlers (manager); the two-layer authz fully exercised ([`03`](03-api-routes-security.md)).
 - **Demo:** sub-admin manages their event only; blocked on others (403) and on delete-user/event/supply (403).
+- **Status:** backend delivered early during the design build (P2): `EventAssignment` entity/repo/service, `GET/POST/DELETE /events/{id}/assignments`, and `EventSecurityService` now resolving real event roles from `event_assignment` (canView/canManage live). MANAGER appoint/remove are hard Admin-only; matrix covered by `AssignmentFlowIT`.
 
 ### M4 — Materials & workflow
 - Main supply list (Admin); event materials; assignment; 5-state **state machine** + history ([`06` §5](06-backend-services-spec.md)).
