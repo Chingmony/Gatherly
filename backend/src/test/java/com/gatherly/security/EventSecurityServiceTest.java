@@ -42,7 +42,7 @@ class EventSecurityServiceTest {
 
   @Test
   void managerCanManageTheirEvent() {
-    Authentication member = auth(GlobalRole.MEMBER);
+    Authentication member = auth(GlobalRole.USER);
     UUID userId = ((UserPrincipal) member.getPrincipal()).id();
     when(assignmentRepository.existsByEventIdAndUserIdAndEventRole(
             eventId, userId, EventRole.MANAGER))
@@ -53,7 +53,7 @@ class EventSecurityServiceTest {
 
   @Test
   void handlerCanViewButNotManage() {
-    Authentication member = auth(GlobalRole.MEMBER);
+    Authentication member = auth(GlobalRole.USER);
     UUID userId = ((UserPrincipal) member.getPrincipal()).id();
     when(assignmentRepository.existsByEventIdAndUserId(eventId, userId)).thenReturn(true);
     when(assignmentRepository.existsByEventIdAndUserIdAndEventRole(
@@ -66,7 +66,7 @@ class EventSecurityServiceTest {
 
   @Test
   void unassignedMemberIsDeniedBothGates() {
-    Authentication member = auth(GlobalRole.MEMBER);
+    Authentication member = auth(GlobalRole.USER);
     assertThat(eventSecurity.canView(eventId, member)).isFalse();
     assertThat(eventSecurity.canManage(eventId, member)).isFalse();
   }

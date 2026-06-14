@@ -63,8 +63,9 @@ public class MaterialServiceImpl implements MaterialService {
   @Override
   @PreAuthorize("@eventSecurity.canView(#eventId, authentication)")
   @Transactional(readOnly = true)
-  public Page<MaterialResponse> list(UUID eventId, Pageable pageable) {
-    return materialRepository.findByEventId(eventId, pageable).map(mapper::toResponse);
+  public Page<MaterialResponse> list(UUID eventId, String search, Pageable pageable) {
+    String q = (search == null || search.isBlank()) ? null : search.trim();
+    return materialRepository.search(eventId, q, pageable).map(mapper::toResponse);
   }
 
   @Override

@@ -71,7 +71,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.pagination.page").value(1));
 
-    // Admin creates a MEMBER.
+    // Admin creates a USER.
     String email = "member-" + UUID.randomUUID() + "@example.com";
     String createBody =
         objectMapper.writeValueAsString(
@@ -79,7 +79,7 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
                 "email", email,
                 "password", "Password123",
                 "fullName", "Test Member",
-                "globalRole", "MEMBER"));
+                "globalRole", "USER"));
     mockMvc
         .perform(
             post("/api/v1/users")
@@ -87,9 +87,9 @@ class AuthFlowIntegrationTest extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createBody))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.data.globalRole").value("MEMBER"));
+        .andExpect(jsonPath("$.data.globalRole").value("USER"));
 
-    // That MEMBER is forbidden from the Admin-only list endpoint.
+    // That USER is forbidden from the Admin-only list endpoint.
     Cookie memberAccess = named(login(email, "Password123"), "access_token");
     mockMvc
         .perform(get("/api/v1/users").cookie(memberAccess))

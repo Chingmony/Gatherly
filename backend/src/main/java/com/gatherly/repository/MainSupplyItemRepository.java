@@ -13,7 +13,7 @@ public interface MainSupplyItemRepository extends JpaRepository<MainSupplyItem, 
   @Query(
       """
       SELECT i FROM MainSupplyItem i
-      WHERE (:q IS NULL OR LOWER(i.name) LIKE LOWER(CONCAT('%', :q, '%')))
+      WHERE (:q IS NULL OR LOWER(i.name) LIKE LOWER(CONCAT('%', CAST(:q AS string), '%')))
       """)
   Page<MainSupplyItem> search(@Param("q") String q, Pageable pageable);
 }

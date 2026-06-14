@@ -6,6 +6,8 @@ import com.gatherly.dto.registration.RegistrationRequest;
 import com.gatherly.dto.registration.RegistrationResponse;
 import com.gatherly.dto.registration.TicketResponse;
 import com.gatherly.service.RegistrationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
  * Public guest surface ({@code docs/03} §4.9) — unauthenticated ({@code permitAll} on {@code
  * /public/**}). Guests register only here; attendance is confirmed by an organizer scan (M7).
  */
+@Tag(
+    name = "Public Registration",
+    description =
+        "Unauthenticated guest surface: resolve a poster QR, fetch a published event's form,"
+            + " register to receive a QR ticket by email, and view/resend a ticket. Only PUBLIC"
+            + " events are exposed; non-public events return 404 to avoid leaking them.")
 @RestController
 @RequestMapping("/public")
 public class PublicController {
@@ -32,16 +40,35 @@ public class PublicController {
     this.registrationService = registrationService;
   }
 
+  @Operation(
+      summary = "Resolve a poster registration-QR token",
+      description =
+          "Maps a printed poster's registration-QR `token` to its public event form. Public."
+              + " Errors: 404 NOT_FOUND if the token is unknown or the event is not PUBLIC.")
   @GetMapping("/r/resolve")
   public ApiResponse<PublicFormResponse> resolvePoster(@RequestParam("token") String token) {
     return ApiResponse.ok("Event resolved.", registrationService.resolvePoster(token));
   }
 
+  @Operation(
+      summary = "Get a public event's registration form",
+      description =
+          "Returns the active registration form for a PUBLIC event by slug, for guests to fill in."
+              + " Public. Errors: 404 NOT_FOUND if the slug is unknown/not public; 409 NO_ACTIVE_FORM"
+              + " if the event has no active form.")
   @GetMapping("/events/{slug}/form")
   public ApiResponse<PublicFormResponse> form(@PathVariable String slug) {
     return ApiResponse.ok("Form retrieved successfully.", registrationService.getPublicForm(slug));
   }
 
+  @Operation(
+      summary = "Register for an event",
+      description =
+          "Submits guest answers (validated server-side against the active form schema; `email` and"
+              + " `phone` always required) and mints a personal QR ticket emailed after commit. A"
+              + " duplicate email re-sends the existing ticket (one ticket per email per event)."
+              + " Public. Errors: 400 VALIDATION_ERROR for bad answers; 404 NOT_FOUND if the event"
+              + " is unknown/not public; 409 NO_ACTIVE_FORM; 429 RATE_LIMITED when throttled.")
   @PostMapping("/events/{eventId}/register")
   @ResponseStatus(HttpStatus.CREATED)
   public ApiResponse<RegistrationResponse> register(
@@ -49,12 +76,24 @@ public class PublicController {
     return ApiResponse.ok("Registration received.", registrationService.register(eventId, request));
   }
 
+  @Operation(
+      summary = "View a ticket",
+      description =
+          "Returns ticket details and an inline QR image (data URL) for a guest's check-in token —"
+              + " the on-screen fallback to the emailed QR. Public. Errors: 404 NOT_FOUND for an"
+              + " unknown token.")
   @GetMapping("/tickets/{checkinToken}")
   public ApiResponse<TicketResponse> ticket(@PathVariable String checkinToken) {
     return ApiResponse.ok(
         "Ticket retrieved successfully.", registrationService.getTicket(checkinToken));
   }
 
+  @Operation(
+      summary = "Resend a ticket email",
+      description =
+          "Re-sends the QR-ticket email for a guest's check-in token. Public. Errors: 404 NOT_FOUND"
+              + " for an unknown token; 409 TICKET_INVALID if the ticket is already checked-in or"
+              + " revoked.")
   @PostMapping("/tickets/{checkinToken}/resend")
   public ApiResponse<RegistrationResponse> resend(@PathVariable String checkinToken) {
     return ApiResponse.ok("Ticket re-sent.", registrationService.resend(checkinToken));

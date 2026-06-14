@@ -13,7 +13,7 @@ app:
     from-address: ${MAIL_FROM_ADDRESS:diffdb.official@gmail.com}
     from-name: ${MAIL_FROM_NAME:Gatherly}
   telegram:
-    enabled: false
+    enabled: true
   scheduling:
     enabled: false # no Redis required for ShedLock locally
   rate-limit:

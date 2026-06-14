@@ -39,7 +39,7 @@ class AttendanceServiceImplTest {
   private AttendanceServiceImpl service;
   private final UUID eventId = UUID.randomUUID();
   private final UserPrincipal staff =
-      new UserPrincipal(UUID.randomUUID(), "staff@example.com", GlobalRole.MEMBER);
+      new UserPrincipal(UUID.randomUUID(), "staff@example.com", GlobalRole.USER);
 
   @BeforeEach
   void setUp() {

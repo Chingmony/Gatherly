@@ -42,7 +42,7 @@ class MaterialServiceImplTest {
 
   private MaterialServiceImpl service;
   private final UserPrincipal principal =
-      new UserPrincipal(UUID.randomUUID(), "u@example.com", GlobalRole.MEMBER);
+      new UserPrincipal(UUID.randomUUID(), "u@example.com", GlobalRole.USER);
 
   @BeforeEach
   void setUp() {

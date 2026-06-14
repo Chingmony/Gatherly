@@ -13,7 +13,7 @@ import org.springframework.data.domain.Pageable;
 /** Event materials + the workflow state machine ({@code docs/03} §4.7, {@code docs/06} §5). */
 public interface MaterialService {
 
-  Page<MaterialResponse> list(UUID eventId, Pageable pageable);
+  Page<MaterialResponse> list(UUID eventId, String search, Pageable pageable);
 
   MaterialResponse create(UUID eventId, MaterialRequest request, UserPrincipal principal);
 

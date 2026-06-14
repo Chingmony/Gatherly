@@ -21,7 +21,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
   @Query(
       """
       SELECT e FROM Event e
-      WHERE (:q IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%')))
+      WHERE (:q IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:q AS string), '%')))
       """)
   Page<Event> search(@Param("q") String q, Pageable pageable);
 
@@ -30,7 +30,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
       """
       SELECT e FROM Event e
       WHERE e.id IN :ids
-        AND (:q IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%')))
+        AND (:q IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:q AS string), '%')))
       """)
   Page<Event> searchScoped(
       @Param("ids") Collection<UUID> ids, @Param("q") String q, Pageable pageable);

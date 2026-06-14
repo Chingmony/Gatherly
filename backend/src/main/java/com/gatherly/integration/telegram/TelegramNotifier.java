@@ -35,6 +35,8 @@ public class TelegramNotifier {
 
   /** Send a pre-formatted HTML message to the ops channel. Returns true on a 2xx response. */
   public boolean send(String html) {
+      System.out.println(props);
+
     if (!props.enabled()) {
       log.info("[telegram disabled] {}", html.replaceAll("<[^>]+>", ""));
       return false;
