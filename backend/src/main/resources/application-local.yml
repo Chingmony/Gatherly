@@ -7,9 +7,10 @@ spring:
         format_sql: true
 
 # Local dev runs the backend on 9090 (override the 8080 default). `SERVER_PORT` env still wins
-# if set, since OS env outranks profile yml in Spring's property precedence.
+# if set — OS env outranks profile yml — which is how the Docker backend is pinned back to 8080
+# (docker-compose sets SERVER_PORT=8080 so the port mapping + healthcheck line up).
 server:
-  port: 9090
+  port: ${SERVER_PORT:9090}
 
 gatherly:
   auth:

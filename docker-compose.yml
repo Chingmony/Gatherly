@@ -65,6 +65,9 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: local
+      # The `local` profile defaults the app to :9090 (for host bootRun); in the container we pin it
+      # back to 8080 so the port mapping + healthcheck below line up. OS env outranks the profile yml.
+      SERVER_PORT: 8080
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-gatherly}
       DB_USERNAME: ${POSTGRES_USER:-gatherly}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-gatherly}
