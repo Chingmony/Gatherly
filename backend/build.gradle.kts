@@ -46,6 +46,11 @@ dependencies {
     // --- Email (OTP + QR-ticket delivery; JavaMailSender → MailHog locally) ---
     implementation("org.springframework.boot:spring-boot-starter-mail")
 
+    // --- QR rendering (per-guest attendance ticket PNG, inline-CID in the email; docs/06 §10
+    //     default = ZXing). javase adds the BufferedImage/MatrixToImageWriter helpers. ---
+    implementation("com.google.zxing:core:3.5.3")
+    implementation("com.google.zxing:javase:3.5.3")
+
     // --- Object storage (Rustfs, S3-compatible) — presigned PUT URLs only; binaries
     //     never stream through the Java heap (docs/04 §4, docs/01 §5). Presigning is
     //     offline (SigV4 crypto), so no live cluster is needed at request time.
@@ -67,6 +72,9 @@ dependencies {
     // to the `testcontainers-<module>` form.
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
+    // GreenMail in-memory SMTP — CLAUDE.md test matrix mandates mock GreenMail validation of
+    // every email dispatcher (QR ticket here); no live SMTP server in CI.
+    testImplementation("com.icegreen:greenmail-junit5:2.1.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

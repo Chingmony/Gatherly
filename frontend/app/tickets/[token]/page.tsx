@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api/client";
 import type { PublicTicket } from "@/lib/api/types";
 import { PublicTopbar } from "@/components/public-topbar";
 import { QrTicket } from "@/components/qr-ticket";
+import { ResendButton } from "./resend-button";
 import { Badge } from "@/components/ui/badge";
 
 /**
@@ -51,7 +52,11 @@ export default async function TicketPage({ params }: { params: Promise<{ token: 
             </div>
             <p className="mx-auto mt-4 max-w-xs text-[12px] text-[var(--text-faint)]">
               Show this QR at the entrance — an organizer will scan it to confirm your attendance.
+              We’ve also emailed it to you.
             </p>
+            {ticket.qrStatus !== "CHECKED_IN" && ticket.qrStatus !== "REVOKED" && (
+              <ResendButton token={ticket.checkinToken} />
+            )}
           </div>
         )}
       </main>

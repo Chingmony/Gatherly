@@ -16,4 +16,9 @@ export function registerForEvent(
   });
 }
 
+/** Re-send the QR-ticket email (docs/03 §4.9). 202 Accepted; delivery internals aren't surfaced. */
+export function resendTicket(checkinToken: string): Promise<void> {
+  return apiFetch<void>(`/public/tickets/${checkinToken}/resend`, { method: "POST" });
+}
+
 export type { PublicEventCard, PublicFormResponse, PublicTicket };

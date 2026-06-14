@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -68,6 +69,51 @@ public class EmailService {
             return;
         }
         send(toEmail, subject, html);
+    }
+
+    /**
+     * Deliver a guest their personal QR ticket (docs/04 §2.1). The QR PNG is embedded inline (CID)
+     * so it renders without an external fetch. Returns {@code true} only if the message was actually
+     * sent — the caller uses that to flip {@code qr_status PENDING → DELIVERED}. When email is
+     * disabled (local/test) or the send fails, returns {@code false} and the ticket stays PENDING
+     * for the retry sweep + on-screen fallback (docs/06 §7).
+     */
+    public boolean sendQrTicket(String toEmail, String guestName, String eventTitle, String eventWhen,
+                                String venue, String ticketLink, byte[] qrPng) {
+        String subject = "Your QR ticket — " + (eventTitle == null ? "Gatherly event" : eventTitle);
+        String details = java.util.stream.Stream.of(eventWhen, venue)
+                .filter(s -> s != null && !s.isBlank()).map(EmailService::escape)
+                .reduce((a, b) -> a + " · " + b).map(s -> " (" + s + ")").orElse("");
+        String html = """
+                <p>Hi %s,</p>
+                <p>You're registered for <b>%s</b>%s.</p>
+                <p>Show this QR at the entrance — an organizer will scan it to confirm your attendance.</p>
+                <p><img src="cid:qr-ticket" alt="Your QR ticket" width="240" height="240"></p>
+                <p>Can't see the image? View your ticket:<br><a href="%s">%s</a></p>
+                <p>— Gatherly</p>
+                """.formatted(escape(guestName == null || guestName.isBlank() ? "there" : guestName),
+                escape(eventTitle == null ? "your event" : eventTitle), details, ticketLink, ticketLink);
+
+        if (!enabled) {
+            log.warn("EMAIL disabled — QR ticket for {} not sent; ticket link is {}", toEmail, ticketLink);
+            return false;
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8"); // multipart
+            helper.setFrom(fromAddress, fromName);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            helper.addInline("qr-ticket", new ByteArrayResource(qrPng), "image/png");
+            mailSender.send(message);
+            log.info("Sent QR ticket to {} (event='{}')", toEmail, eventTitle);
+            return true;
+        } catch (Exception ex) {
+            // Never fail/rollback the registration on a mail problem; the sweep retries (docs/06 §7).
+            log.error("Failed to send QR ticket to {}: {}", toEmail, ex.getMessage());
+            return false;
+        }
     }
 
     private void send(String to, String subject, String html) {

@@ -53,4 +53,15 @@ public class PublicController {
     public PublicTicketResponse ticket(@PathVariable String checkinToken) {
         return registrationService.ticket(checkinToken);
     }
+
+    /**
+     * Re-send the QR-ticket email (docs/03 §4.9). Returns {@code 202 Accepted} regardless of mail
+     * outcome — delivery internals are never surfaced to the guest (docs/04 §2.3); a checked-in or
+     * revoked ticket is rejected (409) and an unknown token is 404. Rate-limiting is M9.
+     */
+    @PostMapping("/tickets/{checkinToken}/resend")
+    public ResponseEntity<Void> resend(@PathVariable String checkinToken) {
+        registrationService.resendTicket(checkinToken);
+        return ResponseEntity.accepted().build();
+    }
 }

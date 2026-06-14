@@ -19,7 +19,9 @@ import com.gatherly.registration.dto.PublicTicketResponse;
 import com.gatherly.registration.dto.RegisterRequest;
 import com.gatherly.registration.dto.RegisterResponse;
 import com.gatherly.registration.dto.SubmissionResponse;
+import com.gatherly.registration.event.GuestRegisteredEvent;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,15 +57,20 @@ public class RegistrationService {
     private final EventRepository events;
     private final RegistrationFormRepository forms;
     private final RegistrationSubmissionRepository submissions;
+    private final QrTicketDeliveryService delivery;
+    private final ApplicationEventPublisher eventPublisher;
     private final JsonMapper json;
     private final String publicBaseUrl;
 
     public RegistrationService(EventRepository events, RegistrationFormRepository forms,
-                               RegistrationSubmissionRepository submissions, JsonMapper json,
+                               RegistrationSubmissionRepository submissions, QrTicketDeliveryService delivery,
+                               ApplicationEventPublisher eventPublisher, JsonMapper json,
                                @Value("${gatherly.app.public-base-url:http://localhost:3000}") String publicBaseUrl) {
         this.events = events;
         this.forms = forms;
         this.submissions = submissions;
+        this.delivery = delivery;
+        this.eventPublisher = eventPublisher;
         this.json = json;
         this.publicBaseUrl = publicBaseUrl.replaceAll("/$", "");
     }
@@ -135,10 +142,18 @@ public class RegistrationService {
                     "This email is already registered for this event.");
         }
 
+        // After-commit: render + email the QR ticket and flip PENDING → DELIVERED (docs/06 §6). A
+        // mail failure can't roll back the registration; the on-screen QR is the immediate fallback.
+        eventPublisher.publishEvent(new GuestRegisteredEvent(sub.getId()));
+
         String ticketUrl = publicBaseUrl + "/tickets/" + sub.getCheckinToken();
-        return new RegisterResponse(sub.getId(), sub.getQrStatus().name(), sub.getCheckinToken(),
-                ticketUrl, "You're registered for " + event.getTitle()
-                + ". Show this QR at the entrance — an organizer will scan it to confirm your attendance.");
+        return new RegisterResponse(sub.getId(), sub.getQrStatus().name(), sub.getCheckinToken(), ticketUrl,
+                "Your QR ticket has been sent to " + email + ". You can also view it at the link above.");
+    }
+
+    /** Re-send the QR-ticket email for a ticket the guest already holds (docs/03 §4.9). */
+    public boolean resendTicket(String checkinToken) {
+        return delivery.resend(checkinToken);
     }
 
     @Transactional(readOnly = true)
