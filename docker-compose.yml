@@ -72,10 +72,18 @@ services:
       BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@gatherly.local}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me-on-first-login}
       BOOTSTRAP_ADMIN_NAME: ${BOOTSTRAP_ADMIN_NAME:-Gatherly Admin}
+      # Mail: defaults to the local MailHog sink; override via .env (git-ignored) to use a real
+      # relay such as Gmail SMTP (see .env.example). Secrets are never committed.
       EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
+      SMTP_HOST: ${SMTP_HOST:-mailhog}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-false}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
       MAIL_FROM: ${MAIL_FROM:-no-reply@gatherly.local}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Gatherly}
+      APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:-http://localhost:3000}
       RUSTFS_ENDPOINT: http://minio:9000
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-minioadmin}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-minioadmin}
