@@ -4,10 +4,10 @@ import com.gatherly.common.ApiResponse;
 import com.gatherly.config.JwtProperties;
 import com.gatherly.dto.auth.ForgotPasswordRequest;
 import com.gatherly.dto.auth.LoginRequest;
+import com.gatherly.dto.auth.LoginResponse;
 import com.gatherly.dto.auth.ResetPasswordRequest;
 import com.gatherly.dto.auth.VerifyOtpRequest;
 import com.gatherly.dto.auth.VerifyOtpResponse;
-import com.gatherly.dto.user.UserResponse;
 import com.gatherly.mapper.UserMapper;
 import com.gatherly.security.AuthCookieService;
 import com.gatherly.service.AuthService;
@@ -47,11 +47,14 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ApiResponse<UserResponse> login(
+  public ApiResponse<LoginResponse> login(
       @Valid @RequestBody LoginRequest request, HttpServletResponse response) {
     AuthTokens tokens = authService.login(request.email(), request.password());
     writeAuthCookies(response, tokens);
-    return ApiResponse.ok("Logged in successfully.", userMapper.toResponse(tokens.user()));
+    LoginResponse body =
+        new LoginResponse(
+            "Bearer", tokens.accessToken(), accessTtl, userMapper.toResponse(tokens.user()));
+    return ApiResponse.ok("Logged in successfully.", body);
   }
 
   @PostMapping("/refresh")
