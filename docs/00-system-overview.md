@@ -47,6 +47,7 @@ The product optimizes for **clear delegation boundaries** (who can do what, on w
 
 ### Admin
 - *As an Admin, I propose and approve an event so the organization can begin planning.*
+- *As an Admin, I invite a new member by email — choosing a Sub-admin or Handler designation, with no password — so they activate their own account via an emailed set-password link.*
 - *As an Admin, I appoint a Sub-admin to an event so its day-to-day running is delegated without surrendering global control.*
 - *As an Admin, I design a custom registration form so each event collects exactly the attendee data it needs.*
 - *As an Admin, I edit the organization profile (name, logo, banner) so branding is consistent.*
@@ -121,6 +122,7 @@ Legend: **✓** allowed · **own** only for events the user is assigned to (Sub-
 | Database | **PostgreSQL** — relational core + **JSONB** for dynamic forms |
 | Tenancy | Single organization; **event-scoped** authorization |
 | QR ticket delivery | **Email/SMTP** — per-guest QR ticket emailed on registration (also delivers OTP) |
+| User onboarding | **Email invite** — Admin creates members with **no password** (role designation Sub-admin/Handler); the user activates via an emailed **set-password** link; account is `PENDING_ACTIVATION` until then |
 | Real-time channel | **Telegram** Bot API — ops-channel forwarding of registration/attendance (outbound only) |
 | Attendance | Per-guest **single-use QR ticket**; confirmed by **organizer scan** at the venue |
 

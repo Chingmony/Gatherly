@@ -73,6 +73,7 @@ Stable codes (consumed by FE for messaging/branching). Grouped by HTTP status:
 | 409 | `TICKET_INVALID` | revoked ticket / check-in window closed |
 | 409 | `ILLEGAL_TRANSITION` | disallowed material status change |
 | 409 | `NO_ACTIVE_FORM` | registration attempted with no active form |
+| 409 | `ACTIVATION_INVALID` | set-password/activation token missing, expired, or already used |
 | 400 | `VALIDATION_ERROR` | field-level validation failures (`fieldErrors`) |
 | 429 | `RATE_LIMITED` | throttled (login/OTP/registration/resend) |
 | 500 | `INTERNAL_ERROR` | unexpected; logged with `traceId`, generic message to client |

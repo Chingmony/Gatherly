@@ -67,9 +67,10 @@ frontend/
 │   ├── (auth)/                         # login / forgot-password / OTP
 │   │   ├── login/page.tsx
 │   │   ├── forgot-password/page.tsx    # request OTP
-│   │   └── reset-password/page.tsx     # verify OTP + set new password
+│   │   ├── reset-password/page.tsx     # verify OTP + set new password
+│   │   └── set-password/page.tsx       # activate an invited account (token from email)
 │   ├── (admin)/                        # Admin-only console
-│   │   ├── users/                      # global user CRUD
+│   │   ├── users/                      # global user invite (Add-User modal) + CRUD
 │   │   ├── organization/page.tsx       # org profile (logo/banner upload → Rustfs)
 │   │   ├── events/                     # propose/publish/delete
 │   │   └── supply-list/                # main supply list CRUD

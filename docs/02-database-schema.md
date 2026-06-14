@@ -54,7 +54,7 @@ Legend: `──<` one-to-many; `>──` many-to-one; `──1` one-to-one. `eve
 |--------|------|-------|
 | id | uuid PK | |
 | email | varchar(255) NOT NULL UNIQUE | login id |
-| password_hash | varchar(100) NOT NULL | BCrypt; never serialized |
+| password_hash | varchar(100) NULL | BCrypt; never serialized. **NULL until an invited user sets it** via the activation flow (§5c) |
 | full_name | varchar(200) NOT NULL | |
 | phone | varchar(30) | |
 | gender | varchar(10) `CHECK IN ('MALE','FEMALE','OTHER')` NULL | optional |
@@ -62,12 +62,15 @@ Legend: `──<` one-to-many; `>──` many-to-one; `──1` one-to-one. `eve
 | address | varchar(500) NULL | optional free-text address |
 | avatar_key | text | Rustfs object key |
 | global_role | varchar(16) NOT NULL `CHECK IN ('ADMIN','MEMBER')` | coarse RBAC layer |
-| status | varchar(16) NOT NULL `CHECK IN ('ACTIVE','INACTIVE')` default ACTIVE | |
+| default_event_role | varchar(16) NULL `CHECK IN ('MANAGER','HANDLER')` | optional designation chosen in the Add-User form (**Sub-admin = MANAGER**, Handler = HANDLER). Pre-fills the per-event grant when this member is assigned to an event (§5c, [`03`](03-api-routes-security.md)). Does **not** confer global privilege. |
+| status | varchar(24) NOT NULL `CHECK IN ('ACTIVE','INACTIVE','PENDING_ACTIVATION')` default ACTIVE | invited users start `PENDING_ACTIVATION` until they set a password (§5c) |
 | created_at / updated_at | timestamptz | |
 
 Indexes: `UNIQUE(email)`, `INDEX(global_role)`.
 
 > `ADMIN` = Super Admin. `MEMBER` is default; a member becomes **Sub-admin or Handler only through `event_assignment`** — there is no global SUB_ADMIN/HANDLER value, because those roles are inherently event-scoped.
+>
+> **Add-User invite (Admin-only):** the Add-User form creates **MEMBER** accounts only — it can never mint a new global Admin (elevation to `ADMIN` is a deliberate, separate action / bootstrap seed). Its role dropdown offers **Sub-admin** and **Handler**, persisted as `default_event_role` (`MANAGER`/`HANDLER`) and surfaced as the user's "Role" in the list; the actual privilege is granted per-event in M3. The admin enters **no password** — the user receives an emailed set-password link and activates their account (§5c).
 
 ### 3.3 `event`
 | Column | Type | Notes |
@@ -248,7 +251,8 @@ Indexes: `UNIQUE(token_hash)`, `INDEX(user_id)`.
 | FormStatus | `DRAFT`, `ACTIVE`, `INACTIVE` | `registration_form.status` |
 | TicketStatus | `PENDING`, `DELIVERED`, `CHECKED_IN`, `REVOKED` | `registration_submission.qr_status` |
 | CheckinSource | `QR_SCAN`, `MANUAL` | `event_checkin.source` |
-| UserStatus | `ACTIVE`, `INACTIVE` | `user.status` |
+| UserStatus | `ACTIVE`, `INACTIVE`, `PENDING_ACTIVATION` | `user.status` |
+| (default_event_role) | reuses `EventRole` (`MANAGER`, `HANDLER`) | `user.default_event_role` (nullable designation) |
 
 ## 5. Material state machine
 
@@ -293,6 +297,31 @@ Every transition writes a `material_status_history` row. Transition legality is 
 > A guest can still be checked in even if the email never arrived (`PENDING`): the post-registration page shows the QR as a fallback, and `PENDING → CHECKED_IN` is permitted.
 
 > A guest can be checked in **only via an organizer scan**; guests never self-check-in. The terminal `CHECKED_IN` + `UNIQUE(event_checkin.submission_id)` guarantee single-use, replay-safe attendance.
+
+## 5c. User account lifecycle (invite → activation)
+
+Admin-created accounts are **invited**, not given a password by the Admin (docs/03 §4.2, docs/06 §3a):
+
+```
+ Admin "Add User" (name, email, role=Sub-admin|Handler)
+    └─ create user { global_role=MEMBER, default_event_role=MANAGER|HANDLER,
+                     password_hash=NULL, status=PENDING_ACTIVATION }
+    └─ commit ─▶ AFTER COMMIT: publish UserCreatedEvent
+                    └─ ActivationService mints a single-use set-password token (Redis, TTL)
+                    └─ EmailService emails APP_PUBLIC_BASE_URL/auth/set-password?token=…
+
+ User opens link ──▶ POST /auth/set-password { token, newPassword }
+    └─ resolve token → user; set BCrypt password_hash; status PENDING_ACTIVATION → ACTIVE;
+       consume token (single-use)
+```
+
+| Transition | Trigger | Effect |
+|------------|---------|--------|
+| → `PENDING_ACTIVATION` | Admin invites a user | `password_hash` NULL; activation email queued (after commit) |
+| `PENDING_ACTIVATION` → `ACTIVE` | user sets a password via the emailed link | `password_hash` set; account usable for login |
+| `ACTIVE` ↔ `INACTIVE` | Admin deactivates / reactivates | login blocked while `INACTIVE` |
+
+> A `PENDING_ACTIVATION` user **cannot log in** (no password). The set-password token is high-entropy, single-use, time-expiring (TTL in [`04` §3](04-external-integrations.md)), and resolved server-side only. The bootstrap Admin seed and any future migration-seeded accounts are created `ACTIVE` with a password and are exempt from this flow.
 
 ## 6. JSONB document structures (dynamic forms)
 

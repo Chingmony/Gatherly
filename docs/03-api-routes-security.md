@@ -37,6 +37,7 @@
 | Forgot password | `POST /auth/forgot-password` | issue OTP to Redis (TTL) — see [`04`](04-external-integrations.md) |
 | Verify OTP | `POST /auth/verify-otp` | validate Redis OTP, return short-lived reset grant |
 | Reset password | `POST /auth/reset-password` | consume reset grant, set new BCrypt hash, revoke all refresh tokens |
+| Set password (activation) | `POST /auth/set-password` | validate single-use activation token → set first BCrypt hash, flip `PENDING_ACTIVATION→ACTIVE`, consume token |
 
 ## 3. Authorization building blocks
 
@@ -59,18 +60,21 @@
 | POST | `/auth/forgot-password` | public | start OTP reset |
 | POST | `/auth/verify-otp` | public | verify OTP → reset grant |
 | POST | `/auth/reset-password` | public (valid grant) | set new password |
+| POST | `/auth/set-password` | public (valid activation token) | **activate** an invited account: set the first password |
 
 ### 4.2 Users — `/users/**` (Admin-only CRUD)
 | Method | Path | Gate |
 |--------|------|------|
 | GET | `/users` (list/search) | `hasRole('ADMIN')` |
-| POST | `/users` | `hasRole('ADMIN')` |
+| POST | `/users` (**invite**) | `hasRole('ADMIN')` |
 | GET | `/users/{userId}` | `hasRole('ADMIN')` |
 | PUT | `/users/{userId}` | `hasRole('ADMIN')` |
 | DELETE | `/users/{userId}` | `hasRole('ADMIN')` — **Sub-admin forbidden** |
 | GET | `/me` | authenticated |
 | PUT | `/me` | `#userId == authentication.principal.id` |
 | PUT | `/me/password` | self (requires current password) |
+
+> **Invite, not password-set (docs/02 §5c, docs/06 §3a).** `POST /users` is gated `hasRole('ADMIN')` and accepts `{ fullName, email, role }` where `role ∈ { SUB_ADMIN, HANDLER }` — **no password field is accepted** (the Admin never sets another user's password). The account is created `global_role=MEMBER`, `default_event_role = MANAGER` (Sub-admin) `| HANDLER`, `status=PENDING_ACTIVATION`; after commit a `UserCreatedEvent` triggers an emailed set-password link. The dropdown intentionally excludes `ADMIN` — new global Admins are not minted through this form. The list view (`GET /users`) returns `{ fullName, email, role (display), status }`; `role` renders the global Admin or the `default_event_role` designation.
 
 ### 4.3 Organization — `/organization`
 | Method | Path | Gate |
@@ -163,6 +167,22 @@ The new check-in: an organizer scans the **guest's** QR at the venue.
 > Telegram is now **outbound only** — there is no webhook. The bot's sole job is forwarding **registration and confirmed-attendance** events to the ops channel, fired automatically inside the respective services (not client-called). Per-guest QR delivery is by **email**, not Telegram (see [`04` §2.1](04-external-integrations.md)).
 
 ## 5. Representative payloads
+
+**`POST /users`** (Admin invites a user — no password)
+```json
+// request
+{ "fullName": "Dara Sok", "email": "dara@example.com", "role": "SUB_ADMIN" }
+// 201 (account is PENDING_ACTIVATION; set-password email queued)
+{ "id": "…", "fullName": "Dara Sok", "email": "dara@example.com",
+  "role": "SUB_ADMIN", "status": "PENDING_ACTIVATION" }
+```
+
+**`POST /auth/set-password`** (invited user activates via the emailed link)
+```json
+// request
+{ "token": "act_7f3c…", "newPassword": "•••••••••" }
+// 204 — password set, status PENDING_ACTIVATION → ACTIVE, token consumed
+```
 
 **`PATCH /materials/{id}/status`**
 ```json

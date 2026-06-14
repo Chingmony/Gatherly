@@ -73,7 +73,19 @@ Can't see the image? View your ticket: {{APP_PUBLIC_BASE_URL}}/tickets/{{checkin
 ```
 
 #### OTP delivery
-The same `EmailService` delivers password-reset OTP codes (see §3.5). One email integration serves both QR tickets and OTP.
+The same `EmailService` delivers password-reset OTP codes (see §3.5). One email integration serves QR tickets, OTP, **and account-activation (set-password) invites**.
+
+#### Account-activation (set-password) email
+When an Admin invites a user (docs/02 §5c, docs/03 §4.2), an `@EventListener` for `UserCreatedEvent` (after commit) mints a single-use activation token and emails a link:
+```
+Subject: You've been added to Gatherly — set your password
+Hi {{fullName}},
+An administrator created an account for you ({{email}}).
+Set your password to activate it:
+{{APP_PUBLIC_BASE_URL}}/auth/set-password?token={{activationToken}}
+This link expires in {{ACTIVATION_TTL hours}}.
+```
+The token is opaque/high-entropy, single-use, time-expiring, and resolved server-side only (never reveals the user id). Sent **after commit** so a slow mail server never blocks user creation.
 
 ### 2.2 Telegram Bot API — ops-channel forwarding
 
@@ -127,6 +139,7 @@ Redis stores **only** ephemeral, time-expiring data: password-reset OTP codes an
 | `OTP_MAX_ATTEMPTS` | default **5** |
 | `OTP_RESEND_COOLDOWN_SECONDS` | default **60** |
 | `OTP_LENGTH` | default **6** digits |
+| `ACTIVATION_TTL_SECONDS` | default **259200** (72h) — validity of the set-password invite link |
 
 ### 3.3 Key schema & TTL
 | Key | Value | TTL | Notes |
@@ -135,6 +148,7 @@ Redis stores **only** ephemeral, time-expiring data: password-reset OTP codes an
 | `otp:attempts:{userId}` | integer | `OTP_TTL_SECONDS` | verification attempts |
 | `otp:cooldown:{userId}` | `1` | `OTP_RESEND_COOLDOWN_SECONDS` | blocks rapid resend |
 | `pwdreset:grant:{userId}` | random grant id | short (e.g. 300s) | issued after successful OTP verify |
+| `setpw:{tokenHash}` | `userId` | `ACTIVATION_TTL_SECONDS` | single-use account-activation token (set-password invite); resolved server-side, deleted on use |
 | `rl:login:{ip}` / `rl:otp:{ip}` / `rl:register:{ip}` | counter | sliding window | brute-force / spam protection |
 
 ### 3.4 Lifecycle (expands on [`03` §2.3](03-api-routes-security.md) — this section is authoritative for key schema and TTL detail)

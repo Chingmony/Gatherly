@@ -33,9 +33,10 @@ Controller  →  Service  →  Repository  →  PostgreSQL
 
 | Service | Key responsibilities |
 |---------|----------------------|
-| `AuthService` | login, refresh-rotation, logout, forgot-password (OTP via Redis+Email), reset-password |
+| `AuthService` | login, refresh-rotation, logout, forgot-password (OTP via Redis+Email), reset-password, **set-password (activation)** |
 | `OtpService` | Redis OTP create/verify/consume ([`04` §3](04-external-integrations.md)) |
-| `UserService` | global user CRUD (Admin), self-profile, password change |
+| `ActivationService` | mint / verify / consume the single-use set-password token (Redis, [`04` §3](04-external-integrations.md)) |
+| `UserService` | global user **invite** (Admin, no password) + CRUD, self-profile, password change; publishes `UserCreatedEvent` |
 | `OrganizationService` | singleton org profile; logo/banner key persistence (Rustfs presign in `StorageService`) |
 | `EventService` | event CRUD, lifecycle `DRAFT→PUBLIC→ARCHIVED`, publish/delete (Admin), registration-QR token |
 | `EventAssignmentService` | appoint sub-admin (Admin), add member/delegate handler (manager), revoke |
@@ -48,6 +49,38 @@ Controller  →  Service  →  Repository  →  PostgreSQL
 | `StorageService` | Rustfs presign (purpose-scoped authz), object validation |
 | `EmailService` | QR-ticket + OTP transactional emails (templates) |
 | `TelegramNotifier` | ops-channel forwarding (registration/attendance) |
+
+## 3a. User invite → activation (worked example)
+
+`UserService.invite(fullName, email, role)` — `@PreAuthorize("hasRole('ADMIN')")`:
+```
+@Transactional
+1. assert email not already in use                         else 409 CONFLICT
+2. role ∈ { SUB_ADMIN, HANDLER }                            else 400 VALIDATION_ERROR
+3. user = save(User{ fullName, email,
+        globalRole = MEMBER,                                // never ADMIN via this form
+        defaultEventRole = (role==SUB_ADMIN ? MANAGER : HANDLER),
+        passwordHash = null,
+        status = PENDING_ACTIVATION })
+4. publishEvent(new UserCreatedEvent(user.id))
+5. commit
+6. AFTER COMMIT (@TransactionalEventListener / @Async):
+       token = ActivationService.mint(user.id)              // CSPRNG; Redis setpw:{hash}=userId, TTL
+       EmailService.sendActivation(user, token)             // link to /auth/set-password?token=…
+return UserResponse{ …, role(display), status=PENDING_ACTIVATION }
+```
+
+`AuthService.setPassword(token, newPassword)` — public:
+```
+@Transactional
+1. userId = ActivationService.verify(token)                 ; if null → 404/409 (invalid/expired)
+2. user = load(userId); assert status == PENDING_ACTIVATION else 409 CONFLICT (already active)
+3. user.passwordHash = bcrypt(newPassword); user.status = ACTIVE
+4. ActivationService.consume(token)                          // single-use
+5. commit
+```
+- **No Admin-set passwords:** the Admin never knows or sets another user's secret; activation is user-driven.
+- **Token safety:** high-entropy, single-use, time-expiring ([`04` §3](04-external-integrations.md)); resolved server-side; the email send happens after commit so a mail failure can't roll back user creation (retry sweep re-sends stuck invites, §7).
 
 ## 4. Attendance scan — idempotent, replay-safe (worked example)
 
