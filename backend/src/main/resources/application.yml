@@ -35,18 +35,17 @@ spring:
       password: ${REDIS_PASSWORD:}
 
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-
-    username: ${MAIL_USERNAME:gartherlyteam@gmail.com}
-    password: ${MAIL_PASSWORD:yusslalwcrrfodgp}
+    host: smtp.gmail.com
+    port: 587
+    username: gartherlyteam@gmail.com
+    password: wwdksnkqfrylytsc
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-            required: true
+
 
 server:
   port: 8080
@@ -86,7 +85,7 @@ app:
 
   email:
     enabled: ${EMAIL_ENABLED:true}
-    from-address: ${MAIL_FROM_ADDRESS:no-reply@gatherly.app}
+    from-address: ${MAIL_FROM_ADDRESS:onboarding@resend.dev}
     from-name: ${MAIL_FROM_NAME:Gatherly}
 
   telegram:
