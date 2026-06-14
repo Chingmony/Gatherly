@@ -1,16 +1,55 @@
 /**
- * Auth endpoints (spec 03 §). Stubs for the prototype — the (auth) screens run
- * their flows client-side. Wire these to the backend (JWT cookies, Redis OTP)
- * for M1.
+ * Auth endpoints (spec 03 §). `login` is wired to the backend; the OTP/reset
+ * flows remain client-side stubs until their endpoints are wired.
  */
+import { apiFetch } from './client'
+import { signIn } from '@/lib/auth/session'
 
 export interface Credentials {
   email: string
   password: string
 }
 
-export async function login(_credentials: Credentials): Promise<void> {
-  throw new Error('auth.login is not wired yet (M1).')
+// Mirror the backend enums verbatim (UserResponse — see backend dto/user).
+export type GlobalRole = 'ADMIN' | 'MEMBER'
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER'
+export type UserStatus = 'ACTIVE' | 'INACTIVE'
+
+/** Authenticated user projection returned by /auth/login (UserResponse). */
+export interface AuthUser {
+  id: string
+  email: string
+  fullName: string
+  phone: string | null
+  gender: Gender | null
+  dateOfBirth: string | null // ISO date (YYYY-MM-DD)
+  address: string | null
+  globalRole: GlobalRole
+  status: UserStatus
+  createdAt: string // ISO instant
+  updatedAt: string // ISO instant
+}
+
+/** Body of a successful POST /api/v1/auth/login (inside the success envelope). */
+export interface LoginResponse {
+  tokenType: string // "Bearer"
+  accessToken: string
+  expiresInSeconds: number
+  user: AuthUser
+}
+
+/**
+ * Authenticate against the backend. On success the backend sets httpOnly
+ * access/refresh cookies; we mirror the global role into the readable
+ * `gatherly_session` cookie so proxy.ts can gate routes for UX.
+ */
+export async function login(credentials: Credentials): Promise<LoginResponse> {
+  const data = await apiFetch<LoginResponse>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(credentials),
+  })
+  signIn(data.user.globalRole)
+  return data
 }
 
 export async function logout(): Promise<void> {
