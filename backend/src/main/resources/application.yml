@@ -1,0 +1,68 @@
+# Base configuration shared by all profiles. Environment-specific overrides live in
+# application-{local,prod}.yml. All secrets/URLs come from env (docs/12 §4) — never hard-coded.
+spring:
+  application:
+    name: gatherly
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gatherly}
+    username: ${DB_USERNAME:gatherly}
+    password: ${DB_PASSWORD:gatherly}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema (docs/02 §8); JPA never mutates it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    # A failed migration halts boot — fail-closed (docs/12 §5).
+    baseline-on-migrate: false
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+# Health is public; everything else under /actuator is restricted (locked down in M9).
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+server:
+  port: 8080
+  error:
+    # The uniform error contract (docs/07) is produced by our @RestControllerAdvice,
+    # not the default whitelabel page.
+    whitelabel:
+      enabled: false
+
+# Application-scoped settings (consumed via @ConfigurationProperties / @Value in later milestones).
+gatherly:
+  api-base-path: /api/v1
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}

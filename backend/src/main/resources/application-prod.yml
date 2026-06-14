@@ -1,0 +1,14 @@
+# Production profile — all values injected from the secret manager at runtime (docs/12 §4).
+spring:
+  jpa:
+    show-sql: false
+
+management:
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    com.gatherly: INFO

@@ -1,0 +1,14 @@
+# Test profile — datasource is supplied dynamically by the Testcontainers base class.
+# Redis points at a local default; M0 tests don't exercise it.
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: validate
+logging:
+  level:
+    org.testcontainers: INFO
+    com.github.dockerjava: WARN
