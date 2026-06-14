@@ -39,10 +39,14 @@ spring:
     password: ${SMTP_PASSWORD:}
     properties:
       mail:
+        debug: ${SMTP_DEBUG:false}
         smtp:
           auth: ${SMTP_AUTH:false}
           starttls:
             enable: ${SMTP_STARTTLS:false}
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
   jackson:
     # Jackson 3 (Spring Boot 4) already serializes dates as ISO-8601 by default, so no

@@ -115,7 +115,7 @@ class AuthFlowIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void onlyAdminCanDeactivateUser() {
+    void onlyAdminCanDeleteUser() {
         UUID targetId = save("target@gatherly.test", MEMBER_PW, GlobalRole.MEMBER, UserStatus.ACTIVE).getId();
 
         // Member is forbidden (stands in for the sub-admin restriction, docs/00 §5).
@@ -123,11 +123,11 @@ class AuthFlowIT extends AbstractIntegrationTest {
         login(member, "member@gatherly.test", MEMBER_PW);
         assertThat(member.delete("/api/v1/users/" + targetId).statusCode()).isEqualTo(403);
 
-        // Admin deactivates (soft delete).
+        // Admin hard-deletes the user.
         HttpTestClient admin = new HttpTestClient(port);
         login(admin, "admin@gatherly.test", ADMIN_PW);
         assertThat(admin.delete("/api/v1/users/" + targetId).statusCode()).isEqualTo(204);
-        assertThat(users.findById(targetId).orElseThrow().getStatus()).isEqualTo(UserStatus.INACTIVE);
+        assertThat(users.findById(targetId)).isEmpty();
     }
 
     @Test

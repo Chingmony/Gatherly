@@ -1,6 +1,8 @@
 package com.gatherly.user;
 
 import com.gatherly.common.PageResponse;
+import com.gatherly.common.error.DomainConflictException;
+import com.gatherly.common.error.ErrorCode;
 import com.gatherly.security.UserPrincipal;
 import com.gatherly.user.dto.ChangePasswordRequest;
 import com.gatherly.user.dto.InviteUserRequest;
@@ -57,8 +59,12 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{userId}")
-    public ResponseEntity<Void> deactivate(@PathVariable UUID userId) {
-        userService.deactivate(userId);
+    public ResponseEntity<Void> delete(@PathVariable UUID userId,
+                                       @AuthenticationPrincipal UserPrincipal principal) {
+        if (principal != null && principal.id().equals(userId)) {
+            throw new DomainConflictException(ErrorCode.CONFLICT, "You cannot delete your own account.");
+        }
+        userService.delete(userId);
         return ResponseEntity.noContent().build();
     }
 

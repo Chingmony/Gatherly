@@ -93,7 +93,18 @@ public class UserService {
         return users.save(u);
     }
 
-    /** Deactivate (soft delete). Sub-admins are forbidden — gate is Admin-only (docs/00 §5). */
+    /**
+     * Hard-delete a user (Admin-only; Sub-admins forbidden, docs/00 §5). Refresh tokens cascade.
+     * A user still referenced by events/materials (M2+) is protected by FK constraints — that
+     * surfaces as a {@code 409 CONFLICT}, at which point deactivation is the appropriate fallback.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    public void delete(UUID userId) {
+        User u = findOrThrow(userId);
+        users.delete(u);
+    }
+
+    /** Deactivate (soft) — keep an active user out without removing the record (docs/02 §1). */
     @PreAuthorize("hasRole('ADMIN')")
     public void deactivate(UUID userId) {
         User u = findOrThrow(userId);
