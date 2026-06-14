@@ -44,6 +44,7 @@ class RegistrationServiceImplTest {
   @Mock private RegistrationSubmissionRepository submissionRepository;
   @Mock private QrTicketDispatcher dispatcher;
   @Mock private QrService qrService;
+  @Mock private OpsNotificationService opsNotificationService;
 
   private final FormSchemaCodec codec = new FormSchemaCodec(new JsonMapper());
   private RegistrationServiceImpl service;
@@ -59,6 +60,7 @@ class RegistrationServiceImplTest {
             new AnswerValidator(),
             dispatcher,
             qrService,
+            opsNotificationService,
             new JsonMapper());
   }
 
@@ -122,7 +124,8 @@ class RegistrationServiceImplTest {
       RegistrationResponse response = service.register(UUID.randomUUID(), validAnswers());
       assertThat(response.ticketStatus().name()).isEqualTo("PENDING");
       verify(submissionRepository).save(any(RegistrationSubmission.class));
-      assertThat(TransactionSynchronizationManager.getSynchronizations()).hasSize(1);
+      // Two after-commit hooks registered: QR-email dispatch + ops (Telegram) registration push.
+      assertThat(TransactionSynchronizationManager.getSynchronizations()).hasSize(2);
     } finally {
       TransactionSynchronizationManager.clearSynchronization();
     }

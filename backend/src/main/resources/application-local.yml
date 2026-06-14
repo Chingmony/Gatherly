@@ -1,11 +1,32 @@
-# Local dev overrides — docker-compose supplies all env vars
-# Connect to services via docker-compose.yml defaults
+# Local dev overrides.
 spring:
   jpa:
     show-sql: true
+  mail:
+    # Resend SMTP (smtp.resend.com). The username is the literal "resend"; the password is your
+    # Resend API key (starts with "re_"). Set MAIL_PASSWORD=<your re_... key> via env.
+    host: ${MAIL_HOST:smtp.resend.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:resend}
+    password: ${MAIL_PASSWORD:} # <-- put your Resend API key here (env), never commit it
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 app:
   email:
-    enabled: true   # MailHog sink at http://localhost:8025
+    # OTP + QR-ticket emails via the SMTP above. Set EMAIL_ENABLED=false to log instead of sending.
+    enabled: ${EMAIL_ENABLED:true}
+    # Must be a Resend-verified sender. For testing without a verified domain, Resend allows
+    # onboarding@resend.dev (delivers only to your own Resend account email).
+    from-address: ${MAIL_FROM_ADDRESS:onboarding@resend.dev}
+    from-name: ${MAIL_FROM_NAME:Gatherly}
   telegram:
     enabled: false
+  scheduling:
+    enabled: false # no Redis required for ShedLock locally
+  rate-limit:
+    enabled: false # no Redis required for rate limiting locally

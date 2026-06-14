@@ -44,6 +44,7 @@ public class RegistrationServiceImpl implements RegistrationService {
   private final AnswerValidator answerValidator;
   private final QrTicketDispatcher dispatcher;
   private final com.gatherly.integration.qr.QrService qrService;
+  private final OpsNotificationService opsNotificationService;
   private final ObjectMapper objectMapper;
   private final SecureRandom random = new SecureRandom();
 
@@ -55,6 +56,7 @@ public class RegistrationServiceImpl implements RegistrationService {
       AnswerValidator answerValidator,
       QrTicketDispatcher dispatcher,
       com.gatherly.integration.qr.QrService qrService,
+      OpsNotificationService opsNotificationService,
       ObjectMapper objectMapper) {
     this.eventRepository = eventRepository;
     this.formRepository = formRepository;
@@ -63,6 +65,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     this.answerValidator = answerValidator;
     this.dispatcher = dispatcher;
     this.qrService = qrService;
+    this.opsNotificationService = opsNotificationService;
     this.objectMapper = objectMapper;
   }
 
@@ -125,6 +128,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     RegistrationSubmission saved = submissionRepository.save(submission);
 
     dispatchAfterCommit(saved.getId());
+    opsRegisterAfterCommit(saved.getId());
     return new RegistrationResponse(
         saved.getId(),
         TicketStatus.PENDING,
@@ -202,6 +206,16 @@ public class RegistrationServiceImpl implements RegistrationService {
           @Override
           public void afterCommit() {
             dispatcher.dispatch(submissionId);
+          }
+        });
+  }
+
+  private void opsRegisterAfterCommit(UUID submissionId) {
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            opsNotificationService.pushRegistration(submissionId);
           }
         });
   }

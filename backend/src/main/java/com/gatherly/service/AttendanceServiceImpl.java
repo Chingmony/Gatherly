@@ -25,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * {@link AttendanceService} implementation ({@code docs/06} §4). Idempotency is guaranteed by the
@@ -38,14 +40,17 @@ public class AttendanceServiceImpl implements AttendanceService {
   private final RegistrationSubmissionRepository submissionRepository;
   private final EventCheckinRepository checkinRepository;
   private final EventRepository eventRepository;
+  private final OpsNotificationService opsNotificationService;
 
   public AttendanceServiceImpl(
       RegistrationSubmissionRepository submissionRepository,
       EventCheckinRepository checkinRepository,
-      EventRepository eventRepository) {
+      EventRepository eventRepository,
+      OpsNotificationService opsNotificationService) {
     this.submissionRepository = submissionRepository;
     this.checkinRepository = checkinRepository;
     this.eventRepository = eventRepository;
+    this.opsNotificationService = opsNotificationService;
   }
 
   @Override
@@ -147,7 +152,15 @@ public class AttendanceServiceImpl implements AttendanceService {
       throw alreadyCheckedIn(null); // concurrent scan won the unique constraint
     }
     submission.setQrStatus(TicketStatus.CHECKED_IN);
-    // After commit: Telegram ops push (M8).
+    // After commit: push the confirmed check-in to the Telegram ops channel (best-effort, retried).
+    UUID checkinId = checkin.getId();
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            opsNotificationService.pushCheckin(checkinId);
+          }
+        });
     return toResponse(checkin);
   }
 

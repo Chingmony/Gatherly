@@ -13,4 +13,7 @@ public interface EventCheckinRepository extends JpaRepository<EventCheckin, UUID
   List<EventCheckin> findByEventIdOrderByCheckedInAtDesc(UUID eventId);
 
   long countByEventId(UUID eventId);
+
+  /** Retry source for the Telegram ops sweep ({@code docs/06} §7). */
+  List<EventCheckin> findTop50ByTelegramNotifiedFalseOrderByCheckedInAtAsc();
 }

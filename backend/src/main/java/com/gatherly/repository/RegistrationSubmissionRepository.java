@@ -1,6 +1,8 @@
 package com.gatherly.repository;
 
 import com.gatherly.domain.RegistrationSubmission;
+import com.gatherly.domain.TicketStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -18,4 +20,7 @@ public interface RegistrationSubmissionRepository
   Page<RegistrationSubmission> findByEventId(UUID eventId, Pageable pageable);
 
   long countByEventId(UUID eventId);
+
+  /** Retry source for the QR-email sweep ({@code docs/06} §7): tickets stuck PENDING. */
+  List<RegistrationSubmission> findTop50ByQrStatusOrderBySubmittedAtAsc(TicketStatus qrStatus);
 }

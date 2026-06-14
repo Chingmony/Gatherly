@@ -34,6 +34,7 @@ class AttendanceServiceImplTest {
   @Mock private RegistrationSubmissionRepository submissionRepository;
   @Mock private EventCheckinRepository checkinRepository;
   @Mock private EventRepository eventRepository;
+  @Mock private OpsNotificationService opsNotificationService;
 
   private AttendanceServiceImpl service;
   private final UUID eventId = UUID.randomUUID();
@@ -42,7 +43,9 @@ class AttendanceServiceImplTest {
 
   @BeforeEach
   void setUp() {
-    service = new AttendanceServiceImpl(submissionRepository, checkinRepository, eventRepository);
+    service =
+        new AttendanceServiceImpl(
+            submissionRepository, checkinRepository, eventRepository, opsNotificationService);
     lenient().when(eventRepository.findById(any())).thenReturn(Optional.of(new Event()));
   }
 
@@ -60,9 +63,14 @@ class AttendanceServiceImplTest {
     when(submissionRepository.findByCheckinToken(any())).thenReturn(Optional.of(s));
     when(checkinRepository.findBySubmissionId(any())).thenReturn(Optional.empty());
 
-    service.scan(eventId, new ScanRequest("tok"), staff);
-
-    assertThat(s.getQrStatus()).isEqualTo(TicketStatus.CHECKED_IN);
+    org.springframework.transaction.support.TransactionSynchronizationManager.initSynchronization();
+    try {
+      service.scan(eventId, new ScanRequest("tok"), staff);
+      assertThat(s.getQrStatus()).isEqualTo(TicketStatus.CHECKED_IN);
+    } finally {
+      org.springframework.transaction.support.TransactionSynchronizationManager
+          .clearSynchronization();
+    }
   }
 
   @Test

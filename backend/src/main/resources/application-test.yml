@@ -11,6 +11,10 @@ app:
     enabled: false
   telegram:
     enabled: false
+  scheduling:
+    enabled: false
+  rate-limit:
+    enabled: false
   rustfs:
     endpoint: http://localhost:9000
     access-key: test
