@@ -57,13 +57,13 @@ function ResetForm() {
           <Input id="newPassword" type="password" autoComplete="new-password" required minLength={8}
                  value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
         </div>
-        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Updating…" : "Set new password"}
         </Button>
       </form>
-      <p className="mt-4 text-center text-sm text-neutral-400">
-        <Link href="/login" className="text-indigo-400 hover:underline">Back to sign in</Link>
+      <p className="mt-5 text-center text-[13px] text-[var(--t2)]">
+        <Link href="/login" className="font-semibold text-[var(--ac)] hover:underline">Back to sign in</Link>
       </p>
     </Card>
   );

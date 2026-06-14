@@ -15,7 +15,7 @@ export function LogoutButton() {
     }
   }
   return (
-    <Button variant="ghost" onClick={onClick}>
+    <Button variant="ghost" onClick={onClick} className="w-full justify-start">
       Sign out
     </Button>
   );

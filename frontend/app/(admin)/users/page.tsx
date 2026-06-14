@@ -24,18 +24,18 @@ export default async function UsersPage() {
 
   if (denied) {
     return (
-      <div className="rounded-lg border border-neutral-800 p-6">
-        <h1 className="text-lg font-semibold">Not authorized</h1>
-        <p className="mt-1 text-sm text-neutral-400">You don’t have access to user management.</p>
+      <div className="mx-auto max-w-md rounded-[var(--r)] border border-[var(--bo)] bg-[var(--ca)] p-6 shadow-[var(--sh)]">
+        <h1 className="text-[15px] font-bold text-[var(--t1)]">Not authorized</h1>
+        <p className="mt-1 text-[13px] text-[var(--t2)]">You don’t have access to user management.</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-        <p className="text-sm text-neutral-400">{page?.totalElements ?? 0} total</p>
+        <h1 className="text-[20px] font-bold tracking-[-0.01em] text-[var(--t1)]">Users</h1>
+        <p className="text-[12px] font-medium text-[var(--t3)]">{page?.totalElements ?? 0} total</p>
       </div>
       <UsersManager initialUsers={page?.content ?? []} />
     </div>

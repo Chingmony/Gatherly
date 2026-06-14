@@ -21,40 +21,43 @@ export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
       <div className="text-center">
-        <h1 className="text-4xl font-semibold tracking-tight">Gatherly</h1>
-        <p className="mt-2 text-sm text-neutral-400">Event Management Platform — M0 walking skeleton</p>
+        <h1 className="text-[28px] font-bold tracking-[-0.02em] text-[var(--t1)]">Gatherly</h1>
+        <p className="mt-1 text-[13px] font-medium text-[var(--t2)]">
+          Event Management Platform — M0 walking skeleton
+        </p>
       </div>
 
-      <div className="w-full max-w-md rounded-xl border border-neutral-800 bg-neutral-900/50 p-6">
-        <div className="flex items-center gap-3">
+      <div className="w-full max-w-md rounded-[var(--r)] border border-[var(--bo)] bg-[var(--ca)] p-5 shadow-[var(--sh)]">
+        <div className="flex items-center gap-2.5">
           <span
             aria-hidden
-            className={`inline-block h-3 w-3 rounded-full ${online ? "bg-green-500" : "bg-red-500"}`}
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ background: online ? "var(--ac)" : "var(--pill-dot)" }}
           />
-          <span className="font-medium">
+          <span className="text-[14px] font-semibold text-[var(--t1)]">
             Backend: {online ? "connected" : "unavailable"}
           </span>
         </div>
 
         {ping && (
-          <dl className="mt-4 space-y-1 text-sm text-neutral-300">
+          <dl className="mt-4 space-y-1.5 text-[13px]">
             <div className="flex justify-between">
-              <dt className="text-neutral-500">service</dt>
-              <dd>{ping.service}</dd>
+              <dt className="text-[var(--t3)]">service</dt>
+              <dd className="text-[var(--t1)]">{ping.service}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-neutral-500">status</dt>
-              <dd>{ping.status}</dd>
+              <dt className="text-[var(--t3)]">status</dt>
+              <dd className="text-[var(--t1)]">{ping.status}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-neutral-500">timestamp</dt>
-              <dd>{ping.timestamp}</dd>
+              <dt className="text-[var(--t3)]">timestamp</dt>
+              <dd className="font-[ui-monospace,Menlo,monospace] text-[var(--t2)]">{ping.timestamp}</dd>
             </div>
           </dl>
         )}
 
         {error && (
-          <p className="mt-4 text-sm text-red-400" role="alert">
+          <p className="mt-4 text-[13px] font-medium text-[var(--ac-2)]" role="alert">
             {error}
           </p>
         )}

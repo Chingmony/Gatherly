@@ -8,6 +8,7 @@ import type { GlobalRole, UserResponse } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function UsersManager({ initialUsers }: { initialUsers: UserResponse[] }) {
@@ -47,10 +48,10 @@ export function UsersManager({ initialUsers }: { initialUsers: UserResponse[] })
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Create user</CardTitle>
+          <CardTitle>Create user</CardTitle>
         </CardHeader>
         <form onSubmit={onCreate} className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -70,14 +71,21 @@ export function UsersManager({ initialUsers }: { initialUsers: UserResponse[] })
           </div>
           <div>
             <Label htmlFor="role">Role</Label>
-            <select id="role" value={role}
-                    onChange={(e) => setRole(e.target.value as GlobalRole)}
-                    className="w-full rounded-md border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100">
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value as GlobalRole)}
+              className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
+            >
               <option value="MEMBER">Member</option>
               <option value="ADMIN">Admin</option>
             </select>
           </div>
-          {error && <p className="text-sm text-red-400 sm:col-span-2" role="alert">{error}</p>}
+          {error && (
+            <p className="text-[13px] font-medium text-[var(--ac-2)] sm:col-span-2" role="alert">
+              {error}
+            </p>
+          )}
           <div className="sm:col-span-2">
             <Button type="submit" disabled={pending}>
               {pending ? "Creating…" : "Create user"}
@@ -86,30 +94,34 @@ export function UsersManager({ initialUsers }: { initialUsers: UserResponse[] })
         </form>
       </Card>
 
-      <div className="overflow-hidden rounded-xl border border-neutral-800">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-neutral-900/60 text-neutral-400">
-            <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Role</th>
-              <th className="px-4 py-3 font-medium">Status</th>
+      <div className="overflow-hidden rounded-[var(--r)] border border-[var(--bo)] bg-[var(--ca)] shadow-[var(--sh)]">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="border-b border-[var(--bo)] text-[10.5px] font-semibold uppercase tracking-[0.06em] text-[var(--t3)]">
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {initialUsers.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-6 text-center text-neutral-500">No users yet.</td></tr>
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-[13px] text-[var(--t3)]">
+                  No users yet.
+                </td>
+              </tr>
             )}
             {initialUsers.map((u) => (
-              <tr key={u.id} className="border-t border-neutral-800">
-                <td className="px-4 py-3">{u.fullName}</td>
-                <td className="px-4 py-3 text-neutral-300">{u.email}</td>
-                <td className="px-4 py-3">{u.globalRole}</td>
+              <tr key={u.id} className="border-b border-[var(--bo)] last:border-0 transition-colors hover:bg-[var(--sidebar-hover)]">
+                <td className="px-4 py-3 text-[13px] font-medium text-[var(--t1)]">{u.fullName}</td>
+                <td className="px-4 py-3 text-[13px] text-[var(--t2)]">{u.email}</td>
                 <td className="px-4 py-3">
-                  <span className={u.status === "ACTIVE" ? "text-green-400" : "text-neutral-500"}>
-                    {u.status}
-                  </span>
+                  <Badge variant={u.globalRole === "ADMIN" ? "accent" : "neutral"}>{u.globalRole}</Badge>
+                </td>
+                <td className="px-4 py-3">
+                  <Badge variant={u.status === "ACTIVE" ? "accent" : "neutral"}>{u.status}</Badge>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Button variant="ghost" disabled={u.status === "INACTIVE"}

@@ -51,13 +51,13 @@ function LoginForm() {
           <Input id="password" type="password" autoComplete="current-password" required
                  value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
-        {error && <p className="text-sm text-red-400" role="alert">{error}</p>}
+        {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
-      <p className="mt-4 text-center text-sm text-neutral-400">
-        <Link href="/forgot-password" className="text-indigo-400 hover:underline">
+      <p className="mt-5 text-center text-[13px] text-[var(--t2)]">
+        <Link href="/forgot-password" className="font-semibold text-[var(--ac)] hover:underline">
           Forgot your password?
         </Link>
       </p>

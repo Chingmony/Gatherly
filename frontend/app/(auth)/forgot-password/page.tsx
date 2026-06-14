@@ -33,9 +33,9 @@ export default function ForgotPasswordPage() {
       </CardHeader>
       {sent ? (
         <div className="space-y-4">
-          <p className="text-sm text-neutral-300">
-            If an account exists for <span className="font-medium">{email}</span>, a reset code
-            has been sent. Enter it on the next screen.
+          <p className="text-[13px] text-[var(--t2)]">
+            If an account exists for <span className="font-semibold text-[var(--t1)]">{email}</span>,
+            a reset code has been sent. Enter it on the next screen.
           </p>
           <Link href={`/reset-password?email=${encodeURIComponent(email)}`}>
             <Button className="w-full">Enter code</Button>
@@ -53,8 +53,8 @@ export default function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-      <p className="mt-4 text-center text-sm text-neutral-400">
-        <Link href="/login" className="text-indigo-400 hover:underline">Back to sign in</Link>
+      <p className="mt-5 text-center text-[13px] text-[var(--t2)]">
+        <Link href="/login" className="font-semibold text-[var(--ac)] hover:underline">Back to sign in</Link>
       </p>
     </Card>
   );

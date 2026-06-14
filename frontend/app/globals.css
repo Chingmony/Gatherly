@@ -1,24 +1,61 @@
 @import "tailwindcss";
 
+/*
+ * Gatherly design system — light, flat, modern-minimalist.
+ * Two families only: purple accent + navy/slate neutral. Swapping --ac re-skins the product.
+ * Status meaning always uses icon/dot + text, never color alone.
+ */
 :root {
-  --background: #0b0b0f;
-  --foreground: #fafafa;
+  /* Accent (brand violet) */
+  --ac: #7c3aed;
+  --al: rgba(124, 58, 237, 0.15); /* line/border tint */
+  --ad: rgba(124, 58, 237, 0.08); /* fill tint for active pills/soft chips */
+  --ac-2: #c026d3; /* secondary */
+  --ac-deep: #6d28d9; /* deep (hover) */
+  --ac-light: #a78bfa;
+
+  /* Neutral */
+  --bg: #f2f0f9; /* app bg, light lavender */
+  --ca: #ffffff; /* card/surface */
+  --sidebar: #ffffff;
+  --sidebar-hover: #f6f4fb;
+  --bo: #eceaf4; /* hairline borders/dividers */
+  --navy: #2b2a3f;
+  --slate: #3a3550;
+  --slate-2: #6b6478;
+  --t1: #1c1633; /* primary text */
+  --t2: #6b7280; /* secondary text */
+  --t3: #9ca3af; /* tertiary text */
+
+  /* Neutral status pill */
+  --pill-bg: #efedf4;
+  --pill-text: #6b6478;
+  --pill-dot: #b6b0c8;
+
+  /* Radius */
+  --r: 16px; /* cards */
+  --rs: 11px; /* small/inner */
+
+  /* Elevation (low-opacity, layered) */
+  --sh: 0 1px 2px rgba(24, 16, 48, 0.04), 0 6px 18px rgba(24, 16, 48, 0.06);
+  --sh2: 0 6px 16px rgba(24, 16, 48, 0.09), 0 18px 40px rgba(24, 16, 48, 0.12);
 }
 
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--font-sora), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Respect reduced-motion globally (docs/05 §4). */
+/* Accessibility: honor reduced-motion globally (docs/05 §4). */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
