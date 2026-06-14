@@ -40,7 +40,7 @@ class JwtServiceTest {
 
   @Test
   void tamperedTokenIsRejected() {
-    String token = jwtService.issueAccessToken(user(GlobalRole.MEMBER));
+    String token = jwtService.issueAccessToken(user(GlobalRole.USER));
     String tampered = token.substring(0, token.length() - 2) + "xy";
 
     assertThat(jwtService.parse(tampered)).isEmpty();

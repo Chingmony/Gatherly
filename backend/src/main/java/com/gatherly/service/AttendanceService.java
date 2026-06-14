@@ -25,5 +25,5 @@ public interface AttendanceService {
 
   AttendanceSummary attendance(UUID eventId);
 
-  Page<SubmissionSummary> submissions(UUID eventId, Pageable pageable);
+  Page<SubmissionSummary> submissions(UUID eventId, String search, Pageable pageable);
 }

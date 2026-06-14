@@ -111,9 +111,10 @@ public class AttendanceServiceImpl implements AttendanceService {
   @Override
   @PreAuthorize("@eventSecurity.canView(#eventId, authentication)")
   @Transactional(readOnly = true)
-  public Page<SubmissionSummary> submissions(UUID eventId, Pageable pageable) {
+  public Page<SubmissionSummary> submissions(UUID eventId, String search, Pageable pageable) {
+    String q = (search == null || search.isBlank()) ? null : search.trim();
     return submissionRepository
-        .findByEventId(eventId, pageable)
+        .search(eventId, q, pageable)
         .map(
             s ->
                 new SubmissionSummary(

@@ -15,8 +15,8 @@ import lombok.Setter;
  * Application user ({@code docs/02} §3.2). {@code password_hash} is BCrypt and must never be
  * serialized — DTO mapping ({@code UserResponse}) omits it.
  *
- * <p>Global role is {@code ADMIN} or {@code MEMBER}; event-scoped roles (MANAGER/HANDLER) live in
- * {@code event_assignment}, not here.
+ * <p>Global role is {@code ADMIN}, {@code SUB_ADMIN}, or {@code USER}; event-scoped roles
+ * (MANAGER/HANDLER) live in {@code event_assignment}, not here.
  */
 @Entity
 @Table(name = "\"user\"")
