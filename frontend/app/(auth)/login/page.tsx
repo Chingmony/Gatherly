@@ -8,36 +8,9 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-const MOCK_ACCOUNTS = [
-  {
-    role:     "Admin",
-    email:    "patrick@gatherly.io",
-    password: "admin123",
-    redirect: "/dashboard",
-    soft:     "var(--violet-soft)",
-    color:    "var(--violet)",
-    desc:     "Full platform access",
-  },
-  {
-    role:     "Manager",
-    email:    "jordan@gatherly.io",
-    password: "manager123",
-    redirect: "/events/ev1/workspace",
-    soft:     "var(--blue-soft)",
-    color:    "var(--blue)",
-    desc:     "Event sub-admin",
-  },
-  {
-    role:     "Handler",
-    email:    "sam@gatherly.io",
-    password: "handler123",
-    redirect: "/tasks",
-    soft:     "var(--green-soft)",
-    color:    "var(--green-600)",
-    desc:     "Task & scanner",
-  },
-];
+import { login } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
+import { startSession, landingFor } from "@/lib/auth/session";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,31 +20,24 @@ export default function LoginPage() {
   const [busy, setBusy]       = useState(false);
   const [error, setError]     = useState("");
 
-  function fillAccount(acc: typeof MOCK_ACCOUNTS[0]) {
-    setEmail(acc.email);
-    setPassword(acc.password);
-    setError("");
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-
-    // Validate against mock accounts
-    const match = MOCK_ACCOUNTS.find(
-      (a) => a.email === email.trim() && a.password === password
-    );
-    if (!match) {
-      setError("Invalid email or password. Use one of the demo accounts below.");
-      return;
-    }
-
     setBusy(true);
-    await new Promise((r) => setTimeout(r, 700));
-    setBusy(false);
-    const roleKey = match.role === "Manager" ? "subadmin" : match.role === "Handler" ? "handler" : "admin";
-    sessionStorage.setItem("gatherly_role", roleKey);
-    router.push(match.redirect);
+    try {
+      const { user } = await login(email.trim(), password);
+      const role = startSession(user);
+      router.push(landingFor(role));
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.code === "INVALID_CREDENTIALS"
+            ? "Invalid email or password."
+            : err.message
+          : "Something went wrong. Please try again.",
+      );
+      setBusy(false);
+    }
   }
 
   return (
@@ -85,38 +51,6 @@ export default function LoginPage() {
           <span className="text-[13.5px]" style={{ color: "var(--text-muted)" }}>
             Sign in to your Gatherly console
           </span>
-        </div>
-
-        {/* Mock account quick-select */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-faint)" }}>
-            Demo accounts — click to fill
-          </span>
-          <div className="grid grid-cols-3 gap-2">
-            {MOCK_ACCOUNTS.map((acc) => {
-              const active = email === acc.email;
-              return (
-                <button
-                  key={acc.role}
-                  type="button"
-                  onClick={() => fillAccount(acc)}
-                  className="flex flex-col items-start gap-0.5 px-3 py-2.5 rounded-[var(--radius-md)] border text-left transition-all cursor-pointer"
-                  style={{
-                    background:  active ? acc.soft : "var(--surface-2)",
-                    borderColor: active ? acc.color : "var(--border-hex,#ecedf4)",
-                    boxShadow:   active ? `0 0 0 3px color-mix(in srgb, ${acc.color} 16%, transparent)` : "none",
-                  }}
-                >
-                  <span className="text-[12px] font-extrabold" style={{ color: acc.color }}>
-                    {acc.role}
-                  </span>
-                  <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                    {acc.desc}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Email */}
