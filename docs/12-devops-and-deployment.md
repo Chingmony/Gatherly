@@ -11,13 +11,13 @@ Monorepo ([`01` §2](01-architecture-layout.md)):
 ```
 gatherly/
 ├── frontend/   # Next.js 16 — Node 20, pnpm/npm; `next build`
-├── backend/    # Spring Boot 4.x — Java 21, Gradle; `./gradlew build`
+├── backend/    # Spring Boot 4.1.0 — Java 21, Gradle 8.14 (Groovy DSL); `./gradlew build`
 ├── docs/
 ├── .claude/skills/      # team-shared skills (review before trusting in CI — see 10 §8)
 ├── docker-compose.yml
 └── .github/workflows/   # CI/CD pipelines
 ```
-- **Backend:** Gradle (wrapper committed); produces an executable jar; Spring Boot Buildpacks or a Dockerfile for the image.
+- **Backend:** Gradle **8.14** with the **Groovy** DSL (`build.gradle` / `settings.gradle`); wrapper committed (`gradle-wrapper.properties` pins 8.14). Spring Boot **4.1.0** on the Java **21** toolchain; produces an executable jar; Spring Boot Buildpacks or a Dockerfile for the image.
 - **Frontend:** Node 20, lockfile committed; `next build` → standalone output for a slim runtime image.
 
 ## 2. Containerization

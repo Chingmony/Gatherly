@@ -1,13 +1,10 @@
 package com.gatherly;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@ActiveProfiles("test")
-class GatherlyApplicationTests {
+/** Smoke test: the Spring context boots and Flyway migrations apply against a real Postgres. */
+class GatherlyApplicationTests extends AbstractIntegrationTest {
 
-    @Test
-    void contextLoads() {}
+  @Test
+  void contextLoads() {}
 }
