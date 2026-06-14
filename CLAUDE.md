@@ -59,3 +59,20 @@ Code development is structured strictly around thin vertical milestone slices (D
 The custom project skill command `/build-milestone <M0-M10>` reads your context variables, references structural documentation patterns from `docs/13-implementation-roadmap.md`, writes matching schema tables, secures routes, and generates localized unit test blocks.
 
 **Branch Rule:** Because milestones can be built in parallel tracks, always verify you are executing features inside an isolated Git feature branch workspace before proposing structural code writing.
+
+## Sub-Agent Usage
+
+Spawn these project sub-agents automatically at the matching trigger; they encode the
+directives above so authorization, schema, and query-performance regressions are
+caught at the source.
+
+- **authz-reviewer** (read-only) — after adding or changing any controller, route, or
+  authentication/authorization logic. Audits the two-layer authZ model (docs/00 §5,
+  docs/03), the four absolute sub-admin restrictions, and that no event-scoped role
+  leaks into the JWT.
+- **flyway-migration** — after any database schema change. Writes forward-only Flyway
+  migrations and the matching JSONB/GIN-index schema per the Zero-Migration Forms rule
+  and docs/02 conventions.
+- **db-query-reviewer** (read-only) — after adding or changing any service-layer or
+  repository query method. Reviews for N+1 queries, missing indexes, and unbounded
+  queries, reporting issues with suggested fixes.
