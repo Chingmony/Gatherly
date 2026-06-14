@@ -9,6 +9,11 @@ frontend/.env.production
 frontend/.env*.local
 frontend/next-env.d.ts
 
+# ── Local AI tooling (skills, Claude agents) ──────────────────────────────────
+frontend/.agents/
+frontend/.claude/skills/
+frontend/skills-lock.json
+
 # ── Backend ───────────────────────────────────────────────────────────────────
 backend/build/
 backend/.gradle/
