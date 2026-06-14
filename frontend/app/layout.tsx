@@ -1,19 +1,27 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Sora } from 'next/font/google'
 import './globals.css'
+import { ToastProvider } from '@/components/ui/toast'
 
-const inter = Inter({ subsets: ['latin'] })
+const sora = Sora({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-sora',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: 'Gatherly',
-  description: 'Event management platform',
+  title: 'Gatherly — Admin Console',
+  description: 'Events, orchestrated end to end.',
   manifest: '/manifest.webmanifest',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={sora.variable}>
+      <body style={{ fontFamily: 'var(--font-sora), sans-serif' }}>
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   )
 }

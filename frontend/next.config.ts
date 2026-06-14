@@ -1,21 +1,21 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  output: 'standalone',
   experimental: {
-    optimizePackageImports: ["lucide-react"],
+    optimizePackageImports: ['lucide-react'],
   },
   images: {
-    formats: ["image/avif", "image/webp"],
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "localhost",
-        port: "9000",
-        pathname: "/gatherly/**",
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/gatherly/**',
       },
     ],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
