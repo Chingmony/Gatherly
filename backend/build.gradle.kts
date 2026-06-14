@@ -27,6 +27,9 @@ dependencies {
 
     // --- Persistence (PostgreSQL + JPA + Flyway) ---
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // Spring Boot 4 split Flyway autoconfiguration into its own module; without it,
+    // flyway-core is present but migrations never run automatically.
+    implementation("org.springframework.boot:spring-boot-flyway")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
@@ -48,8 +51,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:junit-jupiter")
-    testImplementation("org.testcontainers:postgresql")
+    // Testcontainers 2.x (managed by the Spring Boot 4 BOM) renamed the module artifacts
+    // to the `testcontainers-<module>` form.
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

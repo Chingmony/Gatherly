@@ -33,9 +33,9 @@ spring:
       port: ${REDIS_PORT:6379}
 
   jackson:
+    # Jackson 3 (Spring Boot 4) already serializes dates as ISO-8601 by default, so no
+    # write-dates-as-timestamps flag is needed (that SerializationFeature was removed in v3).
     default-property-inclusion: non_null
-    serialization:
-      write-dates-as-timestamps: false
 
 # Health is public; everything else under /actuator is restricted (locked down in M9).
 management:

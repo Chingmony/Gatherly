@@ -1,8 +1,8 @@
 package com.gatherly.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gatherly.common.error.ApiError;
 import com.gatherly.common.error.ErrorCode;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,13 +36,15 @@ import java.util.UUID;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     @Value("${gatherly.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
 
-    public SecurityConfig(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public SecurityConfig(JsonMapper jsonMapper) {
+        // Spring Boot 4 auto-configures a Jackson 3 JsonMapper (the Jackson 2 ObjectMapper is
+        // no longer a bean). Used to render filter-level auth failures in the uniform contract.
+        this.jsonMapper = jsonMapper;
     }
 
     @Bean
@@ -98,6 +100,6 @@ public class SecurityConfig {
         response.setStatus(code.status().value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        objectMapper.writeValue(response.getWriter(), error);
+        jsonMapper.writeValue(response.getWriter(), error);
     }
 }

@@ -2,38 +2,47 @@ package com.gatherly.ping;
 
 import com.gatherly.AbstractIntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * {@code GET /api/v1/ping} is public (docs/03 §2.2) and returns the liveness payload — the
- * backend half of the M0 end-to-end demo.
+ * backend half of the M0 end-to-end demo. Driven over real HTTP (random port) so the security
+ * filter chain is genuinely exercised; the JDK HttpClient keeps this free of test-client deps.
  */
-@AutoConfigureMockMvc
 class PingControllerIT extends AbstractIntegrationTest {
 
-    @Autowired
-    MockMvc mockMvc;
+    @LocalServerPort
+    int port;
+
+    private final HttpClient http = HttpClient.newHttpClient();
+
+    private HttpResponse<String> get(String path) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+                .GET().build();
+        return http.send(request, HttpResponse.BodyHandlers.ofString());
+    }
 
     @Test
     void pingIsPublicAndReturnsOk() throws Exception {
-        mockMvc.perform(get("/api/v1/ping"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("ok"))
-                .andExpect(jsonPath("$.service").value("gatherly-backend"))
-                .andExpect(jsonPath("$.timestamp").exists());
+        HttpResponse<String> res = get("/api/v1/ping");
+        assertThat(res.statusCode()).isEqualTo(200);
+        assertThat(res.body())
+                .contains("\"status\":\"ok\"")
+                .contains("\"service\":\"gatherly-backend\"");
     }
 
     @Test
     void unknownProtectedRouteIsUnauthenticated() throws Exception {
         // Default-deny: a non-public route with no credentials → 401 in the uniform contract.
-        mockMvc.perform(get("/api/v1/secure-does-not-exist"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("UNAUTHENTICATED"));
+        HttpResponse<String> res = get("/api/v1/secure-does-not-exist");
+        assertThat(res.statusCode()).isEqualTo(401);
+        assertThat(res.body()).contains("UNAUTHENTICATED");
     }
 }

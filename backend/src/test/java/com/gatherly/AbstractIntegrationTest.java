@@ -13,7 +13,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * Testcontainers (never H2 — docs/09 §2.2), so real Flyway migrations and JSONB/GIN/CHECK
  * constraints are exercised. Redis is not started here; M0 code paths don't touch it.
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Testcontainers
 public abstract class AbstractIntegrationTest {
