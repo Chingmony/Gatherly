@@ -138,6 +138,18 @@ public class UserServiceImpl implements UserService {
     if (request.address() != null) {
       user.setAddress(request.address());
     }
+    if (request.avatarKey() != null) {
+      user.setAvatarKey(request.avatarKey());
+    }
+    return userMapper.toResponse(user);
+  }
+
+  @Override
+  @PreAuthorize("#userId == authentication.principal.id")
+  @Transactional
+  public UserResponse updateAvatar(UUID userId, String avatarKey) {
+    User user = loadUser(userId);
+    user.setAvatarKey(avatarKey);
     return userMapper.toResponse(user);
   }
 

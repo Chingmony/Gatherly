@@ -19,4 +19,5 @@ public record UserResponse(
     GlobalRole globalRole,
     UserStatus status,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt,
+    String avatarUrl) {}

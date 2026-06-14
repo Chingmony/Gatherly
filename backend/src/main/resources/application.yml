@@ -5,7 +5,7 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5434/postgres}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/postgres}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -37,8 +37,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: gartherlyteam@gmail.com
-    password: wwdksnkqfrylytsc
+    username: lenghongmeng.dev@gmail.com
+    password: tlzh rgai eszy kqdf
     properties:
       mail:
         smtp:
@@ -46,9 +46,14 @@ spring:
           starttls:
             enable: true
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
 
 server:
-  port: 8080
+  port: 9090
   # No servlet context-path: the /api/v1 prefix is applied to controllers via WebMvcConfig so that
   # Swagger UI (springdoc, outside the controller package) stays at the root (/swagger-ui/...).
 

@@ -24,6 +24,7 @@ export interface UserResponse {
   status: "ACTIVE" | "DISABLED" | string;
   createdAt: string;
   updatedAt: string;
+  avatarUrl: string | null;
 }
 
 /** Mirrors backend `LoginResponse`. */

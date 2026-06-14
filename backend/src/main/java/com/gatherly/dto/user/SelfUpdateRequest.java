@@ -10,4 +10,5 @@ public record SelfUpdateRequest(
     @Size(max = 30) String phone,
     Gender gender,
     LocalDate dateOfBirth,
-    @Size(max = 500) String address) {}
+    @Size(max = 500) String address,
+    @Size(max = 512) String avatarKey) {}

@@ -13,7 +13,7 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-export type GlobalRole = "ADMIN" | "MEMBER";
+export type GlobalRole = "ADMIN" | "SUB_ADMIN" | "USER";
 export type UserStatus = "ACTIVE" | "INACTIVE";
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 
@@ -29,6 +29,7 @@ export interface UserResponse {
   status: UserStatus;
   createdAt: string;
   updatedAt: string;
+  avatarUrl: string | null;
 }
 
 export interface LoginResponse {

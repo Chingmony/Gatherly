@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { User, ShieldCheck, Check, Lock, Camera } from "lucide-react";
+import { User, ShieldCheck, Check, Lock, Camera, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,13 +9,25 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AvatarUser } from "@/components/ui/avatar-user";
-import { apiFetch } from "@/lib/api";
-import type { ApiResponse, UserResponse } from "@/lib/types";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { apiFetch, uploadAvatar } from "@/lib/api";
+import type { ApiResponse, UserResponse, Gender } from "@/lib/types";
+import { uiRoleFromGlobal, ROLE_META } from "@/lib/roles";
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
 export default function SettingsPage() {
   const [me, setMe]               = useState<UserResponse | null>(null);
   const [name, setName]           = useState("");
+  const [phone, setPhone]         = useState("");
+  const [gender, setGender]       = useState<Gender | "">("");
+  const [dob, setDob]             = useState("");
+  const [address, setAddress]     = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarBusy, setAvatarBusy]       = useState(false);
+  const [avatarError, setAvatarError]     = useState("");
   const [loading, setLoading]     = useState(true);
   const [saved, setSaved]         = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -27,18 +39,46 @@ export default function SettingsPage() {
 
   useEffect(() => {
     apiFetch<ApiResponse<UserResponse>>("/me")
-      .then((res) => {
-        setMe(res.data);
-        setName(res.data?.fullName ?? "");
-      })
+      .then((res) => seedFromUser(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+  /** Seed every editable field from a fresh UserResponse (fetch + after-save). */
+  function seedFromUser(u: UserResponse | null) {
+    setMe(u);
+    setName(u?.fullName ?? "");
+    setPhone(u?.phone ?? "");
+    setGender(u?.gender ?? "");
+    setDob(u?.dateOfBirth ?? "");
+    setAddress(u?.address ?? "");
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setAvatarError("");
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setAvatarError("Use a PNG, JPEG, or WebP image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError("Image must be under 5 MB.");
+      return;
+    }
     setAvatarPreview(URL.createObjectURL(file));
+    setAvatarBusy(true);
+    try {
+      // The API brokers the upload to storage (browser → /me/avatar → Rustfs) and returns the
+      // updated profile with a viewable avatarUrl.
+      const updated = await uploadAvatar(file);
+      setMe(updated);
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+      setAvatarPreview(null);
+    } finally {
+      setAvatarBusy(false);
+    }
   }
 
   async function handleSaveProfile(e: React.FormEvent) {
@@ -47,9 +87,16 @@ export default function SettingsPage() {
     try {
       const res = await apiFetch<ApiResponse<UserResponse>>("/me", {
         method: "PUT",
-        body: JSON.stringify({ fullName: name }),
+        // Coerce empties to null so enum/date fields never send "" (which would 400).
+        body: JSON.stringify({
+          fullName: name || null,
+          phone: phone || null,
+          gender: gender || null,
+          dateOfBirth: dob || null,
+          address: address || null,
+        }),
       });
-      setMe(res.data);
+      seedFromUser(res.data);
       setSaved(true);
       setTimeout(() => setSaved(false), 2200);
     } catch (err) {
@@ -77,6 +124,7 @@ export default function SettingsPage() {
 
   const displayName  = me?.fullName ?? name;
   const displayEmail = me?.email ?? "";
+  const roleMeta = me ? ROLE_META[uiRoleFromGlobal(me.globalRole)] : null;
 
   return (
     <div className="flex flex-col gap-6 view-anim">
@@ -104,18 +152,19 @@ export default function SettingsPage() {
             <div className="relative flex-shrink-0">
               <AvatarUser
                 name={displayName || "?"}
-                imageUrl={avatarPreview ?? undefined}
+                imageUrl={avatarPreview ?? me?.avatarUrl ?? undefined}
                 size={56}
               />
               {/* Camera button — w-7 h-7 for comfortable touch */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={avatarBusy}
                 title="Change profile photo"
-                className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer transition-opacity hover:opacity-90 active:opacity-70"
+                className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer transition-opacity hover:opacity-90 active:opacity-70 disabled:opacity-70 disabled:cursor-not-allowed"
                 style={{ background: "var(--primary-hex,#6366f1)", color: "#fff" }}
               >
-                <Camera size={13} />
+                {avatarBusy ? <Loader2 size={13} className="animate-spin" /> : <Camera size={13} />}
               </button>
               <input
                 ref={fileInputRef}
@@ -131,13 +180,33 @@ export default function SettingsPage() {
                 {loading ? "Loading…" : displayName}
               </span>
               <span className="text-sm truncate" style={{ color: "var(--text-muted)" }}>{displayEmail || "—"}</span>
-              <span
-                className="flex items-center gap-1 text-xs font-bold mt-1 px-2 py-0.5 rounded-full self-start"
-                style={{ background: "var(--green-soft)", color: "var(--green-600)" }}
-              >
-                <ShieldCheck size={11} /> Handler
-              </span>
+              {roleMeta && (
+                <span
+                  className="flex items-center gap-1 text-xs font-bold mt-1 px-2 py-0.5 rounded-full self-start"
+                  style={{ background: roleMeta.soft, color: roleMeta.color }}
+                >
+                  <ShieldCheck size={11} /> {roleMeta.label}
+                </span>
+              )}
             </div>
+          </div>
+
+          {avatarError && (
+            <p className="text-sm font-semibold m-0" style={{ color: "var(--danger)" }}>{avatarError}</p>
+          )}
+
+          {/* Account meta */}
+          <div className="flex flex-wrap items-center gap-3">
+            {me && (
+              <StatusBadge variant={me.status === "ACTIVE" ? "green" : "gray"} dot>
+                {me.status === "ACTIVE" ? "Active" : "Inactive"}
+              </StatusBadge>
+            )}
+            {me?.createdAt && (
+              <span className="text-xs" style={{ color: "var(--text-faint)" }}>
+                Member since {formatDate(me.createdAt)}
+              </span>
+            )}
           </div>
 
           <Separator />
@@ -175,6 +244,59 @@ export default function SettingsPage() {
                 <p className="text-sm m-0" style={{ color: "var(--text-faint)" }}>
                   Email cannot be changed.
                 </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="s-phone">Phone</Label>
+                <Input
+                  id="s-phone"
+                  type="tel"
+                  className="text-base h-11"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. +855 12 345 678"
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="s-gender">Gender</Label>
+                <select
+                  id="s-gender"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as Gender | "")}
+                  disabled={loading}
+                  className="flex w-full h-11 rounded-[var(--radius-md)] border border-[var(--border-hex,#ecedf4)] bg-[var(--surface-2)] px-3.5 text-base text-[var(--text)] transition-all focus:outline-none focus:border-[var(--primary-hex,#6366f1)] focus:bg-[var(--surface)] focus:shadow-[0_0_0_4px_var(--primary-ring)] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Not specified</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="s-dob">Date of birth</Label>
+                <Input
+                  id="s-dob"
+                  type="date"
+                  className="text-base h-11"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5 sm:col-span-2">
+                <Label htmlFor="s-address">Address</Label>
+                <Input
+                  id="s-address"
+                  className="text-base h-11"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Your address"
+                  disabled={loading}
+                />
               </div>
 
             </div>

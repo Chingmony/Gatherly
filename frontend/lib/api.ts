@@ -1,3 +1,5 @@
+import type { UserResponse } from "./types";
+
 // Backend lives under the /api/v1 prefix. The httpOnly access_token cookie is scoped to
 // Path=/api/v1, so calls MUST include this prefix or the cookie is never sent → 401.
 const BASE =
@@ -24,4 +26,23 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   const json = await res.json();
   if (!res.ok) throw new Error(json.message ?? `HTTP ${res.status}`);
   return json as T;
+}
+
+/**
+ * Upload a profile photo. The browser can't reach object storage directly (Rustfs sends no CORS
+ * headers), so the API brokers it: we POST the file as multipart to /me/avatar and the backend
+ * stores it and returns the updated profile (with a viewable avatarUrl). Don't set Content-Type —
+ * the browser adds the multipart boundary.
+ */
+export async function uploadAvatar(file: File): Promise<UserResponse> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${BASE}/me/avatar`, {
+    method: "POST",
+    credentials: "include",
+    body: form,
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message ?? `HTTP ${res.status}`);
+  return (json as { data: UserResponse }).data;
 }
