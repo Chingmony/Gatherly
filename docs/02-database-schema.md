@@ -382,6 +382,7 @@ Admin-created accounts are **invited**, not given a password by the Admin (docs/
 - **Ticket resolution:** `UNIQUE(registration_submission.checkin_token)` — O(1) lookup when an organizer scans a QR.
 - **Uniqueness:** `user.email`, `event.slug`, `event.registration_qr_token`, `event_assignment(event_id,user_id)`, `registration_form.event_id` (one form per event), `registration_submission.checkin_token`, `event_checkin.submission_id` (one attendance per ticket), `refresh_token.token_hash`.
 - **Audit/timeline reads:** composite `(material_id, created_at)`, `(event_id, checked_in_at)`.
+- **Dashboard aggregates (V6, docs/03 §4.13):** composite `(registration_submission.event_id, qr_status)` for org-wide/grouped check-in counts; `(event_assignment.event_id, event_role)` for managers-per-event; `(event.starts_at DESC NULLS LAST)` for the bounded most-recent-first control feed.
 
 ## 8. Migration & seed plan (Flyway)
 

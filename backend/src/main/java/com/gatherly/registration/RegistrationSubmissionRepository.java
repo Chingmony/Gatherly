@@ -17,6 +17,18 @@ public interface RegistrationSubmissionRepository extends JpaRepository<Registra
 
     long countByEventId(UUID eventId);
 
+    /** Org-wide checked-in total for the dashboard's registration-momentum card (docs/06 §11). */
+    long countByQrStatus(com.gatherly.registration.domain.TicketStatus qrStatus);
+
+    /**
+     * Grouped checked-in counts for a set of events — one query for the whole control table
+     * (mirrors {@link #countByEventIds}; avoids an N+1 count-per-event loop).
+     */
+    @Query("select s.eventId as eventId, count(s) as cnt from RegistrationSubmission s "
+            + "where s.eventId in :eventIds and s.qrStatus = :status group by s.eventId")
+    List<EventSubmissionCount> countByEventIdsAndQrStatus(
+            Collection<UUID> eventIds, com.gatherly.registration.domain.TicketStatus status);
+
     Page<RegistrationSubmission> findByEventId(UUID eventId, Pageable pageable);
 
     Optional<RegistrationSubmission> findByCheckinToken(String checkinToken);

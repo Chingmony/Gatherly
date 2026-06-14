@@ -9,7 +9,7 @@ import type { NextRequest } from "next/server";
  * Route groups like {@code (admin)} don't add a path segment, so the admin user console lives at
  * {@code /users}; the admin-only prefixes below are gated to the global ADMIN role.
  */
-const ADMIN_PREFIXES = ["/users", "/organization", "/supply-list"];
+const ADMIN_PREFIXES = ["/dashboard", "/users", "/organization", "/supply-list"];
 
 export function proxy(request: NextRequest) {
   const access = request.cookies.get("access_token")?.value;
@@ -40,6 +40,8 @@ function decodeRole(jwt: string): string | null {
 
 export const config = {
   matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
     "/users",
     "/users/:path*",
     "/organization",

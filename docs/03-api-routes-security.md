@@ -167,6 +167,13 @@ The new check-in: an organizer scans the **guest's** QR at the venue.
 
 > Telegram is now **outbound only** — there is no webhook. The bot's sole job is forwarding **registration and confirmed-attendance** events to the ops channel, fired automatically inside the respective services (not client-called). Per-guest QR delivery is by **email**, not Telegram (see [`04` §2.1](04-external-integrations.md)).
 
+### 4.13 Dashboard — `/dashboard/**`
+| Method | Path | Gate |
+|--------|------|------|
+| GET | `/dashboard/command-center` | `hasRole('ADMIN')` — global oversight aggregate |
+
+> Read-only aggregate for the Admin **Command Center** ([`05` §7 "Command Center"](05-frontend-spec.md), docs/06 §11): lifecycle counts (draft/live/completed), org-wide registration momentum (tickets issued vs capacity + check-ins), and a bounded (≤200, most-recent-first) Event Control Center feed — each row carries the event's manager (first `MANAGER` assignment), registration/check-in counts, and a flagged-issue count. Lifecycle totals are a grouped DB count (unaffected by the row cap); per-event counts/managers are batched (no N+1). `materialHealth` and `critical` are backed by the material/task domain (§4.7) — `null`/empty until it lands, and the UI renders an explicit "not tracked yet" state rather than fabricated data.
+
 ## 5. Representative payloads
 
 **`POST /users`** (Admin invites a user — no password)

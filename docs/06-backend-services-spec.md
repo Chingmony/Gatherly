@@ -49,6 +49,7 @@ Controller  →  Service  →  Repository  →  PostgreSQL
 | `StorageService` | Rustfs presign (purpose-scoped authz), object validation |
 | `EmailService` | QR-ticket + OTP transactional emails (templates) |
 | `TelegramNotifier` | ops-channel forwarding (registration/attendance) |
+| `DashboardService` | Admin Command Center aggregate (Admin-only, read-only) — lifecycle counts, registration momentum, bounded event-control feed (§11) |
 
 ## 3a. User invite → activation (worked example)
 
@@ -158,6 +159,15 @@ return { submissionId, ticketUrl }
 - **Event-scoped queries:** repositories accept `eventId` and the caller's identity is checked by the service gate, not by trusting client filters.
 - **JSONB:** native queries with `@>` containment for attendee discovery; GIN-indexed ([`02` §7](02-database-schema.md)).
 - **Pagination:** `Pageable` everywhere a collection can grow (users, submissions, materials, attendance).
+
+## 11. Dashboard aggregation — Command Center (worked example)
+
+`DashboardService.commandCenter()` powers the Admin **Command Center** ([`05` §7](05-frontend-spec.md)). Admin-only, `@Transactional(readOnly = true)`, gate on the service method.
+
+- **Lifecycle** counts (`draft` / `live` / `completed=ARCHIVED`) come from **one grouped DB count** over all events — correct regardless of the row cap below.
+- **Registration momentum** is org-wide: `count(submissions)`, `count(qr_status=CHECKED_IN)`, and `sum(capacity)` (capacity-`null` = unlimited, excluded) → `fillPct` clamped to 100.
+- **Event Control feed** is **bounded** (`≤200`, most-recent-first) so the dashboard never scans unbounded ([`11`](11-performance-and-scalability.md)). Per-event registration counts, check-in counts, and managers (first `MANAGER` assignment) are each **one batched query** over the row set — **no N+1** — and manager display names are batch-loaded by id.
+- **`materialHealth` + `critical`** are backed by the material/task domain (§5) — returned as `null`/empty until it lands; the client renders an explicit "not tracked yet" state (never fabricated numbers; the API is the source of authority, [`05` §1](05-frontend-spec.md)).
 
 ## 9. Configuration & beans
 

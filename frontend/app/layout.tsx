@@ -27,6 +27,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${jakarta.variable} ${dmMono.variable}`}>
+      <head>
+        {/* Apply the persisted theme before first paint to avoid a light→dark flash (design: theme
+            toggle persists to localStorage `gatherly-theme`, sets data-theme="dark" on <html>). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('gatherly-theme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

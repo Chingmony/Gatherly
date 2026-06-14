@@ -262,6 +262,72 @@ export interface SubmissionResponse {
   submittedAt: string;
 }
 
+// ---- Admin Command Center dashboard (docs/03 §4.13, docs/06 §11) ----------
+
+export interface CommandCenterLifecycle {
+  total: number;
+  draft: number;
+  live: number;
+  completed: number;
+}
+
+export interface CommandCenterRegistration {
+  totalRegistered: number;
+  totalCheckedIn: number;
+  totalCapacity: number;
+  fillPct: number;
+}
+
+export interface CommandCenterMaterialBucket {
+  id: string;
+  label: string;
+  count: number;
+}
+
+export interface CommandCenterMaterialHealth {
+  total: number;
+  onTrackPct: number;
+  issues: number;
+  buckets: CommandCenterMaterialBucket[];
+}
+
+export interface CommandCenterEventRow {
+  id: string;
+  title: string;
+  slug?: string;
+  status: EventStatus;
+  startsAt?: string;
+  venue?: string;
+  category?: string;
+  coverGradient?: string;
+  coverImageKey?: string;
+  capacity?: number | null;
+  registered: number;
+  checkedIn: number;
+  managerId?: string | null;
+  managerName?: string | null;
+  issueCount: number;
+}
+
+export interface CommandCenterIssue {
+  eventId: string;
+  eventName: string;
+  coverGradient?: string;
+  handlerName?: string;
+  task: string;
+  note?: string;
+  when?: string;
+}
+
+export interface CommandCenterResponse {
+  lifecycle: CommandCenterLifecycle;
+  registration: CommandCenterRegistration;
+  /** Null until the material/task domain lands (docs/06 §11) — UI shows a "not tracked" state. */
+  materialHealth: CommandCenterMaterialHealth | null;
+  events: CommandCenterEventRow[];
+  critical: CommandCenterIssue[];
+}
+
 // ---- Storage presign (docs/04 §4.4) ---------------------------------------
 
 export type StoragePurpose = "ORG_LOGO" | "ORG_BANNER" | "USER_AVATAR";
