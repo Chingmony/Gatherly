@@ -14,6 +14,8 @@ import {
   ImageIcon,
   ImagePlus,
   ShieldCheck,
+  AlertCircle,
+  Loader2,
   X,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
@@ -31,6 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ApiError } from "@/lib/api/client";
+import { createEvent, publishEvent, type EventCreateInput } from "@/lib/api/events";
 
 const CATEGORIES = ["Conference", "Workshop", "Festival", "Meetup", "Webinar", "Summit"] as const;
 
@@ -76,6 +80,9 @@ export default function CreateEventPage() {
   });
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const [submitting, setSubmitting] = useState<null | "draft" | "publish">(null);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<string[]>([]);
 
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -102,13 +109,61 @@ export default function CreateEventPage() {
     });
   }
 
+  function buildPayload(): EventCreateInput {
+    const title = form.name.trim();
+    const capacity = form.capacity.trim() === "" ? null : Number(form.capacity);
+    // Combine the date + time inputs into an ISO-8601 instant; null when no date is set.
+    let startsAt: string | null = null;
+    if (form.date) {
+      const dt = new Date(`${form.date}T${form.time || "00:00"}`);
+      if (!Number.isNaN(dt.getTime())) startsAt = dt.toISOString();
+    }
+    return {
+      title,
+      category: form.category,
+      capacity: capacity != null && Number.isFinite(capacity) ? capacity : null,
+      description: form.description.trim() || null,
+      venue: form.venue.trim() || null,
+      // Cover image upload goes through Rustfs (out of scope here); persist the chosen color theme.
+      coverColor: form.cover,
+      coverImageUrl: null,
+      startsAt,
+    };
+  }
+
+  async function submit(mode: "draft" | "publish") {
+    if (submitting) return;
+    setError(null);
+    setFieldErrors([]);
+    if (!form.name.trim()) {
+      setError("Event name is required.");
+      return;
+    }
+    setSubmitting(mode);
+    try {
+      const created = await createEvent(buildPayload());
+      if (mode === "publish") {
+        await publishEvent(created.id);
+      }
+      router.push("/events");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message || "Couldn't create the event. Please review your details.");
+        setFieldErrors(err.fieldErrors.map((fe) => fe.message).filter(Boolean));
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+      setSubmitting(null);
+    }
+  }
+
   function handlePublish(e: React.FormEvent) {
     e.preventDefault();
-    router.push("/events");
+    void submit("publish");
   }
 
   function handleDraft() {
-    router.push("/events");
+    void submit("draft");
   }
 
   return (
@@ -124,13 +179,32 @@ export default function CreateEventPage() {
       </nav>
 
       <PageHeader title="Create Event" sub="Set up a new event, then publish it when you're ready">
-        <Button variant="ghost" size="sm" onClick={handleDraft}>
-          <PencilLine size={15} /> Save draft
+        <Button variant="ghost" size="sm" onClick={handleDraft} disabled={submitting !== null}>
+          {submitting === "draft" ? <Loader2 size={15} className="animate-spin" /> : <PencilLine size={15} />}
+          Save draft
         </Button>
-        <Button size="sm" onClick={handlePublish}>
-          <Radio size={15} /> Create &amp; publish
+        <Button size="sm" onClick={handlePublish} disabled={submitting !== null}>
+          {submitting === "publish" ? <Loader2 size={15} className="animate-spin" /> : <Radio size={15} />}
+          Create &amp; publish
         </Button>
       </PageHeader>
+
+      {error && (
+        <div
+          className="flex flex-col gap-1 rounded-[var(--radius-md)] border px-3.5 py-3"
+          style={{ background: "var(--danger-soft)", borderColor: "var(--danger)" }}
+          role="alert"
+        >
+          <span className="inline-flex items-center gap-2 text-sm font-bold" style={{ color: "var(--danger)" }}>
+            <AlertCircle size={15} /> {error}
+          </span>
+          {fieldErrors.length > 0 && (
+            <ul className="list-disc pl-8 m-0 text-xs" style={{ color: "var(--text)" }}>
+              {fieldErrors.map((m, i) => <li key={i}>{m}</li>)}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-6 items-start">
         {/* ── Left: Form ── */}

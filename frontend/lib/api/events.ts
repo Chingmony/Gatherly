@@ -114,3 +114,124 @@ export async function registerForEvent(
     signal,
   });
 }
+
+/* ─────────────────────── Authenticated event management ───────────────────────
+ * Wraps the role-scoped `/events` endpoints (backend `EventController`). Auth is carried by the
+ * httpOnly cookies `apiFetch` replays — ADMIN sees all events, others only events they're assigned
+ * to. Create/publish/archive/delete/QR-rotate are ADMIN-only (the API returns 403 otherwise).
+ */
+
+/** Event lifecycle — mirrors backend `EventStatus` (serialized as the enum name). */
+export type EventStatus = "DRAFT" | "PUBLIC" | "ARCHIVED";
+
+/** Whitelisted sort keys for `GET /events` — mirrors backend `EventSort`. */
+export type EventSortKey = "DATE" | "NAME" | "STATUS" | "CREATED_AT";
+
+/** Full event projection — mirrors backend `EventResponse`. */
+export interface AdminEvent {
+  id: string;
+  title: string;
+  slug: string;
+  category: string | null;
+  capacity: number | null;
+  description: string | null;
+  venue: string | null;
+  coverColor: string | null;
+  coverImageUrl: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  status: EventStatus;
+  registeredCount: number;
+  registrationQrToken: string | null;
+  checkinOpensAt: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ListEventsParams {
+  search?: string;
+  page?: number;
+  size?: number;
+  sort?: EventSortKey;
+  direction?: "ASC" | "DESC";
+  signal?: AbortSignal;
+}
+
+/** Role-scoped list of events the caller can see. Returns a single page (default size 100). */
+export async function listEvents(params: ListEventsParams = {}): Promise<AdminEvent[]> {
+  const { search, page, size = 100, sort, direction, signal } = params;
+  const qs = new URLSearchParams();
+  if (search) qs.set("search", search);
+  if (page != null) qs.set("page", String(page));
+  qs.set("size", String(size));
+  if (sort) qs.set("sort", sort);
+  if (direction) qs.set("direction", direction);
+  const query = qs.toString();
+  return apiFetch<AdminEvent[]>(`/events${query ? `?${query}` : ""}`, { signal });
+}
+
+/** Fields accepted when creating an event — mirrors backend `EventCreateRequest`. */
+export interface EventCreateInput {
+  title: string;
+  category?: string | null;
+  capacity?: number | null;
+  description?: string | null;
+  venue?: string | null;
+  coverColor?: string | null;
+  coverImageUrl?: string | null;
+  /** ISO-8601 instant (e.g. `2026-07-15T09:00:00Z`), or null for TBA. */
+  startsAt?: string | null;
+  endsAt?: string | null;
+  checkinOpensAt?: string | null;
+}
+
+/** Partial update — mirrors backend `EventUpdateRequest`; omitted/null fields are left unchanged. */
+export type EventUpdateInput = Partial<EventCreateInput>;
+
+/** Create a new DRAFT event (ADMIN only). Throws `ApiError` (403/400) on failure. */
+export async function createEvent(
+  input: EventCreateInput,
+  signal?: AbortSignal
+): Promise<AdminEvent> {
+  return apiFetch<AdminEvent>("/events", { method: "POST", body: input, signal });
+}
+
+/** Fetch a single event by id (ADMIN or an assigned MANAGER/HANDLER). */
+export async function getEvent(id: string, signal?: AbortSignal): Promise<AdminEvent> {
+  return apiFetch<AdminEvent>(`/events/${encodeURIComponent(id)}`, { signal });
+}
+
+/** Partial update of event details (ADMIN or the event's MANAGER). */
+export async function updateEvent(
+  id: string,
+  input: EventUpdateInput,
+  signal?: AbortSignal
+): Promise<AdminEvent> {
+  return apiFetch<AdminEvent>(`/events/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: input,
+    signal,
+  });
+}
+
+/** Transition DRAFT → PUBLIC (ADMIN only). Throws `ApiError` 409 if not in DRAFT. */
+export async function publishEvent(id: string, signal?: AbortSignal): Promise<AdminEvent> {
+  return apiFetch<AdminEvent>(`/events/${encodeURIComponent(id)}/publish`, {
+    method: "POST",
+    signal,
+  });
+}
+
+/** Transition PUBLIC → ARCHIVED (ADMIN only). Throws `ApiError` 409 if not in PUBLIC. */
+export async function archiveEvent(id: string, signal?: AbortSignal): Promise<AdminEvent> {
+  return apiFetch<AdminEvent>(`/events/${encodeURIComponent(id)}/archive`, {
+    method: "POST",
+    signal,
+  });
+}
+
+/** Permanently delete an event and its children (ADMIN only). */
+export async function deleteEvent(id: string, signal?: AbortSignal): Promise<void> {
+  return apiFetch<void>(`/events/${encodeURIComponent(id)}`, { method: "DELETE", signal });
+}

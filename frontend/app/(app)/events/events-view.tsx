@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -10,76 +10,168 @@ import {
   Calendar,
   MapPin,
   Users,
-  ListChecks,
+  Radio,
   PencilLine,
   CalendarX2,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { ApiError } from "@/lib/api/client";
+import {
+  listEvents,
+  deleteEvent,
+  publishEvent,
+  archiveEvent,
+  type AdminEvent,
+  type EventStatus,
+} from "@/lib/api/events";
+import { getUser } from "@/lib/auth/session";
 
-type EventStatus = "public" | "draft";
-
-interface EventItem {
-  id: string;
-  name: string;
-  category: string;
-  status: EventStatus;
-  date: string;
-  location: string;
-  registered: number;
-  capacity: number;
-  crew: number;
-  tasksDone: number;
-  tasksTotal: number;
-  from: string;
-  to: string;
-}
-
-const EVENTS: EventItem[] = [
-  { id: "ev1", name: "NorthStar Tech Summit", category: "Conference", status: "public", date: "Jun 24, 2026", location: "Pier 48",          registered: 1842, capacity: 2000, crew: 6,  tasksDone: 18, tasksTotal: 26, from: "#6366f1", to: "#8b5cf6" },
-  { id: "ev2", name: "Lumen Music Festival",  category: "Festival",   status: "public", date: "Jul 12, 2026", location: "Golden Gate Park",  registered: 6320, capacity: 8000, crew: 11, tasksDone: 9,  tasksTotal: 31, from: "#f43f5e", to: "#f59e0b" },
-  { id: "ev3", name: "Founders Brunch Q3",    category: "Networking", status: "draft",  date: "Aug 03, 2026", location: "The Battery",       registered: 0,    capacity: 120,  crew: 3,  tasksDone: 2,  tasksTotal: 14, from: "#14b8a6", to: "#3b82f6" },
-  { id: "ev4", name: "DesignOps Workshop",    category: "Workshop",   status: "public", date: "Jun 30, 2026", location: "Online + Studio C", registered: 318,  capacity: 400,  crew: 4,  tasksDone: 11, tasksTotal: 15, from: "#22c55e", to: "#16a34a" },
-  { id: "ev5", name: "Harvest Charity Gala",  category: "Gala",       status: "draft",  date: "Sep 20, 2026", location: "Fairmont Ballroom", registered: 0,    capacity: 500,  crew: 5,  tasksDone: 0,  tasksTotal: 19, from: "#f59e0b", to: "#ec4899" },
-  { id: "ev6", name: "Frostbyte Hackathon",   category: "Hackathon",  status: "public", date: "Jul 28, 2026", location: "Innovation Hub",    registered: 540,  capacity: 600,  crew: 8,  tasksDone: 7,  tasksTotal: 22, from: "#3b82f6", to: "#6366f1" },
-];
-
-const STATUS_META: Record<EventStatus, { label: string; dot: string }> = {
-  public: { label: "Public", dot: "var(--green)" },
-  draft:  { label: "Draft",  dot: "#9aa3b5" },
+/* ─────────────────────────── cover gradients ─────────────────────────── */
+const COVER_THEMES: Record<string, { from: string; to: string }> = {
+  violet: { from: "#6366f1", to: "#8b5cf6" },
+  blue: { from: "#3b82f6", to: "#6366f1" },
+  teal: { from: "#14b8a6", to: "#06b6d4" },
+  green: { from: "#22c55e", to: "#16a34a" },
+  orange: { from: "#f59e0b", to: "#f97316" },
+  amber: { from: "#f97316", to: "#ec4899" },
+  pink: { from: "#f43f5e", to: "#f59e0b" },
 };
 
-type TabId = "all" | "public" | "draft";
+// Deterministic fallback gradient per event id so cards without a coverColor still look distinct.
+const FALLBACK_THEMES = Object.values(COVER_THEMES);
+
+function coverGradientFor(ev: AdminEvent): string {
+  if (ev.coverColor?.startsWith("#")) {
+    return `linear-gradient(135deg, ${ev.coverColor}, ${ev.coverColor})`;
+  }
+  const theme =
+    (ev.coverColor && COVER_THEMES[ev.coverColor]) ||
+    FALLBACK_THEMES[hashId(ev.id) % FALLBACK_THEMES.length];
+  return `linear-gradient(135deg, ${theme.from}, ${theme.to})`;
+}
+
+function hashId(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function fmtDate(iso: string | null) {
+  if (!iso) return "Date TBA";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "Date TBA";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+/* ─────────────────────────── status meta ─────────────────────────── */
+const STATUS_META: Record<EventStatus, { label: string; dot: string }> = {
+  PUBLIC: { label: "Public", dot: "var(--green)" },
+  DRAFT: { label: "Draft", dot: "#9aa3b5" },
+  ARCHIVED: { label: "Archived", dot: "var(--orange)" },
+};
+
+type TabId = "all" | "PUBLIC" | "DRAFT" | "ARCHIVED";
 
 export function EventsView() {
   const [tab, setTab] = useState<TabId>("all");
   const [query, setQuery] = useState("");
 
-  const counts = useMemo(
-    () => ({
-      all: EVENTS.length,
-      public: EVENTS.filter((e) => e.status === "public").length,
-      draft: EVENTS.filter((e) => e.status === "draft").length,
-    }),
-    []
-  );
+  const [events, setEvents] = useState<AdminEvent[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  // sessionStorage is browser-only — read it after mount so SSR prerender doesn't crash.
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    setIsAdmin(getUser()?.globalRole === "ADMIN");
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setEvents(null);
+    setLoadError(null);
+    listEvents({ size: 100, signal: controller.signal })
+      .then(setEvents)
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        setLoadError(
+          err instanceof ApiError ? err.message : "Couldn't load events. Please try again."
+        );
+        setEvents([]);
+      });
+    return () => controller.abort();
+  }, []);
+
+  const counts = useMemo(() => {
+    const list = events ?? [];
+    return {
+      all: list.length,
+      PUBLIC: list.filter((e) => e.status === "PUBLIC").length,
+      DRAFT: list.filter((e) => e.status === "DRAFT").length,
+      ARCHIVED: list.filter((e) => e.status === "ARCHIVED").length,
+    };
+  }, [events]);
 
   const filtered = useMemo(() => {
+    const list = events ?? [];
     const q = query.trim().toLowerCase();
-    return EVENTS.filter((e) => {
+    return list.filter((e) => {
       const matchesTab = tab === "all" || e.status === tab;
       const matchesQuery =
-        !q || e.name.toLowerCase().includes(q) || e.location.toLowerCase().includes(q) || e.category.toLowerCase().includes(q);
+        !q ||
+        e.title.toLowerCase().includes(q) ||
+        (e.venue ?? "").toLowerCase().includes(q) ||
+        (e.category ?? "").toLowerCase().includes(q);
       return matchesTab && matchesQuery;
     });
-  }, [tab, query]);
+  }, [events, tab, query]);
 
   const TABS: { id: TabId; label: string; count: number }[] = [
     { id: "all", label: "All", count: counts.all },
-    { id: "public", label: "Public", count: counts.public },
-    { id: "draft", label: "Draft", count: counts.draft },
+    { id: "PUBLIC", label: "Public", count: counts.PUBLIC },
+    { id: "DRAFT", label: "Draft", count: counts.DRAFT },
+    { id: "ARCHIVED", label: "Archived", count: counts.ARCHIVED },
   ];
+
+  async function handleDelete(ev: AdminEvent) {
+    if (!window.confirm(`Delete “${ev.title}”? This permanently removes it and all its data.`)) {
+      return;
+    }
+    setActionError(null);
+    setBusyId(ev.id);
+    try {
+      await deleteEvent(ev.id);
+      setEvents((prev) => (prev ?? []).filter((e) => e.id !== ev.id));
+    } catch (err) {
+      setActionError(
+        err instanceof ApiError ? err.message : "Couldn't delete this event. Please try again."
+      );
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleTransition(ev: AdminEvent, to: "publish" | "archive") {
+    setActionError(null);
+    setBusyId(ev.id);
+    try {
+      const updated = to === "publish" ? await publishEvent(ev.id) : await archiveEvent(ev.id);
+      setEvents((prev) => (prev ?? []).map((e) => (e.id === ev.id ? updated : e)));
+    } catch (err) {
+      setActionError(
+        err instanceof ApiError ? err.message : `Couldn't ${to} this event. Please try again.`
+      );
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  const loading = events === null;
 
   return (
     <div className="flex flex-col gap-6 view-anim">
@@ -139,25 +231,67 @@ export function EventsView() {
             })}
           </div>
 
-          <Button asChild>
-            <Link href="/events/new"><Plus size={16} /> Create Event</Link>
-          </Button>
+          {isAdmin && (
+            <Button asChild>
+              <Link href="/events/new"><Plus size={16} /> Create Event</Link>
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* ── Grid ── */}
-      {filtered.length === 0 ? (
+      {/* ── Action error banner ── */}
+      {actionError && (
+        <div
+          className="flex items-center gap-2 rounded-[var(--radius-md)] border px-3.5 py-3 text-sm font-bold"
+          style={{ background: "var(--danger-soft)", borderColor: "var(--danger)", color: "var(--danger)" }}
+          role="alert"
+        >
+          <AlertCircle size={15} /> {actionError}
+        </div>
+      )}
+
+      {/* ── Body ── */}
+      {loading ? (
+        <Card className="flex flex-col items-center justify-center gap-3 py-20 text-center" style={{ color: "var(--text-muted)" }}>
+          <Loader2 size={26} className="animate-spin" />
+          <p className="text-sm font-semibold m-0">Loading events…</p>
+        </Card>
+      ) : loadError ? (
+        <Card className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+          <AlertCircle size={30} style={{ color: "var(--danger)" }} />
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-bold m-0" style={{ color: "var(--text)" }}>Couldn&apos;t load events</p>
+            <p className="text-xs m-0" style={{ color: "var(--text-muted)" }}>{loadError}</p>
+          </div>
+        </Card>
+      ) : filtered.length === 0 ? (
         <Card className="flex flex-col items-center justify-center gap-3 py-16 text-center">
           <CalendarX2 size={30} style={{ color: "var(--text-faint)" }} />
           <div className="flex flex-col gap-1">
-            <p className="text-sm font-bold m-0" style={{ color: "var(--text)" }}>No events match your filters</p>
-            <p className="text-xs m-0" style={{ color: "var(--text-muted)" }}>Try a different search or tab.</p>
+            <p className="text-sm font-bold m-0" style={{ color: "var(--text)" }}>
+              {counts.all === 0 ? "No events yet" : "No events match your filters"}
+            </p>
+            <p className="text-xs m-0" style={{ color: "var(--text-muted)" }}>
+              {counts.all === 0
+                ? isAdmin
+                  ? "Create your first event to get started."
+                  : "You haven't been assigned to any events yet."
+                : "Try a different search or tab."}
+            </p>
           </div>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
           {filtered.map((ev) => (
-            <EventCard key={ev.id} ev={ev} />
+            <EventCard
+              key={ev.id}
+              ev={ev}
+              isAdmin={isAdmin}
+              busy={busyId === ev.id}
+              onDelete={() => handleDelete(ev)}
+              onPublish={() => handleTransition(ev, "publish")}
+              onArchive={() => handleTransition(ev, "archive")}
+            />
           ))}
         </div>
       )}
@@ -165,23 +299,35 @@ export function EventsView() {
   );
 }
 
-function EventCard({ ev }: { ev: EventItem }) {
-  const fillPct = ev.capacity > 0 ? Math.round((ev.registered / ev.capacity) * 100) : 0;
+function EventCard({
+  ev,
+  isAdmin,
+  busy,
+  onDelete,
+  onPublish,
+  onArchive,
+}: {
+  ev: AdminEvent;
+  isAdmin: boolean;
+  busy: boolean;
+  onDelete: () => void;
+  onPublish: () => void;
+  onArchive: () => void;
+}) {
+  const capacity = ev.capacity ?? 0;
+  const fillPct = capacity > 0 ? Math.min(100, Math.round((ev.registeredCount / capacity) * 100)) : 0;
   const st = STATUS_META[ev.status];
 
   return (
     <Card className="overflow-hidden flex flex-col">
       {/* Cover */}
-      <div
-        className="relative h-44 p-4"
-        style={{ background: `linear-gradient(135deg, ${ev.from}, ${ev.to})` }}
-      >
+      <div className="relative h-44 p-4" style={{ background: coverGradientFor(ev) }}>
         <div className="flex items-start justify-between">
           <span
             className="text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-sm"
             style={{ background: "rgba(17,20,42,0.25)", color: "#fff" }}
           >
-            {ev.category}
+            {ev.category || "Event"}
           </span>
           <span
             className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-sm"
@@ -201,17 +347,17 @@ function EventCard({ ev }: { ev: EventItem }) {
       {/* Body */}
       <div className="p-5 flex flex-col gap-3 flex-1">
         <h3 className="text-[17px] font-extrabold leading-tight m-0" style={{ color: "var(--text-strong)" }}>
-          {ev.name}
+          {ev.title}
         </h3>
 
         <div className="flex items-center gap-2 text-[13px]" style={{ color: "var(--text-muted)" }}>
           <span className="inline-flex items-center gap-1.5">
-            <Calendar size={13} /> {ev.date}
+            <Calendar size={13} /> {fmtDate(ev.startsAt)}
           </span>
           <span style={{ color: "var(--text-faint)" }}>·</span>
           <span className="inline-flex items-center gap-1.5 min-w-0">
             <MapPin size={13} className="flex-shrink-0" />
-            <span className="truncate">{ev.location}</span>
+            <span className="truncate">{ev.venue || "Venue TBD"}</span>
           </span>
         </div>
 
@@ -220,7 +366,7 @@ function EventCard({ ev }: { ev: EventItem }) {
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold" style={{ color: "var(--text-muted)" }}>Registration</span>
             <span className="text-[13px] font-extrabold" style={{ color: "var(--text-strong)" }}>
-              {ev.registered.toLocaleString()} / {ev.capacity.toLocaleString()}
+              {ev.registeredCount.toLocaleString()} / {ev.capacity != null ? ev.capacity.toLocaleString() : "∞"}
             </span>
           </div>
           <Progress value={fillPct} />
@@ -229,10 +375,7 @@ function EventCard({ ev }: { ev: EventItem }) {
         {/* Meta */}
         <div className="flex items-center gap-4 text-[13px] font-semibold" style={{ color: "var(--text-muted)" }}>
           <span className="inline-flex items-center gap-1.5">
-            <Users size={14} /> {ev.crew} crew
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <ListChecks size={14} /> {ev.tasksDone}/{ev.tasksTotal} tasks
+            <Users size={14} /> {ev.registeredCount.toLocaleString()} registered
           </span>
         </div>
 
@@ -244,9 +387,21 @@ function EventCard({ ev }: { ev: EventItem }) {
           <Button asChild variant="ghost" size="icon" title="Open workspace">
             <Link href={`/events/${ev.id}/workspace`}><Eye size={16} /></Link>
           </Button>
-          <Button variant="danger" size="icon" title="Delete event">
-            <Trash2 size={16} />
-          </Button>
+          {isAdmin && ev.status === "DRAFT" && (
+            <Button variant="ghost" size="icon" title="Publish event" onClick={onPublish} disabled={busy}>
+              {busy ? <Loader2 size={15} className="animate-spin" /> : <Radio size={16} />}
+            </Button>
+          )}
+          {isAdmin && ev.status === "PUBLIC" && (
+            <Button variant="ghost" size="icon" title="Archive event" onClick={onArchive} disabled={busy}>
+              {busy ? <Loader2 size={15} className="animate-spin" /> : <CalendarX2 size={16} />}
+            </Button>
+          )}
+          {isAdmin && (
+            <Button variant="danger" size="icon" title="Delete event" onClick={onDelete} disabled={busy}>
+              {busy ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={16} />}
+            </Button>
+          )}
         </div>
       </div>
     </Card>
