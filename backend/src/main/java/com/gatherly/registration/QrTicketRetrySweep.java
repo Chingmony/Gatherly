@@ -2,6 +2,7 @@ package com.gatherly.registration;
 
 import com.gatherly.registration.domain.RegistrationSubmission;
 import com.gatherly.registration.domain.TicketStatus;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,7 @@ public class QrTicketRetrySweep {
 
     @Scheduled(fixedDelayString = "${gatherly.qr-retry.interval-ms:90000}",
             initialDelayString = "${gatherly.qr-retry.interval-ms:90000}")
+    @SchedulerLock(name = "qrTicketRetrySweep", lockAtMostFor = "PT5M", lockAtLeastFor = "PT10S")
     public void sweep() {
         if (!emailEnabled) {
             return; // nothing can be delivered with email disabled (local/test)

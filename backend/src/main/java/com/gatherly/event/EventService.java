@@ -29,9 +29,11 @@ import java.util.UUID;
 public class EventService {
 
     private final EventRepository events;
+    private final com.gatherly.audit.AuditService auditService;
 
-    public EventService(EventRepository events) {
+    public EventService(EventRepository events, com.gatherly.audit.AuditService auditService) {
         this.events = events;
+        this.auditService = auditService;
     }
 
     // ---- Read (service-scoped, docs/03 §4.4) --------------------------------
@@ -109,7 +111,9 @@ public class EventService {
                     "Only a DRAFT event can be published.");
         }
         e.setStatus(EventStatus.PUBLIC);
-        return events.save(e);
+        Event saved = events.save(e);
+        auditService.record("EVENT_PUBLISHED", "EVENT", eventId, "title=" + e.getTitle());
+        return saved;
     }
 
     /** Draft/Public → Archived. Admin only — completes the lifecycle (docs/02 §3.3). */
@@ -128,6 +132,7 @@ public class EventService {
     public void delete(UUID eventId) {
         Event e = findOrThrow(eventId);
         events.delete(e);
+        auditService.record("EVENT_DELETED", "EVENT", eventId, "title=" + e.getTitle());
     }
 
     // ---- Helpers -------------------------------------------------------------

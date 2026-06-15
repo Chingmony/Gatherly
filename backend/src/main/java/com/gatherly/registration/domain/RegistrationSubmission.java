@@ -61,6 +61,13 @@ public class RegistrationSubmission {
     @Column(name = "qr_delivered_at")
     private Instant qrDeliveredAt;
 
+    // Revoke-actor audit trail (docs/10 §audit, V13). Set when a manager revokes the ticket.
+    @Column(name = "revoked_by")
+    private UUID revokedBy;
+
+    @Column(name = "revoked_at")
+    private Instant revokedAt;
+
     @Column(name = "form_version", nullable = false)
     private int formVersion;
 
@@ -141,6 +148,22 @@ public class RegistrationSubmission {
 
     public void setQrStatus(TicketStatus qrStatus) {
         this.qrStatus = qrStatus;
+    }
+
+    public UUID getRevokedBy() {
+        return revokedBy;
+    }
+
+    public void setRevokedBy(UUID revokedBy) {
+        this.revokedBy = revokedBy;
+    }
+
+    public Instant getRevokedAt() {
+        return revokedAt;
+    }
+
+    public void setRevokedAt(Instant revokedAt) {
+        this.revokedAt = revokedAt;
     }
 
     public Instant getQrDeliveredAt() {

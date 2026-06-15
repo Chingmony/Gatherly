@@ -121,6 +121,11 @@ gatherly:
     grace-seconds: ${OPS_RETRY_GRACE_SECONDS:120}
     interval-ms: ${OPS_RETRY_INTERVAL_MS:90000}
     batch-size: ${OPS_RETRY_BATCH_SIZE:100}
+  # Submission/check-in retention purge (docs/10 §7, M9): delete data this many days after an
+  # event ends; ShedLock single-fires the daily job across instances.
+  retention:
+    submission-days: ${RETENTION_SUBMISSION_DAYS:90}
+    cron: ${RETENTION_CRON:0 30 3 * * *}
   # Rustfs / S3-compatible object store (docs/04 §4.2). Env-driven; local default is MinIO.
   # The endpoint host is baked into the presigned URL, so it must be reachable by the uploading
   # client (the browser) — use a host the client can resolve, not the internal compose hostname.

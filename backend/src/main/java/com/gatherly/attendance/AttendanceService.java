@@ -8,6 +8,7 @@ import com.gatherly.attendance.dto.CheckinResult;
 import com.gatherly.attendance.dto.ManualCheckinRequest;
 import com.gatherly.attendance.dto.ScanRequest;
 import com.gatherly.attendance.event.GuestCheckedInEvent;
+import com.gatherly.audit.AuditService;
 import com.gatherly.common.error.DomainConflictException;
 import com.gatherly.common.error.ErrorCode;
 import com.gatherly.common.error.NotFoundException;
@@ -55,15 +56,17 @@ public class AttendanceService {
     private final EventCheckinRepository checkins;
     private final UserRepository users;
     private final ApplicationEventPublisher eventPublisher;
+    private final AuditService auditService;
 
     public AttendanceService(EventRepository events, RegistrationSubmissionRepository submissions,
                              EventCheckinRepository checkins, UserRepository users,
-                             ApplicationEventPublisher eventPublisher) {
+                             ApplicationEventPublisher eventPublisher, AuditService auditService) {
         this.events = events;
         this.submissions = submissions;
         this.checkins = checkins;
         this.users = users;
         this.eventPublisher = eventPublisher;
+        this.auditService = auditService;
     }
 
     /**
@@ -95,7 +98,7 @@ public class AttendanceService {
      * ticket already {@code CHECKED_IN} can't be revoked; a re-revoke is an idempotent no-op.
      */
     @PreAuthorize("@eventSecurity.canManage(#eventId, authentication)")
-    public void revoke(UUID eventId, UUID submissionId) {
+    public void revoke(UUID eventId, UUID submissionId, UserPrincipal actor) {
         RegistrationSubmission sub = submissions.findById(submissionId)
                 .filter(s -> s.getEventId().equals(eventId))
                 .orElseThrow(() -> new NotFoundException("Ticket not found.")); // no cross-event leak
@@ -107,10 +110,11 @@ public class AttendanceService {
             return; // idempotent
         }
         sub.setQrStatus(TicketStatus.REVOKED);
+        // Revoke-actor audit trail (docs/10 §audit, V13) — who revoked and when.
+        sub.setRevokedBy(actor == null ? null : actor.id());
+        sub.setRevokedAt(Instant.now());
         submissions.save(sub);
-        // TODO(M9): record the revoking actor for audit (docs/10 §audit). Needs the principal
-        // plumbed controller→service + a revoked_by/revoked_at column (V9). Authz already gated;
-        // this is the audit-trail gap flagged by authz-reviewer, deferred to M9 hardening.
+        auditService.record("TICKET_REVOKED", "SUBMISSION", submissionId, "event=" + eventId);
     }
 
     /** Live attendance list + counts (docs/03 §4.10), bounded most-recent-first; no N+1. */

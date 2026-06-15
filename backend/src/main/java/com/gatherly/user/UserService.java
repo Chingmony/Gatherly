@@ -40,13 +40,16 @@ public class UserService {
     private final EventAssignmentRepository assignments;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher events;
+    private final com.gatherly.audit.AuditService auditService;
 
     public UserService(UserRepository users, EventAssignmentRepository assignments,
-                       PasswordEncoder passwordEncoder, ApplicationEventPublisher events) {
+                       PasswordEncoder passwordEncoder, ApplicationEventPublisher events,
+                       com.gatherly.audit.AuditService auditService) {
         this.users = users;
         this.assignments = assignments;
         this.passwordEncoder = passwordEncoder;
         this.events = events;
+        this.auditService = auditService;
     }
 
     // ---- Admin global CRUD (docs/03 §4.2) -----------------------------------
@@ -126,6 +129,7 @@ public class UserService {
     public void delete(UUID userId) {
         User u = findOrThrow(userId);
         users.delete(u);
+        auditService.record("USER_DELETED", "USER", userId, "email=" + u.getEmail());
     }
 
     /** Deactivate (soft) — keep an active user out without removing the record (docs/02 §1). */

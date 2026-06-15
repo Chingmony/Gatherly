@@ -12,6 +12,15 @@ gatherly:
   auth:
     cookie:
       secure: false
+  # Keep the rate limiter wired (its code path runs) but effectively non-blocking for the general
+  # suite — many ITs log in repeatedly from 127.0.0.1 sharing one Redis. RateLimitIT overrides
+  # these low to assert the 429 behaviour.
+  rate-limit:
+    login: 100000
+    forgot: 100000
+    otp-verify: 100000
+    register: 100000
+    resend: 100000
 
 logging:
   level:

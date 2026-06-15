@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Structured logging (docs/08 §2). One JSON event per line in prod (logstash encoder) for a central
+  store; a readable console pattern elsewhere. Both surface the MDC traceId/userId set by
+  RequestTracingFilter so a single id correlates logs ↔ audit ↔ client error body. DEBUG is off in
+  prod. Never log secrets/PII (enforced in code, not here).
+-->
+<configuration>
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+            <customFields>{"app":"gatherly"}</customFields>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%X{traceId:-}] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Prod: JSON to stdout for shipping to the central store (docs/08 §9 Grafana/Loki). -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Local / test / default: human-readable console. -->
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.gatherly" level="DEBUG"/>
+    </springProfile>
+</configuration>

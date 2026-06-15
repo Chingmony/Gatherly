@@ -174,6 +174,14 @@ The new check-in: an organizer scans the **guest's** QR at the venue.
 
 > Read-only aggregate for the Admin **Command Center** ([`05` §7 "Command Center"](05-frontend-spec.md), docs/06 §11): lifecycle counts (draft/live/completed), org-wide registration momentum (tickets issued vs capacity + check-ins), and a bounded (≤200, most-recent-first) Event Control Center feed — each row carries the event's manager (first `MANAGER` assignment), registration/check-in counts, and a flagged-issue count. Lifecycle totals are a grouped DB count (unaffected by the row cap); per-event counts/managers are batched (no N+1). `materialHealth` and `critical` are backed by the material/task domain (§4.7) — `null`/empty until it lands, and the UI renders an explicit "not tracked yet" state rather than fabricated data.
 
+### 4.14 Admin operations (M9 hardening) — `/audit-log`, `/admin/**`
+| Method | Path | Gate |
+|--------|------|------|
+| GET | `/audit-log` | `hasRole('ADMIN')` — paginated privileged-action audit trail (docs/08 §5) |
+| DELETE | `/admin/guest-data?email=&phone=` | `hasRole('ADMIN')` — right-to-erasure: delete a guest's submissions/check-ins (docs/10 §7) |
+
+> Both gates live on the service layer (`AuditService#list`, `PrivacyService#erase`). The audit trail records privileged actions (`USER_DELETED`, `EVENT_PUBLISHED`/`EVENT_DELETED`, `TICKET_REVOKED`, `GUEST_ERASED`, …) with `{actor, action, targetType, targetId, traceId, ts}`. Submission/check-in **retention** (90d post-event) is a scheduled purge, not an endpoint (docs/10 §7).
+
 ## 5. Representative payloads
 
 **`POST /users`** (Admin invites a user — no password)
