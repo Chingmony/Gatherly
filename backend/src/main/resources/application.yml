@@ -5,9 +5,9 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/gatherly}
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/postgres}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:1111}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -49,7 +49,7 @@ spring:
 
 
 server:
-  port: 8081
+  port: 9092
   # No servlet context-path: the /api/v1 prefix is applied to controllers via WebMvcConfig so that
   # Swagger UI (springdoc, outside the controller package) stays at the root (/swagger-ui/...).
 
