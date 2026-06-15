@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -35,7 +35,10 @@ import {
 } from "@/components/ui/select";
 import { ApiError } from "@/lib/api/client";
 import { createEvent, publishEvent, type EventCreateInput } from "@/lib/api/events";
+import { listTemplates } from "@/lib/api/forms";
 
+// Fallback shown until the real form-template event types load. The category drives which form
+// template seeds the event's registration form, so the live options come from the templates.
 const CATEGORIES = ["Conference", "Workshop", "Festival", "Meetup", "Webinar", "Summit"] as const;
 
 const STATUSES = ["draft", "published"] as const;
@@ -68,7 +71,7 @@ export default function CreateEventPage() {
   const router = useRouter();
   const [form, setForm] = useState({
     name: "",
-    category: "Conference" as (typeof CATEGORIES)[number],
+    category: "Conference" as string,
     capacity: "",
     date: "",
     time: "09:00",
@@ -83,6 +86,20 @@ export default function CreateEventPage() {
   const [submitting, setSubmitting] = useState<null | "draft" | "publish">(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([...CATEGORIES]);
+
+  // The category options are the form-template event types: picking one seeds the new event's
+  // registration form from that template, so guests register with the form built for the category.
+  useEffect(() => {
+    listTemplates()
+      .then((tpls) => {
+        const types = Array.from(new Set((tpls ?? []).map((t) => t.eventType))).sort();
+        if (types.length === 0) return;
+        setCategories(types);
+        setForm((p) => (types.includes(p.category) ? p : { ...p, category: types[0] }));
+      })
+      .catch(() => {});
+  }, []);
 
   const set = (k: string, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -240,13 +257,16 @@ export default function CreateEventPage() {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {CATEGORIES.map((c) => (
+                      {categories.map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs m-0" style={{ color: "var(--text-faint)" }}>
+                    Guests register with the form template for this category.
+                  </p>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="capacity">

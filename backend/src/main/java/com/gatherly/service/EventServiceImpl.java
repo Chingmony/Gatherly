@@ -5,7 +5,9 @@ import com.gatherly.common.error.ErrorCode;
 import com.gatherly.domain.Event;
 import com.gatherly.domain.EventAssignment;
 import com.gatherly.domain.EventStatus;
+import com.gatherly.domain.FormStatus;
 import com.gatherly.domain.GlobalRole;
+import com.gatherly.domain.RegistrationForm;
 import com.gatherly.dto.event.EventCreateRequest;
 import com.gatherly.dto.event.EventResponse;
 import com.gatherly.dto.event.EventUpdateRequest;
@@ -13,6 +15,8 @@ import com.gatherly.dto.event.PublicEventResponse;
 import com.gatherly.mapper.EventMapper;
 import com.gatherly.repository.EventAssignmentRepository;
 import com.gatherly.repository.EventRepository;
+import com.gatherly.repository.FormTemplateRepository;
+import com.gatherly.repository.RegistrationFormRepository;
 import com.gatherly.repository.RegistrationSubmissionRepository;
 import com.gatherly.repository.RegistrationSubmissionRepository.EventRegistrationCount;
 import com.gatherly.security.UserPrincipal;
@@ -40,6 +44,8 @@ public class EventServiceImpl implements EventService {
   private final EventRepository eventRepository;
   private final EventAssignmentRepository assignmentRepository;
   private final RegistrationSubmissionRepository submissionRepository;
+  private final FormTemplateRepository formTemplateRepository;
+  private final RegistrationFormRepository formRepository;
   private final EventMapper eventMapper;
   private final SecureRandom random = new SecureRandom();
 
@@ -47,10 +53,14 @@ public class EventServiceImpl implements EventService {
       EventRepository eventRepository,
       EventAssignmentRepository assignmentRepository,
       RegistrationSubmissionRepository submissionRepository,
+      FormTemplateRepository formTemplateRepository,
+      RegistrationFormRepository formRepository,
       EventMapper eventMapper) {
     this.eventRepository = eventRepository;
     this.assignmentRepository = assignmentRepository;
     this.submissionRepository = submissionRepository;
+    this.formTemplateRepository = formTemplateRepository;
+    this.formRepository = formRepository;
     this.eventMapper = eventMapper;
   }
 
@@ -120,7 +130,35 @@ public class EventServiceImpl implements EventService {
     event.setCheckinOpensAt(request.checkinOpensAt());
     event.setStatus(EventStatus.DRAFT);
     event.setCreatedBy(principal.id());
-    return toResponse(eventRepository.save(event));
+    Event saved = eventRepository.save(event);
+    seedRegistrationForm(saved, principal.id());
+    return toResponse(saved);
+  }
+
+  /**
+   * Give a new event a ready-to-use registration form by copying the most recent form template
+   * whose event type matches the chosen category. This is what lets guests register for an event
+   * with the form designed for its category. Seeded ACTIVE (templates always carry the required
+   * email + phone fields); if no template matches the category the event starts with no form and an
+   * organizer can build one. Public registration stays gated on the event being PUBLISHED.
+   */
+  private void seedRegistrationForm(Event event, UUID createdBy) {
+    String category = event.getCategory();
+    if (category == null || category.isBlank()) {
+      return;
+    }
+    formTemplateRepository
+        .findFirstByEventTypeIgnoreCaseOrderByUpdatedAtDesc(category.trim())
+        .ifPresent(
+            template -> {
+              RegistrationForm form = new RegistrationForm();
+              form.setEventId(event.getId());
+              form.setTitle(template.getTitle());
+              form.setSchema(template.getSchema());
+              form.setStatus(FormStatus.ACTIVE);
+              form.setCreatedBy(createdBy);
+              formRepository.save(form);
+            });
   }
 
   @Override
