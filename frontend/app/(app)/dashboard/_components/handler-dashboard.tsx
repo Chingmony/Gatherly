@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { ShieldCheck, Zap, Eye, ListChecks, CheckCircle2, QrCode, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { apiFetch } from "@/lib/api";
-import type { ApiResponse, EventResponse, MaterialResponse, UserResponse } from "@/lib/types";
+import { apiFetch } from "@/lib/api/client";
+import type { EventResponse, MaterialResponse, UserResponse } from "@/lib/types";
 
 const EVENT_COLORS = [
   "#7c3aed",
@@ -39,22 +39,22 @@ export function HandlerDashboard() {
     async function load() {
       try {
         const [meRes, eventsRes] = await Promise.all([
-          apiFetch<ApiResponse<UserResponse>>("/me"),
-          apiFetch<ApiResponse<EventResponse[]>>("/events?size=100"),
+          apiFetch<UserResponse>("/me"),
+          apiFetch<EventResponse[]>("/events?size=100"),
         ]);
 
-        const evs = eventsRes.data ?? [];
+        const evs = eventsRes ?? [];
 
         const materialResults = await Promise.all(
           evs.map((e) =>
-            apiFetch<ApiResponse<MaterialResponse[]>>(`/events/${e.id}/materials?size=100`)
+            apiFetch<MaterialResponse[]>(`/events/${e.id}/materials?size=100`)
           )
         );
 
         setState({
-          me: meRes.data,
+          me: meRes,
           events: evs,
-          materials: materialResults.flatMap((r) => r.data ?? []),
+          materials: materialResults.flatMap((r) => r ?? []),
           loading: false,
           error: null,
         });

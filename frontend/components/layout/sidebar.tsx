@@ -26,7 +26,7 @@ const NAV: NavItem[] = [
   { id: "dashboard",   label: "Dashboard",        href: "/dashboard",   icon: LayoutDashboard, roles: ["admin", "subadmin", "handler"] },
   { id: "events",      label: "Events",           href: "/events",      icon: Calendar,        roles: ["admin", "subadmin"] },
   { id: "tasks",       label: "My Tasks",         href: "/tasks",       icon: CheckSquare,     roles: ["subadmin", "handler"], badge: "tasks" },
-  { id: "scanner",     label: "Check-in Scanner", href: "/events/ev1/scanner",      icon: QrCode,    roles: ["admin", "subadmin", "handler"] },
+  { id: "scanner",     label: "Check-in Scanner", href: "/scanner",                 icon: QrCode,    roles: ["admin", "subadmin", "handler"] },
   { id: "formbuilder", label: "Form Builder",     href: "/events/ev1/form-builder", icon: FileText, roles: ["admin", "subadmin"] },
   { section: "Others" },
   { id: "supplylist",  label: "Supply List",      href: "/supply-list", icon: Package,         roles: ["admin"] },
