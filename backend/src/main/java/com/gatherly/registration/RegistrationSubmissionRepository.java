@@ -5,6 +5,7 @@ import com.gatherly.registration.domain.TicketStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.Instant;
@@ -54,6 +55,26 @@ public interface RegistrationSubmissionRepository extends JpaRepository<Registra
     @Query("select s.eventId as eventId, count(s) as cnt from RegistrationSubmission s "
             + "where s.eventId in :eventIds group by s.eventId")
     List<EventSubmissionCount> countByEventIds(Collection<UUID> eventIds);
+
+    /**
+     * Retention purge (docs/10 §7, default 90d): delete submissions for events that ended before the
+     * cutoff. The SQL DELETE triggers the {@code event_checkin → submission ON DELETE CASCADE}, so
+     * check-ins go with them. Returns the number of submissions removed.
+     */
+    @Modifying
+    @Query("delete from RegistrationSubmission s where s.eventId in "
+            + "(select e.id from Event e where e.endsAt is not null and e.endsAt < :cutoff)")
+    int deleteForEventsEndedBefore(Instant cutoff);
+
+    /**
+     * Right-to-erasure (docs/10 §7): delete a guest's submissions by email and/or phone (cascades to
+     * check-ins). At least one of {@code email}/{@code phone} must be non-null. Returns the count removed.
+     */
+    @Modifying
+    @Query("delete from RegistrationSubmission s where "
+            + "(:email is not null and lower(s.guestEmail) = lower(:email)) "
+            + "or (:phone is not null and s.guestPhone = :phone)")
+    int deleteByGuestEmailOrPhone(String email, String phone);
 
     /** Projection for {@link #countByEventIds}. */
     interface EventSubmissionCount {

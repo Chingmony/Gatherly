@@ -48,8 +48,9 @@ public class AttendanceController {
     }
 
     @PostMapping("/tickets/{submissionId}/revoke")
-    public ResponseEntity<Void> revoke(@PathVariable UUID eventId, @PathVariable UUID submissionId) {
-        attendanceService.revoke(eventId, submissionId);
+    public ResponseEntity<Void> revoke(@PathVariable UUID eventId, @PathVariable UUID submissionId,
+                                       @AuthenticationPrincipal UserPrincipal actor) {
+        attendanceService.revoke(eventId, submissionId, actor);
         return ResponseEntity.noContent().build();
     }
 

@@ -75,8 +75,8 @@ Distinct from app logs — an **append-only, queryable** record of who-did-what:
 - **Refresh-token reuse detected:** chain auto-revoked ([`04`](04-external-integrations.md) / [`03`](03-api-routes-security.md)); advise user re-login; investigate source IP.
 - **Migration failed on deploy:** Flyway halts startup; roll back deploy, fix migration, redeploy (see [`12`](12-devops-and-deployment.md)).
 
-## 9. Open questions
+## 9. Decisions (resolved at M9)
 
-- **Log/metrics/trace backend** — self-hosted (Loki/Prometheus/Tempo/Grafana) vs managed? *(Default: Grafana stack; revisit per ops capacity in [`12`](12-devops-and-deployment.md).)*
-- **`audit_log` as a table** (queryable in-app by Admin) in addition to the log stream? *(Default: yes — a table for the privileged-action audit; admins may need to view it.)*
-- **PII retention in logs** window? *(Default: mask in app logs; retention policy set in [`10`](10-security-and-compliance.md).)*
+- **Log/metrics/trace backend = the Grafana stack** (Loki/Prometheus/Tempo/Grafana). App emits JSON logs (logback `logstash` encoder, prod profile) + Prometheus metrics + OTLP traces; revisit per ops capacity in [`12`](12-devops-and-deployment.md).
+- **`audit_log` is a queryable table** (Admin-viewable via `GET /audit-log`) in addition to the structured log stream — implemented in M9 (`AuditService`), correlated by `traceId`.
+- **PII in logs: masked**; access logs carry `traceId`/`userId`, never email/phone/secrets. Log retention follows the policy in [`10`](10-security-and-compliance.md).

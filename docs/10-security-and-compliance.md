@@ -109,7 +109,7 @@ Criticals (T4, T12) are covered by the authorization test matrix ([`09` §2.3](0
 ## 9. Compliance posture & open questions
 
 - Treat as **privacy-by-design**; if EU/▣ data subjects are in scope, align with GDPR basics (lawful basis = consent at registration; erasure; minimization). Confirm jurisdiction.
-- **Open:** submission/check-in **retention window**? *(Default: 90 days post-event, then purge — confirm.)*
-- **Open:** explicit **consent checkbox** required on every registration form? *(Default: yes — a required consent field template.)*
-- **Open:** **CAPTCHA** on public registration from day one or only if abused? *(Default: ship without, add on signal.)*
-- **Open:** field-level **encryption** for phone/email at rest beyond disk encryption? *(Default: no in v1; rely on managed encryption + access control.)*
+- **Decided (M9):** submission/check-in **retention window = 90 days post-event, then purge** — implemented by the scheduled `RetentionService` (`gatherly.retention.submission-days`, ShedLock-guarded), cascading to check-ins. Right-to-erasure is the Admin `DELETE /api/v1/admin/guest-data` endpoint.
+- **Decided:** a **required consent checkbox** is included on every registration form (a required consent field in the form template) — lawful basis = consent at registration.
+- **Decided:** **CAPTCHA** ships **off**; per-IP Redis rate limiting (§6) is the day-one abuse control. Add CAPTCHA only on a spam signal.
+- **Decided:** **no field-level encryption** for phone/email at rest in v1 — rely on managed Postgres encryption-at-rest + least-exposure DTOs + access control. Revisit if data classification changes.

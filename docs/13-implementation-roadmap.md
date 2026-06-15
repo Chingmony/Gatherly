@@ -73,9 +73,11 @@ M0 Foundations ─┬─▶ M1 Auth & Users ─┬─▶ M2 Org & Events ─┬�
 
 ### M9 — Hardening & operations
 - Rate limiting, secure headers/CORS, dependency+image scans ([`10`](10-security-and-compliance.md)); observability (metrics/logs/traces/dashboards/alerts) ([`08`](08-observability-and-operations.md)); load test the door-rush ([`11` §8](11-performance-and-scalability.md)); full E2E green ([`09`](09-testing-strategy.md)).
+- **Status:** code-side delivered — per-IP Redis rate limiting, secure headers + tightened CORS, actuator/Swagger lockdown, `audit_log` (+ Admin read) wired into privileged actions, revoke-actor trail, ShedLock on the retry sweeps, structured JSON logging + `traceId` MDC, business metrics, retention purge + right-to-erasure (migration `V13`). Tested green (`HardeningFlowIT`, `RateLimitIT` + full suite). Infra scaffolds: CI dep+image scans, k6 door-rush (`loadtest/`), runbooks ([`14`](14-runbooks-and-launch.md)).
 
 ### M10 — Launch
 - Staging→prod promotion, migration runbook, backups/DR drill, rollback rehearsal ([`12`](12-devops-and-deployment.md)); SPF/DKIM/DMARC on the sending domain; retention/consent decisions resolved ([`10` §9](10-security-and-compliance.md)).
+- **Status:** in-repo artifacts scaffolded — `deploy.yml` (tag → staging → approval → prod), runbooks + launch checklist ([`14`](14-runbooks-and-launch.md)), open questions resolved ([`10` §9](10-security-and-compliance.md), [`08` §9](08-observability-and-operations.md)). The *execution* (real prod/DNS/DR drill) is an ops activity, not runnable from this repo.
 
 ## 4. MVP cut line
 

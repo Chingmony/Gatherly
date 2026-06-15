@@ -4,6 +4,7 @@ import com.gatherly.attendance.EventCheckinRepository;
 import com.gatherly.attendance.domain.EventCheckin;
 import com.gatherly.registration.RegistrationSubmissionRepository;
 import com.gatherly.registration.domain.RegistrationSubmission;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +50,7 @@ public class TelegramOpsRetrySweep {
 
     @Scheduled(fixedDelayString = "${gatherly.ops-retry.interval-ms:90000}",
             initialDelayString = "${gatherly.ops-retry.interval-ms:90000}")
+    @SchedulerLock(name = "telegramOpsRetrySweep", lockAtMostFor = "PT5M", lockAtLeastFor = "PT10S")
     public void sweep() {
         if (!enabled) {
             return; // nothing can be forwarded with Telegram disabled (local/test)

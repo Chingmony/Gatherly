@@ -60,6 +60,12 @@ dependencies {
     // --- Observability (health endpoints + Prometheus scrape, docs/08) ---
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
+    // Structured JSON logs (Logback + logstash encoder), one event per line (docs/08 §2).
+    implementation("net.logstash.logback:logstash-logback-encoder:8.0")
+
+    // --- Distributed scheduler lock (docs/08, M9): single-fire the retry sweeps across instances ---
+    implementation("net.javacrumbs.shedlock:shedlock-spring:6.3.0")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:6.3.0")
 
     // --- API docs (OpenAPI → generated FE types, docs/05 §3) ---
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
