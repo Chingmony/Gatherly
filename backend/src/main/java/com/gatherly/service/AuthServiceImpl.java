@@ -18,6 +18,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -126,6 +128,7 @@ public class AuthServiceImpl implements AuthService {
             user -> {
               try {
                 String otp = otpService.issue(user.getId());
+
                 emailService.sendOtp(
                     user.getEmail(), user.getFullName(), otp, otpService.ttlMinutes());
               } catch (ApiException ex) {

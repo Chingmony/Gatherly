@@ -9,6 +9,7 @@ import com.gatherly.domain.GlobalRole;
 import com.gatherly.dto.event.EventCreateRequest;
 import com.gatherly.dto.event.EventResponse;
 import com.gatherly.dto.event.EventUpdateRequest;
+import com.gatherly.dto.event.PublicEventResponse;
 import com.gatherly.mapper.EventMapper;
 import com.gatherly.repository.EventAssignmentRepository;
 import com.gatherly.repository.EventRepository;
@@ -16,6 +17,7 @@ import com.gatherly.repository.RegistrationSubmissionRepository;
 import com.gatherly.repository.RegistrationSubmissionRepository.EventRegistrationCount;
 import com.gatherly.security.UserPrincipal;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +90,16 @@ public class EventServiceImpl implements EventService {
   /** Maps a single event, resolving its live registration count. */
   private EventResponse toResponse(Event event) {
     return eventMapper.toResponse(event, submissionRepository.countByEventId(event.getId()));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<PublicEventResponse> listPublic(
+      String query, Instant from, Instant to, Pageable pageable) {
+    String q = (query == null || query.isBlank()) ? null : query.trim();
+    return eventRepository
+        .searchPublic(q, from, to, pageable)
+        .map(eventMapper::toPublicResponse);
   }
 
   @Override

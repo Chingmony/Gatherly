@@ -2,6 +2,7 @@ package com.gatherly.mapper;
 
 import com.gatherly.domain.Event;
 import com.gatherly.dto.event.EventResponse;
+import com.gatherly.dto.event.PublicEventResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -15,4 +16,7 @@ public interface EventMapper {
    */
   @Mapping(target = "registeredCount", source = "registeredCount")
   EventResponse toResponse(Event event, long registeredCount);
+
+  /** Public-safe projection for the unauthenticated discovery list. */
+  PublicEventResponse toPublicResponse(Event event);
 }

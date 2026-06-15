@@ -2,7 +2,10 @@ package com.gatherly.controller;
 
 import com.gatherly.common.ApiResponse;
 import com.gatherly.common.PageMeta;
+import com.gatherly.common.error.ApiException;
+import com.gatherly.common.error.ErrorCode;
 import com.gatherly.common.paging.PageRequests;
+import com.gatherly.domain.AssetPurpose;
 import com.gatherly.dto.user.ChangePasswordRequest;
 import com.gatherly.dto.user.SelfUpdateRequest;
 import com.gatherly.dto.user.UserCreateRequest;
@@ -10,16 +13,19 @@ import com.gatherly.dto.user.UserResponse;
 import com.gatherly.dto.user.UserSort;
 import com.gatherly.dto.user.UserUpdateRequest;
 import com.gatherly.security.UserPrincipal;
+import com.gatherly.service.StorageService;
 import com.gatherly.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * User management ({@code docs/03} §4.2). Thin: each method delegates to one {@link UserService}
@@ -45,9 +52,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService userService;
+  private final StorageService storageService;
 
-  public UserController(UserService userService) {
+  public UserController(UserService userService, StorageService storageService) {
     this.userService = userService;
+    this.storageService = storageService;
   }
 
   // ── Admin CRUD ──────────────────────────────────────────────────────────────
@@ -152,5 +161,30 @@ public class UserController {
       @Valid @RequestBody ChangePasswordRequest request) {
     userService.changePassword(principal.id(), request);
     return ApiResponse.ok("Password changed successfully.");
+  }
+
+  @Operation(
+      summary = "Upload my profile photo",
+      description =
+          "Uploads an avatar image (PNG/JPEG/WebP, max 5 MB) for the caller. The API brokers the"
+              + " bytes to object storage and persists the key; the updated profile (with a viewable"
+              + " avatarUrl) is returned. Any authenticated user. Errors: 400 VALIDATION_ERROR for"
+              + " an empty file or unsupported type/size.")
+  @PostMapping(value = "/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ApiResponse<UserResponse> uploadAvatar(
+      @AuthenticationPrincipal UserPrincipal principal,
+      @RequestParam("file") MultipartFile file) {
+    if (file.isEmpty()) {
+      throw new ApiException(ErrorCode.VALIDATION_ERROR, "No file provided.");
+    }
+    byte[] bytes;
+    try {
+      bytes = file.getBytes();
+    } catch (IOException e) {
+      throw new ApiException(ErrorCode.VALIDATION_ERROR, "Could not read the uploaded file.");
+    }
+    String key = storageService.store(AssetPurpose.USER_AVATAR, bytes, file.getContentType());
+    return ApiResponse.ok(
+        "Avatar updated successfully.", userService.updateAvatar(principal.id(), key));
   }
 }

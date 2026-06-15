@@ -3,25 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sun, Moon, Bell, ChevronDown, User, Settings, LogOut } from "lucide-react";
+import { Sun, Moon, Bell, ChevronDown, User, LogOut } from "lucide-react";
 import { AvatarUser } from "@/components/ui/avatar-user";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/cn";
-import { performLogout } from "@/lib/auth/session";
-
-type Role = "admin" | "subadmin" | "handler";
-
-const USERS: Record<Role, { name: string; initials: string; email: string; hue: number }> = {
-  admin:    { name: "Patrick Hale",  initials: "PH", email: "patrick@gatherly.io",  hue: 239 },
-  subadmin: { name: "Jordan Lee",    initials: "JL", email: "jordan@gatherly.io",   hue: 210 },
-  handler:  { name: "Sam Rivera",    initials: "SR", email: "sam@gatherly.io",       hue: 142 },
-};
-
-const ROLES: Record<Role, { label: string; sub: string; soft: string; color: string }> = {
-  admin:    { label: "Admin",   sub: "Full access",        soft: "var(--violet-soft)", color: "var(--violet)" },
-  subadmin: { label: "Manager", sub: "Event-scoped",       soft: "var(--blue-soft)",   color: "var(--blue)" },
-  handler:  { label: "Handler", sub: "Task & scan access", soft: "var(--green-soft)",  color: "var(--green-600)" },
-};
+import { performLogout, getUser } from "@/lib/auth/session";
+import { ROLE_META, type Role } from "@/lib/roles";
+import type { UserResponse } from "@/lib/api/auth";
 
 const NOTIFICATIONS = [
   { icon: "🚩", title: "Liam Carter",    body: "flagged an issue on Wi-Fi QA sweep.",          when: "12m ago", color: "var(--danger)",     bg: "var(--danger-soft)" },
@@ -39,12 +27,18 @@ interface TopbarProps {
 export function Topbar({ role, title, subtitle }: TopbarProps) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
-  const u = USERS[role];
-  const r = ROLES[role];
+  const r = ROLE_META[role];
+  const [user, setUser] = useState<UserResponse | null>(null);
   const [userOpen, setUserOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const userRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Read the cached logged-in user after mount (sessionStorage isn't available during SSR).
+  useEffect(() => setUser(getUser()), []);
+
+  const displayName = user?.fullName || r.label;
+  const displayEmail = user?.email || "";
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -77,7 +71,7 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
           className="text-[20px] font-extrabold tracking-tight m-0 whitespace-nowrap"
           style={{ color: "var(--text-strong)" }}
         >
-          {title || u.name}
+          {title || displayName}
         </h2>
       </div>
 
@@ -151,9 +145,9 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
               borderColor: "var(--border-hex, #ecedf4)",
             }}
           >
-            <AvatarUser name={u.name} initials={u.initials} hue={u.hue} size={34} ring />
+            <AvatarUser name={displayName} imageUrl={user?.avatarUrl ?? undefined} size={34} ring />
             <span className="flex items-center gap-1.5 text-[13.5px] font-bold hidden sm:flex">
-              {u.name.split(" ")[0]}
+              {displayName.split(" ")[0]}
               <ChevronDown size={15} style={{ color: "var(--text-faint)" }} />
             </span>
           </button>
@@ -169,10 +163,10 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
               }}
             >
               <div className="flex items-center gap-2.5 px-3 py-3">
-                <AvatarUser name={u.name} initials={u.initials} hue={u.hue} size={42} />
+                <AvatarUser name={displayName} imageUrl={user?.avatarUrl ?? undefined} size={42} />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-extrabold truncate" style={{ color: "var(--text-strong)" }}>{u.name}</span>
-                  <span className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{u.email}</span>
+                  <span className="text-sm font-extrabold truncate" style={{ color: "var(--text-strong)" }}>{displayName}</span>
+                  <span className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{displayEmail || "—"}</span>
                 </div>
               </div>
               <div className="px-3 pb-2">
@@ -186,7 +180,6 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
               <div className="border-t" style={{ borderColor: "var(--border-hex, #ecedf4)" }} />
               {[
                 { icon: User, label: "My Profile", href: "/settings" },
-                { icon: Settings, label: "Account Settings", href: "/settings" },
               ].map(({ icon: Icon, label, href }) => (
                 <Link
                   key={label}

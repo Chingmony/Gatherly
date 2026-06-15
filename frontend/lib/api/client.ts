@@ -11,7 +11,7 @@
  */
 
 const API_ROOT =
-  (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8083").replace(/\/+$/, "") +
+  (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080").replace(/\/+$/, "") +
   "/api/v1";
 
 /** Field-level validation detail mirrored from the backend `FieldErrorDetail`. */

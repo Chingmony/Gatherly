@@ -1,6 +1,7 @@
 package com.gatherly.repository;
 
 import com.gatherly.domain.Event;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +40,7 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
    * Public discovery listing ({@code docs/03} §4.9): only PUBLIC events, with optional guest filters
    * — name search ({@code q}), exact {@code category}, and {@code location} substring (matched on
    * venue). Non-public events are never returned, so drafts/archived events cannot leak to guests.
+   * Backs the {@code /explore} browse + registration surface (rich {@code PublicEventResponse}).
    */
   @Query(
       """
@@ -53,5 +55,24 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
       @Param("q") String q,
       @Param("category") String category,
       @Param("location") String location,
+      Pageable pageable);
+
+  /**
+   * Public discovery listing ({@code GET /public/events}): only PUBLIC events, with optional title
+   * substring and start-time range filters ({@code from}/{@code to} bound {@code startsAt}). Backs
+   * {@code EventService.listPublic} (slim {@code PublicEventResponse}).
+   */
+  @Query(
+      """
+      SELECT e FROM Event e
+      WHERE e.status = com.gatherly.domain.EventStatus.PUBLIC
+        AND (:q IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:q AS string), '%')))
+        AND (:from IS NULL OR e.startsAt >= :from)
+        AND (:to IS NULL OR e.startsAt <= :to)
+      """)
+  Page<Event> searchPublic(
+      @Param("q") String q,
+      @Param("from") Instant from,
+      @Param("to") Instant to,
       Pageable pageable);
 }

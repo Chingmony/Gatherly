@@ -47,6 +47,22 @@ public class StorageServiceImpl implements StorageService {
     return new PresignResponse(uploadUrl, key, rustfsClient.publicUrl(key));
   }
 
+  @Override
+  @PreAuthorize("#purpose.isOrgAsset() ? hasRole('ADMIN') : isAuthenticated()")
+  public String store(AssetPurpose purpose, byte[] content, String contentType) {
+    String ext = ALLOWED_TYPES.get(contentType);
+    if (ext == null) {
+      throw new ApiException(
+          ErrorCode.VALIDATION_ERROR, "Unsupported content type. Allowed: png, jpeg, webp.");
+    }
+    if (content.length > MAX_BYTES) {
+      throw new ApiException(ErrorCode.VALIDATION_ERROR, "File exceeds the 5 MB limit.");
+    }
+    String key = buildKey(purpose, ext);
+    rustfsClient.putObject(key, content, contentType);
+    return key;
+  }
+
   private String buildKey(AssetPurpose purpose, String ext) {
     String file = UUID.randomUUID() + "." + ext;
     if (purpose == AssetPurpose.USER_AVATAR) {

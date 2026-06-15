@@ -24,6 +24,7 @@ export interface UserResponse {
   status: "ACTIVE" | "DISABLED" | string;
   createdAt: string;
   updatedAt: string;
+  avatarUrl: string | null;
 }
 
 /** Mirrors backend `LoginResponse`. */
@@ -74,6 +75,18 @@ export function logout(): Promise<void> {
  */
 export function forgotPassword(email: string): Promise<void> {
   return apiFetch<void>("/auth/forgot-password", {
+    method: "POST",
+    body: { email },
+  });
+}
+
+/**
+ * Resend the OTP for an in-progress reset (the verify-otp "resend code" action).
+ * Mirrors {@link forgotPassword}: always 202 with a neutral message; a 60s per-account
+ * cooldown and the per-IP OTP limit throttle abuse. Errors: 429 `RATE_LIMITED`.
+ */
+export function resendOtp(email: string): Promise<void> {
+  return apiFetch<void>("/auth/resend-otp", {
     method: "POST",
     body: { email },
   });

@@ -29,5 +29,7 @@ public interface UserService {
 
   UserResponse updateSelf(UUID userId, SelfUpdateRequest request);
 
+  UserResponse updateAvatar(UUID userId, String avatarKey);
+
   void changePassword(UUID userId, ChangePasswordRequest request);
 }

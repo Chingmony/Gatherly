@@ -3,7 +3,9 @@ package com.gatherly.service;
 import com.gatherly.dto.event.EventCreateRequest;
 import com.gatherly.dto.event.EventResponse;
 import com.gatherly.dto.event.EventUpdateRequest;
+import com.gatherly.dto.event.PublicEventResponse;
 import com.gatherly.security.UserPrincipal;
+import java.time.Instant;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,12 @@ public interface EventService {
 
   /** Service-scoped list: Admin sees all; others only assigned events (wired in M3). */
   Page<EventResponse> list(String query, Pageable pageable, UserPrincipal principal);
+
+  /**
+   * Unauthenticated public discovery list: only PUBLIC events, with optional title search and
+   * start-time range ({@code from}/{@code to}).
+   */
+  Page<PublicEventResponse> listPublic(String query, Instant from, Instant to, Pageable pageable);
 
   EventResponse create(EventCreateRequest request, UserPrincipal principal);
 

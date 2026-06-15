@@ -5,12 +5,18 @@ import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 /**
@@ -42,6 +48,44 @@ public class RustfsClient {
             .putObjectRequest(objectRequest)
             .build();
     return presigner.presignPutObject(presignRequest).url().toString();
+  }
+
+  /** Create the bucket if missing. Best-effort: a storage outage logs a warning, never throws. */
+  public void ensureBucketExists() {
+    try {
+      s3Client.headBucket(HeadBucketRequest.builder().bucket(props.bucket()).build());
+    } catch (NoSuchBucketException e) {
+      try {
+        s3Client.createBucket(CreateBucketRequest.builder().bucket(props.bucket()).build());
+        log.info("Created storage bucket '{}'.", props.bucket());
+      } catch (RuntimeException ce) {
+        log.warn("Could not create bucket '{}': {}", props.bucket(), ce.getMessage());
+      }
+    } catch (RuntimeException ex) {
+      log.warn("Bucket check failed for '{}': {}", props.bucket(), ex.getMessage());
+    }
+  }
+
+  /** Upload bytes to the bucket server-side (used when the API brokers the upload, not the client). */
+  public void putObject(String key, byte[] content, String contentType) {
+    s3Client.putObject(
+        PutObjectRequest.builder().bucket(props.bucket()).key(key).contentType(contentType).build(),
+        RequestBody.fromBytes(content));
+  }
+
+  /** Issue a short-lived presigned GET URL for reading an object, or null for a missing key. */
+  public String presignGet(String key) {
+    if (key == null || key.isBlank()) {
+      return null;
+    }
+    GetObjectRequest objectRequest =
+        GetObjectRequest.builder().bucket(props.bucket()).key(key).build();
+    GetObjectPresignRequest presignRequest =
+        GetObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofSeconds(props.presignTtlSeconds()))
+            .getObjectRequest(objectRequest)
+            .build();
+    return presigner.presignGetObject(presignRequest).url().toString();
   }
 
   /** True if the object exists. Connectivity errors propagate (caller decides best-effort). */

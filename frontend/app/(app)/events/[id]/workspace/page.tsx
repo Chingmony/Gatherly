@@ -1,76 +1,100 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Calendar, MapPin, Users, Edit2, MoreHorizontal, CheckSquare, Plus } from "lucide-react";
+import { Calendar, MapPin, CheckSquare } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { AvatarUser } from "@/components/ui/avatar-user";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { apiFetch } from "@/lib/api/client";
+import type { EventResponse, MaterialResponse, MaterialStatus } from "@/lib/types";
 
-// ── Mock event data ──────────────────────────────────────────────────────────
-const EVENT = {
-  id: "ev1",
-  name: "NorthStar Leadership Summit",
-  date: "Jun 18, 2026",
-  time: "9:00 AM",
-  location: "Moscone Center, San Francisco, CA",
-  status: "live",
-  registered: 842,
-  capacity: 1000,
-  fillPct: 84,
-  description: "A premier gathering for enterprise leaders focused on resilient strategy and cross-functional alignment. Featuring keynotes, roundtables, and hands-on workshops across three stages.",
+type UIStatus = "IN_PROGRESS" | "NEEDS_REVIEW" | "PENDING" | "ISSUE" | "DONE";
+
+const STATUS_VARIANT: Record<UIStatus, "blue" | "orange" | "gray" | "green" | "danger"> = {
+  IN_PROGRESS:  "blue",
+  NEEDS_REVIEW: "orange",
+  PENDING:      "gray",
+  ISSUE:        "danger",
+  DONE:         "green",
 };
 
-const MEMBERS = [
-  { id: "m1", name: "Ava Mitchell",  email: "ava@acme.io",   role: "MANAGER", status: "active" },
-  { id: "m2", name: "Leo Fernandez", email: "leo@acme.io",   role: "HANDLER", status: "active" },
-  { id: "m3", name: "Zara Khan",     email: "zara@acme.io",  role: "HANDLER", status: "active" },
-  { id: "m4", name: "Noah Carter",   email: "noah@acme.io",  role: "HANDLER", status: "pending" },
-];
-
-const AGENDA = [
-  { time: "8:30 AM",  title: "Registration & Badge Pickup",           type: "logistics",  speaker: "" },
-  { time: "9:00 AM",  title: "Opening Keynote: The Resilient Leader", type: "keynote",    speaker: "Dr. Sarah Lin" },
-  { time: "10:15 AM", title: "Coffee Break",                          type: "break",      speaker: "" },
-  { time: "10:30 AM", title: "Roundtable: Cross-functional Strategy", type: "workshop",   speaker: "Panel of 4" },
-  { time: "12:00 PM", title: "Networking Lunch",                      type: "break",      speaker: "" },
-  { time: "1:30 PM",  title: "Workshop: OKR Alignment at Scale",      type: "workshop",   speaker: "Marco Reyes" },
-  { time: "3:00 PM",  title: "Fireside Chat",                         type: "keynote",    speaker: "CEO Panel" },
-  { time: "4:30 PM",  title: "Closing Ceremony + Raffle",             type: "logistics",  speaker: "" },
-];
-
-const MATERIALS = [
-  { id: "r1", name: "Registration table",  assigned: "Zara Khan",    status: "in-progress" },
-  { id: "r2", name: "Stage A/V check",     assigned: "Leo Fernandez", status: "done" },
-  { id: "r3", name: "Sponsor banner setup",assigned: "Noah Carter",   status: "todo" },
-  { id: "r4", name: "Catering coordination",assigned: "Ava Mitchell", status: "todo" },
-];
-
-const AGENDA_TYPE_COLOR: Record<string, { bg: string; color: string; label: string }> = {
-  keynote:   { bg: "var(--primary-soft)", color: "var(--primary-hex,#6366f1)", label: "Keynote" },
-  workshop:  { bg: "var(--blue-soft)",    color: "var(--blue)",                label: "Workshop" },
-  break:     { bg: "var(--green-soft)",   color: "var(--green-600)",           label: "Break" },
-  logistics: { bg: "var(--orange-soft)",  color: "var(--orange)",              label: "Logistics" },
+const STATUS_LABEL: Record<UIStatus, string> = {
+  IN_PROGRESS:  "In progress",
+  NEEDS_REVIEW: "Needs review",
+  PENDING:      "To do",
+  ISSUE:        "Issue",
+  DONE:         "Done",
 };
 
-const TASK_STATUS: Record<string, "green" | "blue" | "gray"> = {
-  done: "green",
-  "in-progress": "blue",
-  todo: "gray",
+const EVENT_STATUS_VARIANT: Record<string, "primary" | "green" | "gray" | "orange"> = {
+  PUBLIC:   "green",
+  DRAFT:    "gray",
+  ARCHIVED: "orange",
 };
+
+function formatDateTime(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+    " at " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
 
 export default function WorkspacePage() {
   const params = useParams();
+  const id = params.id as string;
+
+  const [event, setEvent]       = useState<EventResponse | null>(null);
+  const [materials, setMaterials] = useState<MaterialResponse[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [eventRes, materialsRes] = await Promise.all([
+          apiFetch<EventResponse>(`/events/${id}`),
+          apiFetch<MaterialResponse[]>(`/events/${id}/materials?size=100`),
+        ]);
+        setEvent(eventRes);
+        setMaterials(materialsRes ?? []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load event");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-6 view-anim">
+        <div className="h-8 w-48 rounded-lg animate-pulse" style={{ background: "var(--surface-2)" }} />
+        <div className="h-48 rounded-[var(--radius-xl)] animate-pulse" style={{ background: "var(--surface-2)" }} />
+        <div className="flex flex-col gap-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-14 rounded-[var(--radius-lg)] animate-pulse" style={{ background: "var(--surface-2)" }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !event) {
+    return (
+      <div className="flex flex-col gap-5 view-anim">
+        <PageHeader title="Event workspace" />
+        <Card>
+          <CardContent className="px-5 py-12 text-center">
+            <span className="text-sm" style={{ color: "var(--danger)" }}>{error ?? "Event not found."}</span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const doneMaterials = materials.filter((m) => m.status === "DONE").length;
 
   return (
     <div className="flex flex-col gap-6 view-anim">
@@ -83,32 +107,28 @@ export default function WorkspacePage() {
           className="h-36 flex items-end px-6 pb-5"
           style={{ background: "linear-gradient(135deg, var(--primary-hex,#6366f1), color-mix(in srgb, var(--primary-hex,#6366f1) 40%, #22c55e))" }}
         >
-          <StatusBadge variant={EVENT.status === "live" ? "primary" : "green"}>
-            {EVENT.status === "live" ? "Live" : "Published"}
+          <StatusBadge variant={EVENT_STATUS_VARIANT[event.status] ?? "gray"}>
+            {event.status.charAt(0) + event.status.slice(1).toLowerCase()}
           </StatusBadge>
         </div>
         <div
-          className="px-6 py-5 flex items-start gap-5"
+          className="px-6 py-5"
           style={{ background: "var(--surface)", borderTop: "1px solid var(--border-hex,#ecedf4)" }}
         >
           <div className="flex-1 flex flex-col gap-2 min-w-0">
             <h1 className="text-[22px] font-extrabold m-0 leading-tight" style={{ color: "var(--text-strong)" }}>
-              {EVENT.name}
+              {event.title}
             </h1>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
-                <Calendar size={13} /> {EVENT.date} at {EVENT.time}
+                <Calendar size={13} /> {formatDateTime(event.startsAt)}
               </span>
-              <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
-                <MapPin size={13} /> {EVENT.location}
-              </span>
-              <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
-                <Users size={13} /> {EVENT.registered.toLocaleString()} / {EVENT.capacity.toLocaleString()} registered
-              </span>
+              {event.venue && (
+                <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+                  <MapPin size={13} /> {event.venue}
+                </span>
+              )}
             </div>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <Button variant="ghost" size="sm"><Edit2 size={13} /> Edit</Button>
           </div>
         </div>
       </div>
@@ -124,33 +144,21 @@ export default function WorkspacePage() {
 
         {/* Overview */}
         <TabsContent value="overview" className="mt-5">
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5">
-            <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5">
+            {event.description && (
               <Card>
                 <CardHeader className="px-6 pt-6 pb-2"><CardTitle>About this event</CardTitle></CardHeader>
                 <CardContent className="px-6 pb-6 pt-3">
-                  <p className="text-[14px] leading-relaxed m-0" style={{ color: "var(--text-muted)" }}>{EVENT.description}</p>
+                  <p className="text-[14px] leading-relaxed m-0" style={{ color: "var(--text-muted)" }}>
+                    {event.description}
+                  </p>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="px-6 py-5 flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>Registration fill rate</span>
-                    <span className="text-sm font-extrabold" style={{ color: "var(--primary-hex,#6366f1)" }}>{EVENT.fillPct}%</span>
-                  </div>
-                  <Progress value={EVENT.fillPct} />
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {EVENT.capacity - EVENT.registered} spots remaining
-                  </span>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="flex flex-col gap-4">
+            )}
+            <div className="grid grid-cols-2 gap-4">
               {[
-                { label: "Registered", value: EVENT.registered.toLocaleString(), color: "var(--primary-hex,#6366f1)" },
-                { label: "Capacity",   value: EVENT.capacity.toLocaleString(),   color: "var(--text-strong)" },
-                { label: "Checked in", value: "0",                               color: "var(--green-600)" },
-                { label: "Team size",  value: MEMBERS.length.toString(),          color: "var(--blue)" },
+                { label: "Materials",  value: materials.length.toString(), color: "var(--primary-hex,#6366f1)" },
+                { label: "Completed",  value: doneMaterials.toString(),    color: "var(--green-600)" },
               ].map(({ label, value, color }) => (
                 <Card key={label}>
                   <CardContent className="px-5 py-4 flex items-center justify-between">
@@ -163,131 +171,59 @@ export default function WorkspacePage() {
           </div>
         </TabsContent>
 
-        {/* Members */}
+        {/* Members — placeholder until endpoint is available */}
         <TabsContent value="members" className="mt-5">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>{MEMBERS.length} team members assigned</span>
-              <Button size="sm"><Plus size={13} /> Assign member</Button>
-            </div>
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
-                        {["Member", "Event role", "Status", ""].map((h) => (
-                          <th key={h} className="text-left text-xs font-bold uppercase tracking-wider px-5 py-3.5" style={{ color: "var(--text-muted)" }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {MEMBERS.map((m, i) => (
-                        <tr
-                          key={m.id}
-                          className="transition-colors hover:bg-[var(--surface-2)]"
-                          style={{ borderBottom: i === MEMBERS.length - 1 ? "none" : "1px solid var(--border-hex,#ecedf4)" }}
-                        >
-                          <td className="px-5 py-3.5">
-                            <div className="flex items-center gap-3">
-                              <AvatarUser name={m.name} size={34} />
-                              <div className="flex flex-col gap-0.5">
-                                <span className="font-bold" style={{ color: "var(--text-strong)" }}>{m.name}</span>
-                                <span className="text-xs" style={{ color: "var(--text-muted)" }}>{m.email}</span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <StatusBadge variant={m.role === "MANAGER" ? "teal" : "orange"}>{m.role}</StatusBadge>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <StatusBadge variant={m.status === "active" ? "green" : "gray"}>
-                              {m.status.charAt(0).toUpperCase() + m.status.slice(1)}
-                            </StatusBadge>
-                          </td>
-                          <td className="px-5 py-3.5">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon-sm"><MoreHorizontal size={15} /></Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem>Change role</DropdownMenuItem>
-                                <DropdownMenuItem className="text-[var(--danger)]">Remove</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardContent className="px-5 py-12 text-center">
+              <span className="text-sm" style={{ color: "var(--text-muted)" }}>Member list coming soon.</span>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* Agenda */}
+        {/* Agenda — placeholder until endpoint is available */}
         <TabsContent value="agenda" className="mt-5">
-          <div className="flex flex-col gap-3">
-            {AGENDA.map((item, i) => {
-              const type = AGENDA_TYPE_COLOR[item.type] ?? AGENDA_TYPE_COLOR.logistics;
-              return (
-                <div
-                  key={i}
-                  className="flex items-center gap-4 px-5 py-4 rounded-[var(--radius-lg)] border transition-colors hover:bg-[var(--surface-2)]"
-                  style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)" }}
-                >
-                  <span
-                    className="text-[13px] font-bold whitespace-nowrap"
-                    style={{ color: "var(--text-muted)", width: 74, flexShrink: 0 }}
-                  >
-                    {item.time}
-                  </span>
-                  <div
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ background: type.color }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{item.title}</span>
-                    {item.speaker && (
-                      <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>{item.speaker}</span>
-                    )}
-                  </div>
-                  <span
-                    className="text-[11px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
-                    style={{ background: type.bg, color: type.color }}
-                  >
-                    {type.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+          <Card>
+            <CardContent className="px-5 py-12 text-center">
+              <span className="text-sm" style={{ color: "var(--text-muted)" }}>Agenda coming soon.</span>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* Materials / Tasks */}
+        {/* Materials */}
         <TabsContent value="materials" className="mt-5">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>{MATERIALS.length} supply tasks</span>
-              <Button size="sm"><Plus size={13} /> Add task</Button>
-            </div>
-            <div className="flex flex-col gap-3">
-              {MATERIALS.map((task) => (
-                <div
-                  key={task.id}
-                  className="flex items-center gap-4 px-5 py-4 rounded-[var(--radius-lg)] border transition-colors hover:bg-[var(--surface-2)]"
-                  style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)" }}
-                >
-                  <CheckSquare size={16} style={{ color: "var(--primary-hex,#6366f1)", flexShrink: 0 }} />
-                  <span className="flex-1 font-semibold text-sm" style={{ color: "var(--text-strong)" }}>{task.name}</span>
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>{task.assigned}</span>
-                  <StatusBadge variant={TASK_STATUS[task.status] ?? "gray"}>
-                    {task.status === "in-progress" ? "In progress" : task.status === "done" ? "Done" : "To do"}
-                  </StatusBadge>
-                </div>
-              ))}
-            </div>
+            <span className="text-sm font-bold" style={{ color: "var(--text-muted)" }}>
+              {materials.length} supply task{materials.length !== 1 ? "s" : ""}
+            </span>
+            {materials.length === 0 ? (
+              <Card>
+                <CardContent className="px-5 py-12 text-center">
+                  <span className="text-sm" style={{ color: "var(--text-muted)" }}>No materials for this event.</span>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {materials.map((m) => {
+                  const s = m.status as UIStatus;
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex items-center gap-4 px-5 py-4 rounded-[var(--radius-lg)] border"
+                      style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)" }}
+                    >
+                      <CheckSquare size={16} style={{ color: "var(--primary-hex,#6366f1)", flexShrink: 0 }} />
+                      <span className="flex-1 font-semibold text-sm" style={{ color: "var(--text-strong)" }}>{m.name}</span>
+                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                        {m.assignedTo ? m.assignedTo.slice(0, 8) + "…" : "Unassigned"}
+                      </span>
+                      <StatusBadge variant={STATUS_VARIANT[s] ?? "gray"}>
+                        {STATUS_LABEL[s] ?? m.status}
+                      </StatusBadge>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
