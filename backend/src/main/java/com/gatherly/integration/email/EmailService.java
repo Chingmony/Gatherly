@@ -41,6 +41,7 @@ public class EmailService {
    */
   @Async("sideEffectExecutor")
   public void sendOtp(String toEmail, String fullName, String otp, int ttlMinutes) {
+      System.out.println(props);
     if (!props.enabled()) {
       log.info("[email disabled] OTP for {} = {} (valid {} min)", toEmail, otp, ttlMinutes);
       return;
@@ -61,6 +62,35 @@ public class EmailService {
       log.info("OTP email sent to {}", toEmail);
     } catch (MessagingException | UnsupportedEncodingException | RuntimeException ex) {
       log.error("Failed to send OTP email to {}", toEmail, ex);
+    }
+  }
+
+  /**
+   * Welcome a newly-created member with a one-click link to set their own password (single-use grant
+   * baked into the URL). Runs off the request thread; failures are logged only.
+   */
+  @Async("sideEffectExecutor")
+  public void sendWelcome(String toEmail, String fullName, String setupUrl) {
+    if (!props.enabled()) {
+      log.info("[email disabled] Welcome for {} — set-password link = {}", toEmail, setupUrl);
+      return;
+    }
+    Context ctx = new Context();
+    ctx.setVariable("fullName", fullName);
+    ctx.setVariable("email", toEmail);
+    ctx.setVariable("setupUrl", setupUrl);
+    String html = templateEngine.process("email/welcome", ctx);
+    try {
+      MimeMessage message = mailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+      helper.setFrom(props.fromAddress(), props.fromName());
+      helper.setTo(toEmail);
+      helper.setSubject("Welcome to Gatherly — your account is ready");
+      helper.setText(html, true);
+      mailSender.send(message);
+      log.info("Welcome email sent to {}", toEmail);
+    } catch (MessagingException | UnsupportedEncodingException | RuntimeException ex) {
+      log.error("Failed to send welcome email to {}", toEmail, ex);
     }
   }
 
