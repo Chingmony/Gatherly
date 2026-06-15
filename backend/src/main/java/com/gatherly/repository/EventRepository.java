@@ -34,4 +34,24 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
       """)
   Page<Event> searchScoped(
       @Param("ids") Collection<UUID> ids, @Param("q") String q, Pageable pageable);
+
+  /**
+   * Public discovery listing ({@code docs/03} §4.9): only PUBLIC events, with optional guest filters
+   * — name search ({@code q}), exact {@code category}, and {@code location} substring (matched on
+   * venue). Non-public events are never returned, so drafts/archived events cannot leak to guests.
+   */
+  @Query(
+      """
+      SELECT e FROM Event e
+      WHERE e.status = com.gatherly.domain.EventStatus.PUBLIC
+        AND (:q IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:q AS string), '%')))
+        AND (:category IS NULL OR e.category = :category)
+        AND (:location IS NULL
+             OR LOWER(e.venue) LIKE LOWER(CONCAT('%', CAST(:location AS string), '%')))
+      """)
+  Page<Event> searchPublic(
+      @Param("q") String q,
+      @Param("category") String category,
+      @Param("location") String location,
+      Pageable pageable);
 }

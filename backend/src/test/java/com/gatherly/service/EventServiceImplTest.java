@@ -3,6 +3,7 @@ package com.gatherly.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +14,7 @@ import com.gatherly.domain.EventStatus;
 import com.gatherly.mapper.EventMapper;
 import com.gatherly.repository.EventAssignmentRepository;
 import com.gatherly.repository.EventRepository;
+import com.gatherly.repository.RegistrationSubmissionRepository;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,14 +29,17 @@ class EventServiceImplTest {
 
   @Mock private EventRepository eventRepository;
   @Mock private EventAssignmentRepository assignmentRepository;
+  @Mock private RegistrationSubmissionRepository submissionRepository;
   @Mock private EventMapper eventMapper;
 
   private EventServiceImpl service;
 
   @BeforeEach
   void setUp() {
-    service = new EventServiceImpl(eventRepository, assignmentRepository, eventMapper);
-    lenient().when(eventMapper.toResponse(any())).thenReturn(null);
+    service =
+        new EventServiceImpl(
+            eventRepository, assignmentRepository, submissionRepository, eventMapper);
+    lenient().when(eventMapper.toResponse(any(), anyLong())).thenReturn(null);
   }
 
   private Event eventWith(EventStatus status) {
