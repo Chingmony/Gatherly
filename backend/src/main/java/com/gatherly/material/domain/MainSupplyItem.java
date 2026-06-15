@@ -2,6 +2,8 @@ package com.gatherly.material.domain;
 
 import com.gatherly.common.domain.BaseEntity;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
@@ -26,6 +28,22 @@ public class MainSupplyItem extends BaseEntity {
 
     @Column(name = "default_quantity")
     private Integer defaultQuantity;
+
+    /** Human-facing stock-keeping unit, e.g. {@code FUR-0420}. Optional, unique when present. */
+    @Column
+    private String sku;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private SupplyCategory category;
+
+    /** Current inventory count. Drives the derived {@link SupplyStatus} badge. */
+    @Column(name = "on_hand", nullable = false)
+    private int onHand = 0;
+
+    /** Reorder point: at or below this on-hand count the item reads as low stock. Null disables it. */
+    @Column(name = "low_stock_threshold")
+    private Integer lowStockThreshold;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -64,6 +82,43 @@ public class MainSupplyItem extends BaseEntity {
 
     public void setDefaultQuantity(Integer defaultQuantity) {
         this.defaultQuantity = defaultQuantity;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public SupplyCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(SupplyCategory category) {
+        this.category = category;
+    }
+
+    public int getOnHand() {
+        return onHand;
+    }
+
+    public void setOnHand(int onHand) {
+        this.onHand = onHand;
+    }
+
+    public Integer getLowStockThreshold() {
+        return lowStockThreshold;
+    }
+
+    public void setLowStockThreshold(Integer lowStockThreshold) {
+        this.lowStockThreshold = lowStockThreshold;
+    }
+
+    /** Derived stock badge — never persisted (docs/03 §4.6). */
+    public SupplyStatus getStatus() {
+        return SupplyStatus.of(onHand, lowStockThreshold);
     }
 
     public boolean isActive() {

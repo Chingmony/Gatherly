@@ -21,6 +21,7 @@ public final class EventMapper {
                 e.getStatus(),
                 e.getCategory(),
                 e.getCapacity(),
+                e.getTags(),
                 e.getCoverGradient(),
                 e.getCoverImageKey(),
                 e.getCheckinOpensAt(),

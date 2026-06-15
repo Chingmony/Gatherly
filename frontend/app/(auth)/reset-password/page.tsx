@@ -1,27 +1,51 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Check, Clock, Mail } from "lucide-react";
 import { resetPassword, verifyOtp } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthHeading, BackLink, IconInput, OtpInput, PasswordField } from "../auth-ui";
+
+/** Mirror of the server OTP lifetime (Redis TTL) — used only for the on-screen countdown. */
+const OTP_TTL_SECONDS = 300;
 
 function ResetForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const [email, setEmail] = useState(params.get("email") ?? "");
+  const emailFromQuery = params.get("email") ?? "";
+  const [email, setEmail] = useState(emailFromQuery);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [remaining, setRemaining] = useState(OTP_TTL_SECONDS);
+
+  useEffect(() => {
+    if (remaining <= 0) return;
+    const t = setInterval(() => setRemaining((r) => Math.max(0, r - 1)), 1000);
+    return () => clearInterval(t);
+  }, [remaining]);
+
+  const expired = remaining <= 0;
+  const pct = Math.round((remaining / OTP_TTL_SECONDS) * 100);
+  const mmss = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (code.length < 6) {
+      setError("Enter the 6-digit code from your email.");
+      return;
+    }
+    if (newPassword !== confirm) {
+      setError("Passwords don’t match.");
+      return;
+    }
     setPending(true);
     try {
       const { resetGrant } = await verifyOtp(email, code);
@@ -36,36 +60,86 @@ function ResetForm() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Enter your code</CardTitle>
-        <CardDescription>Use the code we emailed you to set a new password.</CardDescription>
-      </CardHeader>
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" required value={email}
-                 onChange={(e) => setEmail(e.target.value)} />
+    <div>
+      <BackLink href="/forgot-password">Back</BackLink>
+      <AuthHeading title="Enter passcode" subtitle="We sent a 6-digit code to your email." className="mt-4" />
+
+      {/* TTL countdown */}
+      <div className="mt-5 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-2)] p-3.5">
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[var(--text)]">
+            <Clock className="h-4 w-4" />
+            {expired ? "Code expired" : `Code expires in ${mmss}`}
+          </span>
+          <span className="font-[var(--mono)] text-[11px] text-[var(--text-faint)]">Redis TTL</span>
         </div>
-        <div>
-          <Label htmlFor="code">Reset code</Label>
-          <Input id="code" inputMode="numeric" required value={code}
-                 onChange={(e) => setCode(e.target.value)} />
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--border)]">
+          <div
+            className="h-full rounded-full bg-[var(--primary)] transition-[width] duration-1000 ease-linear"
+            style={{ width: `${pct}%` }}
+          />
         </div>
+      </div>
+
+      <form onSubmit={onSubmit} className="mt-5 space-y-4">
+        {!emailFromQuery && (
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <IconInput
+              id="email"
+              type="email"
+              required
+              icon={<Mail className="h-[17px] w-[17px]" />}
+              placeholder="you@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+        )}
+
+        <div>
+          <Label>Passcode</Label>
+          <OtpInput value={code} onChange={setCode} disabled={pending || expired} />
+        </div>
+
         <div>
           <Label htmlFor="newPassword">New password</Label>
-          <Input id="newPassword" type="password" autoComplete="new-password" required minLength={8}
-                 value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          <PasswordField
+            id="newPassword"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            placeholder="At least 8 characters"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
         </div>
-        {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
-        <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? "Updating…" : "Set new password"}
-        </Button>
+
+        <div>
+          <Label htmlFor="confirm">Confirm password</Label>
+          <PasswordField
+            id="confirm"
+            autoComplete="new-password"
+            required
+            placeholder="Re-enter password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+        </div>
+
+        {error && <p className="text-[13px] font-semibold text-[var(--danger)]" role="alert">{error}</p>}
+
+        {expired ? (
+          <Link href={`/forgot-password`} className="block text-center text-[13px] font-bold text-[var(--primary)] hover:underline">
+            Request a new code
+          </Link>
+        ) : (
+          <Button type="submit" className="w-full" disabled={pending || code.length < 6}>
+            {pending ? "Resetting…" : (<>Reset password <Check className="h-4 w-4" /></>)}
+          </Button>
+        )}
       </form>
-      <p className="mt-5 text-center text-[13px] text-[var(--t2)]">
-        <Link href="/login" className="font-semibold text-[var(--ac)] hover:underline">Back to sign in</Link>
-      </p>
-    </Card>
+    </div>
   );
 }
 

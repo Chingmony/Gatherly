@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { publishEvent, archiveEvent, deleteEvent } from "@/lib/api/events";
 import type {
-  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, AttendanceResponse, EventResponse,
-  EventStatus, FormResponse, MaterialResponse, SubmissionResponse, UserResponse,
+  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, AttendanceResponse, CandidateResponse,
+  EventResponse, EventStatus, FormResponse, MaterialResponse, SubmissionResponse,
 } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,7 @@ export function EventWorkspace({
   materials: MaterialResponse[];
   submissions: SubmissionResponse[];
   attendance: AttendanceResponse;
-  candidates: UserResponse[];
+  candidates: CandidateResponse[];
   form: FormResponse | null;
   isAdmin: boolean;
   canManage: boolean;
@@ -84,7 +84,7 @@ export function EventWorkspace({
 
       {tab === "details" && <div className={CARD}><DetailsForm event={event} /></div>}
       {tab === "agenda" && <div className={CARD}><AgendaEditor event={event} agenda={agenda} templates={templates} /></div>}
-      {tab === "members" && <MembersTab eventId={event.id} assignments={assignments} candidates={candidates} canPickUsers={isAdmin} />}
+      {tab === "members" && <MembersTab eventId={event.id} assignments={assignments} candidates={candidates} canManage={canManage} isAdmin={isAdmin} />}
       {tab === "materials" && <MaterialsTab eventId={event.id} materials={materials} crew={assignments} canManage={canManage} />}
       {tab === "guests" && <GuestsTab eventId={event.id} submissions={submissions} canManage={canManage} />}
       {tab === "attendance" && <AttendanceTab eventId={event.id} initial={attendance} />}

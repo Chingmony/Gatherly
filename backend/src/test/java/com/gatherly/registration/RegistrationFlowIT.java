@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RegistrationFlowIT extends AbstractIntegrationTest {
 
     private static final Pattern ID = Pattern.compile("\"id\":\"([0-9a-f-]{36})\"");
+    private static final Pattern SLUG = Pattern.compile("\"slug\":\"([^\"]+)\"");
     private static final Pattern TOKEN = Pattern.compile("\"checkinToken\":\"(tkt_[^\"]+)\"");
 
     @LocalServerPort int port;
@@ -138,6 +139,40 @@ class RegistrationFlowIT extends AbstractIntegrationTest {
         assertThat(guest.post("/api/v1/public/events/" + eventId + "/register",
                 "{\"answers\":{\"full_name\":\"Two\",\"email\":\"two@x.com\",\"phone\":\"+855 12 000 002\"}}")
                 .statusCode()).isEqualTo(409);
+    }
+
+    @Test
+    void publicEventDetailExposesTagsAndAgendaButNotDrafts() {
+        HttpTestClient admin = login("admin@gatherly.test");
+        // Create with tags, attach an agenda, give it a form, and publish.
+        String eventId = group(ID, admin.post("/api/v1/events",
+                "{\"title\":\"NorthStar Summit\",\"description\":\"A day of keynotes.\","
+                        + "\"tags\":[\"Keynotes\",\"Workshops\",\"Keynotes\",\" \"]}").body());
+        admin.put("/api/v1/events/" + eventId + "/agenda",
+                "{\"items\":[{\"title\":\"Opening Keynote\"},{\"title\":\"Workshop Block A\"}]}");
+        admin.put("/api/v1/events/" + eventId + "/form", SCHEMA);
+        admin.post("/api/v1/events/" + eventId + "/form/activate", "");
+        admin.post("/api/v1/events/" + eventId + "/publish", "");
+        String slug = group(SLUG, admin.get("/api/v1/events/" + eventId).body());
+
+        HttpTestClient guest = new HttpTestClient(port); // unauthenticated
+        HttpResponse<String> detail = guest.get("/api/v1/public/events/" + slug);
+        assertThat(detail.statusCode()).isEqualTo(200);
+        assertThat(detail.body())
+                .contains("NorthStar Summit")
+                .contains("A day of keynotes.")
+                .contains("\"registrationOpen\":true")
+                .contains("Opening Keynote").contains("Workshop Block A")
+                .contains("\"Keynotes\"").contains("\"Workshops\"");
+        // Tags were trimmed + de-duplicated server-side (no blank, single "Keynotes").
+        assertThat(detail.body()).doesNotContain("\"Keynotes\",\"Keynotes\"");
+        // Internal Rustfs key is never exposed on the public surface.
+        assertThat(detail.body()).doesNotContain("coverImageKey");
+
+        // A DRAFT slug must 404 (non-public events never leak).
+        String draftId = group(ID, admin.post("/api/v1/events", "{\"title\":\"Hidden Draft\"}").body());
+        String draftSlug = group(SLUG, admin.get("/api/v1/events/" + draftId).body());
+        assertThat(guest.get("/api/v1/public/events/" + draftSlug).statusCode()).isEqualTo(404);
     }
 
     @Test

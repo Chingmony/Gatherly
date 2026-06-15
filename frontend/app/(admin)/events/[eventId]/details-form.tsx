@@ -32,6 +32,8 @@ export function DetailsForm({ event }: { event: EventResponse }) {
   const [venue, setVenue] = useState(event.venue ?? "");
   const [category, setCategory] = useState(event.category ?? "");
   const [capacity, setCapacity] = useState(event.capacity != null ? String(event.capacity) : "");
+  const [tags, setTags] = useState<string[]>(event.tags ?? []);
+  const [tagDraft, setTagDraft] = useState("");
   const [cover, setCover] = useState(event.coverGradient ?? "a");
   const [description, setDescription] = useState(event.description ?? "");
   const [startsAt, setStartsAt] = useState(isoToLocal(event.startsAt));
@@ -49,6 +51,7 @@ export function DetailsForm({ event }: { event: EventResponse }) {
         venue: venue || undefined,
         category: category || undefined,
         capacity: capacity ? Number(capacity) : undefined,
+        tags,
         coverGradient: cover,
         description: description || undefined,
         startsAt: localToIso(startsAt),
@@ -63,6 +66,16 @@ export function DetailsForm({ event }: { event: EventResponse }) {
     }
   }
 
+  function addTag(raw: string) {
+    const t = raw.trim();
+    if (!t) return;
+    setTags((prev) => (prev.includes(t) || prev.length >= 12 ? prev : [...prev, t]));
+    setTagDraft("");
+  }
+  function removeTag(t: string) {
+    setTags((prev) => prev.filter((x) => x !== t));
+  }
+
   return (
     <form onSubmit={onSave} className="space-y-4">
       <div><Label htmlFor="t">Title</Label><Input id="t" required value={title} onChange={(e) => setTitle(e.target.value)} /></div>
@@ -71,6 +84,31 @@ export function DetailsForm({ event }: { event: EventResponse }) {
         <div><Label htmlFor="cap">Capacity</Label><Input id="cap" type="number" min={0} value={capacity} onChange={(e) => setCapacity(e.target.value)} placeholder="Unlimited" /></div>
       </div>
       <div><Label htmlFor="v">Venue</Label><Input id="v" value={venue} onChange={(e) => setVenue(e.target.value)} /></div>
+      <div>
+        <Label htmlFor="tags">Tags</Label>
+        {tags.length > 0 && (
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {tags.map((t) => (
+              <span key={t} className="inline-flex items-center gap-1.5 rounded-full bg-[var(--primary-soft)] px-2.5 py-1 text-[12px] font-bold text-[var(--primary)]">
+                {t}
+                <button type="button" aria-label={`Remove ${t}`} onClick={() => removeTag(t)} className="text-[var(--primary)]/70 hover:text-[var(--primary)]">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+        <Input
+          id="tags"
+          value={tagDraft}
+          onChange={(e) => setTagDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(tagDraft); }
+            else if (e.key === "Backspace" && !tagDraft && tags.length) removeTag(tags[tags.length - 1]);
+          }}
+          onBlur={() => addTag(tagDraft)}
+          placeholder="Add a tag and press Enter (e.g. Keynotes)"
+        />
+        <p className="mt-1 text-[12px] text-[var(--text-faint)]">Shown as chips on the public event page. Up to 12.</p>
+      </div>
       <div>
         <Label>Cover</Label>
         <div className="flex gap-2">

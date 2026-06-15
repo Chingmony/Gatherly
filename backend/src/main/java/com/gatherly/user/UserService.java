@@ -4,6 +4,7 @@ import com.gatherly.common.error.AppException;
 import com.gatherly.common.error.DomainConflictException;
 import com.gatherly.common.error.ErrorCode;
 import com.gatherly.common.error.NotFoundException;
+import com.gatherly.event.EventAssignmentRepository;
 import com.gatherly.user.domain.GlobalRole;
 import com.gatherly.user.domain.User;
 import com.gatherly.user.domain.UserStatus;
@@ -11,6 +12,7 @@ import com.gatherly.user.dto.ChangePasswordRequest;
 import com.gatherly.user.dto.InviteUserRequest;
 import com.gatherly.user.dto.UpdateProfileRequest;
 import com.gatherly.user.dto.UpdateUserRequest;
+import com.gatherly.user.dto.UserScope;
 import com.gatherly.user.event.UserCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -20,7 +22,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * User management (docs/06 §3). Admin-only global CRUD plus self-service profile/password.
@@ -32,12 +37,14 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository users;
+    private final EventAssignmentRepository assignments;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher events;
 
-    public UserService(UserRepository users, PasswordEncoder passwordEncoder,
-                       ApplicationEventPublisher events) {
+    public UserService(UserRepository users, EventAssignmentRepository assignments,
+                       PasswordEncoder passwordEncoder, ApplicationEventPublisher events) {
         this.users = users;
+        this.assignments = assignments;
         this.passwordEncoder = passwordEncoder;
         this.events = events;
     }
@@ -57,6 +64,21 @@ public class UserService {
     @Transactional(readOnly = true)
     public User get(UUID userId) {
         return findOrThrow(userId);
+    }
+
+    /**
+     * Event-assignment scope for a page of users (docs/03 §4.2) — one grouped query, not N counts.
+     * Users with no assignments are absent from the map (caller treats absent as {@link UserScope#NONE}).
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
+    public Map<UUID, UserScope> scopeFor(Collection<UUID> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+        return assignments.scopeByUserIds(userIds).stream().collect(Collectors.toMap(
+                EventAssignmentRepository.UserScopeProjection::getUserId,
+                p -> new UserScope(p.getCnt(), p.getCnt() == 1 ? p.getTitle() : null)));
     }
 
     /**
@@ -89,6 +111,8 @@ public class UserService {
         u.setDateOfBirth(req.dateOfBirth());
         u.setAddress(req.address());
         u.setGlobalRole(req.globalRole());
+        // An Admin has no event-role designation; otherwise honour the chosen Sub-admin/Handler tier.
+        u.setDefaultEventRole(req.globalRole() == GlobalRole.ADMIN ? null : req.defaultEventRole());
         u.setStatus(req.status());
         return users.save(u);
     }

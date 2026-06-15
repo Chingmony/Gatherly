@@ -22,6 +22,10 @@ public record UserResponse(
         GlobalRole globalRole,
         EventRole defaultEventRole,
         UserStatus status,
+        /** Number of events this user is assigned to (admins: 0 — they implicitly cover all). */
+        long assignedEventCount,
+        /** The assigned event's name when {@link #assignedEventCount} is exactly 1, else null. */
+        String assignedEventName,
         Instant createdAt,
         Instant updatedAt
 ) {

@@ -3,9 +3,10 @@ import type { SupplyItemResponse, UserResponse } from "@/lib/api/types";
 import { SupplyItemsManager } from "./supply-items-manager";
 
 /**
- * Main supply list (docs/03 §4.6, docs/05 §6). The global, reusable supply catalog. Reads are open
- * to any authenticated user; only an Admin may add or delete (Sub-admins are forbidden from
- * deleting — an absolute restriction, docs/00 §5). `canEdit` is the caller's global role.
+ * Supply Catalog (docs/03 §4.6, docs/05 §6) — the global, reusable master inventory. Reads are open
+ * to any authenticated user; only an Admin may add, edit, or delete (Sub-admins are forbidden from
+ * deleting — an absolute restriction, docs/00 §5). `canEdit` is the caller's global role; the
+ * manager hides all mutation affordances and the Actions column for everyone else (view-only).
  */
 export default async function SupplyItemsPage() {
   const [items, me] = await Promise.all([
@@ -14,16 +15,5 @@ export default async function SupplyItemsPage() {
   ]);
   const canEdit = me?.globalRole === "ADMIN";
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <div>
-        <h1 className="text-[22px] font-extrabold tracking-[-0.01em] text-[var(--text-strong)]">Supply list</h1>
-        <p className="text-[13px] text-[var(--text-muted)]">
-          The global catalog of reusable supplies, available to every event.
-          {canEdit ? "" : " Read-only — only an admin can edit."}
-        </p>
-      </div>
-      <SupplyItemsManager items={items} canEdit={canEdit} />
-    </div>
-  );
+  return <SupplyItemsManager items={items} canEdit={canEdit} />;
 }

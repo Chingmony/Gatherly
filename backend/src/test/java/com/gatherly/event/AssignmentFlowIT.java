@@ -107,6 +107,35 @@ class AssignmentFlowIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void usersTableShowsAssignmentScopeAndEditableRole() {
+        HttpTestClient admin = login("admin@gatherly.test");
+        String eventA = idOf(admin.post("/api/v1/events", "{\"title\":\"Event A\"}").body());
+        String eventB = idOf(admin.post("/api/v1/events", "{\"title\":\"Event B\"}").body());
+
+        // member1 → assigned to two events; member2 → assigned to one (Event A).
+        admin.post("/api/v1/events/" + eventA + "/assignments", "{\"userId\":\"%s\",\"role\":\"SUB_ADMIN\"}".formatted(member1Id));
+        admin.post("/api/v1/events/" + eventB + "/assignments", "{\"userId\":\"%s\",\"role\":\"HANDLER\"}".formatted(member1Id));
+        admin.post("/api/v1/events/" + eventA + "/assignments", "{\"userId\":\"%s\",\"role\":\"HANDLER\"}".formatted(member2Id));
+
+        String list = admin.get("/api/v1/users?size=50").body();
+        // member1: count 2, no single name. member2: count 1, name "Event A".
+        assertThat(list).contains("\"assignedEventCount\":2");
+        assertThat(list).contains("\"assignedEventCount\":1").contains("\"assignedEventName\":\"Event A\"");
+
+        // Admin edit can change the event-role tier (Sub-admin ↔ Handler) via defaultEventRole.
+        HttpResponse<String> toManager = admin.put("/api/v1/users/" + member2Id,
+                "{\"fullName\":\"Mia\",\"globalRole\":\"MEMBER\",\"defaultEventRole\":\"MANAGER\",\"status\":\"ACTIVE\"}");
+        assertThat(toManager.statusCode()).isEqualTo(200);
+        assertThat(toManager.body()).contains("\"defaultEventRole\":\"MANAGER\"");
+
+        // Promoting to ADMIN drops the event-role tier (admins have none).
+        HttpResponse<String> toAdmin = admin.put("/api/v1/users/" + member2Id,
+                "{\"fullName\":\"Mia\",\"globalRole\":\"ADMIN\",\"defaultEventRole\":\"MANAGER\",\"status\":\"ACTIVE\"}");
+        assertThat(toAdmin.statusCode()).isEqualTo(200);
+        assertThat(toAdmin.body()).contains("\"globalRole\":\"ADMIN\"").doesNotContain("\"defaultEventRole\":\"MANAGER\"");
+    }
+
+    @Test
     void unassignedMemberCannotViewEvent() {
         HttpTestClient admin = login("admin@gatherly.test");
         String eventA = idOf(admin.post("/api/v1/events", "{\"title\":\"Private\"}").body());

@@ -20,8 +20,24 @@ export interface UserResponse {
   globalRole: GlobalRole;
   defaultEventRole?: EventRole;
   status: UserStatus;
+  /** Events this user is assigned to (admins: 0 — they implicitly cover all). */
+  assignedEventCount?: number;
+  /** The assigned event's name when assignedEventCount is exactly 1, else null. */
+  assignedEventName?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Admin edit of another user (docs/03 §4.2). Email is immutable; password changes go via reset. */
+export interface UpdateUserBody {
+  fullName: string;
+  phone?: string;
+  gender?: Gender;
+  dateOfBirth?: string;
+  address?: string;
+  globalRole: GlobalRole;
+  defaultEventRole?: EventRole | null;
+  status: UserStatus;
 }
 
 /** Display label for the "Role" column: Admin, or the event-role designation, else Member. */
@@ -85,6 +101,7 @@ export interface EventResponse {
   status: EventStatus;
   category?: string;
   capacity?: number | null;
+  tags?: string[];
   coverGradient?: string;
   coverImageKey?: string;
   checkinOpensAt?: string;
@@ -99,6 +116,7 @@ export interface CreateEventBody {
   venue?: string;
   category?: string;
   capacity?: number;
+  tags?: string[];
   coverGradient?: string;
   coverImageKey?: string;
   startsAt?: string;
@@ -207,6 +225,24 @@ export interface PublicEventCard {
   capacity?: number | null;
 }
 
+/** Full public projection of one event — drives the guest detail page (docs/03 §4.9). */
+export interface PublicEventDetail {
+  id: string;
+  slug: string;
+  title: string;
+  category?: string;
+  venue?: string;
+  startsAt?: string;
+  endsAt?: string;
+  description?: string;
+  coverGradient?: string;
+  registered: number;
+  capacity?: number | null;
+  tags: string[];
+  registrationOpen: boolean;
+  agenda: AgendaItemResponse[];
+}
+
 export interface PublicFormResponse {
   eventId: string;
   eventTitle: string;
@@ -247,6 +283,13 @@ export interface AssignmentResponse {
 export interface AssignMemberBody {
   userId: string;
   role: InviteRole;
+}
+
+/** Slim member-picker projection (docs/03 §4.5) — no PII; just enough to identify a user. */
+export interface CandidateResponse {
+  id: string;
+  fullName: string;
+  email: string;
 }
 
 // ---- Submissions / manage guests (docs/03 §4.8) ---------------------------
@@ -390,11 +433,39 @@ export interface PresignResponse {
 
 export type MaterialStatus = "PENDING" | "IN_PROGRESS" | "NEEDS_REVIEW" | "DONE" | "ISSUE";
 
+/** Supply Catalog category — mirrors the backend SupplyCategory enum + the UI filter tabs. */
+export type SupplyCategory =
+  | "FURNITURE" | "PRINT" | "AV" | "STAGING" | "CATERING" | "COMMS" | "OTHER";
+
+/** Derived stock badge — computed server-side from onHand + lowStockThreshold. */
+export type SupplyStatus = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+
+export const SUPPLY_CATEGORY_LABEL: Record<SupplyCategory, string> = {
+  FURNITURE: "Furniture",
+  PRINT: "Print",
+  AV: "AV",
+  STAGING: "Staging",
+  CATERING: "Catering",
+  COMMS: "Comms",
+  OTHER: "Other",
+};
+
+export const SUPPLY_STATUS_LABEL: Record<SupplyStatus, string> = {
+  IN_STOCK: "In stock",
+  LOW_STOCK: "Low stock",
+  OUT_OF_STOCK: "Out of stock",
+};
+
 export interface SupplyItemResponse {
   id: string;
   name: string;
   description?: string;
+  sku?: string;
+  category?: SupplyCategory;
   unit?: string;
+  onHand: number;
+  lowStockThreshold?: number;
+  status: SupplyStatus;
   defaultQuantity?: number;
   active: boolean;
   createdAt: string;
@@ -404,7 +475,11 @@ export interface SupplyItemResponse {
 export interface SupplyItemBody {
   name: string;
   description?: string;
+  sku?: string;
+  category?: SupplyCategory;
   unit?: string;
+  onHand?: number;
+  lowStockThreshold?: number;
   defaultQuantity?: number;
   active?: boolean;
 }

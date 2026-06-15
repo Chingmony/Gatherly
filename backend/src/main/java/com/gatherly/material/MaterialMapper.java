@@ -15,7 +15,8 @@ public final class MaterialMapper {
     }
 
     public static SupplyItemResponse toResponse(MainSupplyItem i) {
-        return new SupplyItemResponse(i.getId(), i.getName(), i.getDescription(), i.getUnit(),
+        return new SupplyItemResponse(i.getId(), i.getName(), i.getDescription(), i.getSku(),
+                i.getCategory(), i.getUnit(), i.getOnHand(), i.getLowStockThreshold(), i.getStatus(),
                 i.getDefaultQuantity(), i.isActive(), i.getCreatedAt(), i.getUpdatedAt());
     }
 

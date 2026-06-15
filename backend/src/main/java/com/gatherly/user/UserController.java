@@ -4,12 +4,15 @@ import com.gatherly.common.PageResponse;
 import com.gatherly.common.error.DomainConflictException;
 import com.gatherly.common.error.ErrorCode;
 import com.gatherly.security.UserPrincipal;
+import com.gatherly.user.domain.User;
 import com.gatherly.user.dto.ChangePasswordRequest;
 import com.gatherly.user.dto.InviteUserRequest;
 import com.gatherly.user.dto.UpdateProfileRequest;
 import com.gatherly.user.dto.UpdateUserRequest;
 import com.gatherly.user.dto.UserResponse;
+import com.gatherly.user.dto.UserScope;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -39,7 +44,9 @@ public class UserController {
     @GetMapping("/users")
     public PageResponse<UserResponse> list(@RequestParam(required = false) String query,
                                            @PageableDefault(size = 20) Pageable pageable) {
-        return PageResponse.of(userService.list(query, pageable), UserMapper::toResponse);
+        Page<User> page = userService.list(query, pageable);
+        Map<UUID, UserScope> scopes = userService.scopeFor(page.getContent().stream().map(User::getId).toList());
+        return PageResponse.of(page, u -> UserMapper.toResponse(u, scopes.get(u.getId())));
     }
 
     @PostMapping("/users")
@@ -50,7 +57,9 @@ public class UserController {
 
     @GetMapping("/users/{userId}")
     public UserResponse get(@PathVariable UUID userId) {
-        return UserMapper.toResponse(userService.get(userId));
+        User u = userService.get(userId);
+        UserScope scope = userService.scopeFor(List.of(userId)).get(userId);
+        return UserMapper.toResponse(u, scope);
     }
 
     @PutMapping("/users/{userId}")

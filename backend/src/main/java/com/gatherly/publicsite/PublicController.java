@@ -27,15 +27,24 @@ public class PublicController {
 
     private final FormService formService;
     private final RegistrationService registrationService;
+    private final PublicEventService publicEventService;
 
-    public PublicController(FormService formService, RegistrationService registrationService) {
+    public PublicController(FormService formService, RegistrationService registrationService,
+                           PublicEventService publicEventService) {
         this.formService = formService;
         this.registrationService = registrationService;
+        this.publicEventService = publicEventService;
     }
 
     @GetMapping("/events")
     public List<PublicEventCard> events() {
         return registrationService.listPublicEvents();
+    }
+
+    /** Full detail for one PUBLIC event — hero + Schedule tab (docs/03 §4.9, design GuestEventDetail). */
+    @GetMapping("/events/{slug}")
+    public PublicEventDetail eventDetail(@PathVariable String slug) {
+        return publicEventService.detail(slug);
     }
 
     @GetMapping("/events/{slug}/form")

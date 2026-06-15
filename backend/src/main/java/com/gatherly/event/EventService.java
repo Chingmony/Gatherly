@@ -72,6 +72,7 @@ public class EventService {
         e.setEndsAt(req.endsAt());
         e.setCategory(req.category());
         e.setCapacity(req.capacity());
+        e.setTags(normalizeTags(req.tags()));
         e.setCoverGradient(normalizeGradient(req.coverGradient()));
         e.setCoverImageKey(req.coverImageKey());
         e.setStatus(EventStatus.DRAFT);
@@ -89,6 +90,7 @@ public class EventService {
         e.setVenue(req.venue());
         e.setCategory(req.category());
         e.setCapacity(req.capacity());
+        e.setTags(normalizeTags(req.tags()));
         e.setCoverGradient(normalizeGradient(req.coverGradient()));
         e.setCoverImageKey(req.coverImageKey());
         e.setStartsAt(req.startsAt());
@@ -133,6 +135,19 @@ public class EventService {
     /** Default the cover gradient to preset {@code a} when none is supplied. */
     private static String normalizeGradient(String gradient) {
         return (gradient == null || gradient.isBlank()) ? "a" : gradient;
+    }
+
+    /** Trim, drop blanks, and de-duplicate tag labels (order-preserving); null → empty. */
+    private static java.util.List<String> normalizeTags(java.util.List<String> tags) {
+        if (tags == null) {
+            return java.util.List.of();
+        }
+        return tags.stream()
+                .filter(java.util.Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .distinct()
+                .toList();
     }
 
     private void validateTimes(java.time.Instant startsAt, java.time.Instant endsAt) {

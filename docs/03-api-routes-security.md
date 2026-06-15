@@ -102,6 +102,7 @@
 | Method | Path | Gate |
 |--------|------|------|
 | GET | `/events/{eventId}/assignments` | `@eventSecurity.canView(...)` |
+| GET | `/events/{eventId}/assignments/candidates` | `@eventSecurity.canManage(...)` — assignable (non-admin) users for the member picker, so a Sub-admin can delegate Handlers without the Admin-only `/users` directory |
 | POST | `/events/{eventId}/assignments` (MANAGER) | `hasRole('ADMIN')` — appoint Sub-admin |
 | POST | `/events/{eventId}/assignments` (HANDLER) | `@eventSecurity.canManage(...)` — add member/delegate handler |
 | DELETE | `/events/{eventId}/assignments/{id}` | manage (MANAGER removal: Admin only) |

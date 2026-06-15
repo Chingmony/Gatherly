@@ -6,8 +6,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -57,6 +61,11 @@ public class Event extends BaseEntity {
     /** Max registrations; {@code null} = unlimited. */
     @Column
     private Integer capacity;
+
+    /** Short free-text labels shown as chips on the public detail hero (docs/02 §3.3). */
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "tags", columnDefinition = "text[]", nullable = false)
+    private List<String> tags = new ArrayList<>();
 
     /** Cover gradient preset key {@code a–f}; used when {@link #coverImageKey} is unset. */
     @Column(name = "cover_gradient", nullable = false)
@@ -159,6 +168,14 @@ public class Event extends BaseEntity {
 
     public void setCapacity(Integer capacity) {
         this.capacity = capacity;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags == null ? new ArrayList<>() : tags;
     }
 
     public String getCoverGradient() {

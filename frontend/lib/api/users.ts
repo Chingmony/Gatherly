@@ -1,5 +1,5 @@
 import { apiFetch } from "./client";
-import type { InviteUserBody, UserResponse } from "./types";
+import type { InviteUserBody, UpdateUserBody, UserResponse } from "./types";
 
 /** Client-side admin user mutations (docs/03 §4.2). Reads are done server-side (see server.ts). */
 
@@ -11,6 +11,15 @@ export function inviteUser(body: InviteUserBody): Promise<UserResponse> {
   });
 }
 
-export function deactivateUser(userId: string): Promise<void> {
+/** Edit a user's profile, role, and status (Admin only). */
+export function updateUser(userId: string, body: UpdateUserBody): Promise<UserResponse> {
+  return apiFetch<UserResponse>(`/users/${userId}`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Hard-delete a user (Admin only; cannot delete self; 409 if still referenced by events). */
+export function deleteUser(userId: string): Promise<void> {
   return apiFetch<void>(`/users/${userId}`, { method: "DELETE" });
 }

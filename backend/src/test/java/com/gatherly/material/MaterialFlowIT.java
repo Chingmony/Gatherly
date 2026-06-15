@@ -96,6 +96,23 @@ class MaterialFlowIT extends AbstractIntegrationTest {
         assertThat(manager.delete("/api/v1/supply-items/" + supplyId).statusCode()).isEqualTo(403);
         assertThat(admin.get("/api/v1/supply-items").statusCode()).isEqualTo(200);
 
+        // ---- Catalog inventory fields + derived stock status (docs/03 §4.6) -
+        // SKU + category persist; status is DERIVED from on_hand vs. low_stock_threshold.
+        String inStock = admin.post("/api/v1/supply-items",
+                "{\"name\":\"LED Uplights\",\"sku\":\"AV-0440\",\"category\":\"AV\",\"unit\":\"unit\","
+                        + "\"onHand\":40,\"lowStockThreshold\":10}").body();
+        assertThat(inStock).contains("\"sku\":\"AV-0440\"").contains("\"category\":\"AV\"")
+                .contains("\"status\":\"IN_STOCK\"");
+        assertThat(admin.post("/api/v1/supply-items",
+                "{\"name\":\"Wireless Mics\",\"category\":\"AV\",\"onHand\":12,\"lowStockThreshold\":20}").body())
+                .contains("\"status\":\"LOW_STOCK\"");
+        assertThat(admin.post("/api/v1/supply-items",
+                "{\"name\":\"Pipe & Drape\",\"category\":\"STAGING\",\"onHand\":0}").body())
+                .contains("\"status\":\"OUT_OF_STOCK\"");
+        // SKU is unique (case-insensitive) → clean 409, never a 500.
+        assertThat(admin.post("/api/v1/supply-items",
+                "{\"name\":\"Dup\",\"sku\":\"av-0440\"}").statusCode()).isEqualTo(409);
+
         // ---- Material create: canManage (docs/03 §4.7) ----------------------
         // Handler cannot create a material.
         assertThat(handler.post("/api/v1/events/" + eventA + "/materials",

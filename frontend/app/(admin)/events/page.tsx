@@ -32,7 +32,7 @@ export default async function EventsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4">
+    <div className="mx-auto max-w-5xl space-y-4">
       <div>
         <h1 className="text-[20px] font-bold tracking-[-0.01em] text-[var(--t1)]">Events</h1>
         <p className="text-[12px] font-medium text-[var(--t3)]">{page?.totalElements ?? 0} total</p>

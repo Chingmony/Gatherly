@@ -2,15 +2,16 @@ import Link from "next/link";
 import { serverFetch } from "@/lib/api/server";
 import { ApiError } from "@/lib/api/client";
 import type {
-  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, AttendanceResponse, EventResponse,
-  FormResponse, MaterialResponse, PageResponse, SubmissionResponse, UserResponse,
+  AgendaResponse, AgendaTemplateResponse, AssignmentResponse, AttendanceResponse, CandidateResponse,
+  EventResponse, FormResponse, MaterialResponse, PageResponse, SubmissionResponse, UserResponse,
 } from "@/lib/api/types";
 import { EventWorkspace } from "./event-workspace";
 
 /**
  * Event detail / workspace (docs/03 §4.4–§4.8, docs/05 §7). Server Component: parallel fetches of
  * the event + every tab's data (cookies forwarded, never cached). 403/404 render explicit states.
- * `isAdmin` is inferred from whether the admin-only user directory loads (for the member picker).
+ * `isAdmin` comes straight from the caller's global role (`/me`); the member-picker candidates load
+ * from the `canManage`-gated `/assignments/candidates` so Sub-admins can delegate Handlers too.
  */
 export default async function EventDetailPage({ params }: { params: Promise<{ eventId: string }> }) {
   const { eventId } = await params;
@@ -41,16 +42,16 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
   let form: FormResponse | null = null;
   let submissions: SubmissionResponse[] = [];
   let attendance: AttendanceResponse = { registeredCount: 0, checkedInCount: 0, records: [] };
-  let candidates: UserResponse[] = [];
-  let isAdmin = false;
+  let candidates: CandidateResponse[] = [];
   if (event) {
     form = await serverFetch<FormResponse>(`/events/${eventId}/form`).catch(() => null);
     submissions = (await serverFetch<PageResponse<SubmissionResponse>>(`/events/${eventId}/submissions?size=100`)
       .catch(() => null))?.content ?? [];
     attendance = (await serverFetch<AttendanceResponse>(`/events/${eventId}/attendance`).catch(() => null))
       ?? attendance;
-    const users = await serverFetch<PageResponse<UserResponse>>(`/users?size=100`).catch(() => null);
-    if (users) { candidates = users.content; isAdmin = true; }
+    // Member picker: gated by canManage, so both Admins and event MANAGERs get a candidate list.
+    candidates = (await serverFetch<CandidateResponse[]>(`/events/${eventId}/assignments/candidates`)
+      .catch(() => null)) ?? [];
   }
 
   if (denied || missing || !event || !agenda) {
@@ -65,8 +66,9 @@ export default async function EventDetailPage({ params }: { params: Promise<{ ev
     );
   }
 
-  // canManage = Admin, or the current user is the event MANAGER (drives material create/delete).
+  // isAdmin from the caller's global role; canManage = Admin or the event's MANAGER (Sub-admin).
   const me = await serverFetch<UserResponse>("/me").catch(() => null);
+  const isAdmin = me?.globalRole === "ADMIN";
   const canManage = isAdmin || assignments.some((a) => a.userId === me?.id && a.eventRole === "MANAGER");
 
   return (

@@ -17,6 +17,10 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
 
     Optional<Event> findBySlug(String slug);
 
+    /** Public detail lookup — pushes the visibility filter into the index so non-PUBLIC slugs 404
+     *  without hydrating the row (docs/03 §4.9). */
+    Optional<Event> findBySlugAndStatus(String slug, EventStatus status);
+
     /** Public homepage listing (docs/03 §4.9) — every PUBLIC event, soonest first. */
     List<Event> findByStatusOrderByStartsAtAsc(EventStatus status);
 

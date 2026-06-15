@@ -7,6 +7,7 @@ import com.gatherly.event.domain.EventAssignment;
 import com.gatherly.event.domain.EventRole;
 import com.gatherly.event.dto.AssignMemberRequest;
 import com.gatherly.event.dto.AssignmentResponse;
+import com.gatherly.event.dto.CandidateResponse;
 import com.gatherly.security.UserPrincipal;
 import com.gatherly.user.UserRepository;
 import com.gatherly.user.domain.GlobalRole;
@@ -52,6 +53,20 @@ public class EventAssignmentService {
         Map<UUID, User> byId = users.findAllById(rows.stream().map(EventAssignment::getUserId).toList())
                 .stream().collect(Collectors.toMap(User::getId, Function.identity()));
         return rows.stream().map(a -> toResponse(a, byId.get(a.getUserId()))).toList();
+    }
+
+    /**
+     * Assignable directory for the member picker (docs/03 §4.5) — every non-admin user, so an event
+     * MANAGER (Sub-admin) can delegate Handlers on their own event without the Admin-only {@code /users}
+     * directory. Same {@code canManage} gate as {@link #assign}; the caller filters already-assigned.
+     */
+    @PreAuthorize("@eventSecurity.canManage(#eventId, authentication)")
+    @Transactional(readOnly = true)
+    public List<CandidateResponse> assignableUsers(UUID eventId) {
+        requireEvent(eventId);
+        return users.findByGlobalRoleOrderByFullNameAsc(GlobalRole.MEMBER).stream()
+                .map(u -> new CandidateResponse(u.getId(), u.getFullName(), u.getEmail()))
+                .toList();
     }
 
     @PreAuthorize("@eventSecurity.canManage(#eventId, authentication)")

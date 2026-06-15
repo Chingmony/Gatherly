@@ -2,6 +2,7 @@ package com.gatherly.event;
 
 import com.gatherly.event.dto.AssignMemberRequest;
 import com.gatherly.event.dto.AssignmentResponse;
+import com.gatherly.event.dto.CandidateResponse;
 import com.gatherly.security.UserPrincipal;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,12 @@ public class EventAssignmentController {
     @GetMapping
     public List<AssignmentResponse> list(@PathVariable UUID eventId) {
         return assignmentService.list(eventId);
+    }
+
+    /** Assignable members for the picker (docs/03 §4.5) — gated {@code canManage}, so Sub-admins qualify. */
+    @GetMapping("/candidates")
+    public List<CandidateResponse> candidates(@PathVariable UUID eventId) {
+        return assignmentService.assignableUsers(eventId);
     }
 
     @PostMapping

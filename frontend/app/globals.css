@@ -161,9 +161,37 @@ body {
 .view-anim > *:nth-child(5) { animation-delay: 0.16s; }
 .view-anim > *:nth-child(6) { animation-delay: 0.20s; }
 
+/* Ambient hero motion — slow drifting aurora orbs + a gentle float for the
+ * featured card. Purely decorative; the reduced-motion block below freezes them. */
+@keyframes gDriftA {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(18px, -26px, 0) scale(1.08); }
+}
+@keyframes gDriftB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-22px, 20px, 0) scale(0.93); }
+}
+@keyframes gFloatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.hero-orb { will-change: transform; border-radius: 999px; }
+.hero-orb-a { animation: gDriftA 14s ease-in-out infinite; }
+.hero-orb-b { animation: gDriftB 18s ease-in-out infinite; }
+.hero-float { will-change: transform; animation: gFloatY 7s ease-in-out infinite; }
+
+/* Brand gradient text accent. */
+.text-grad {
+  background: linear-gradient(100deg, var(--primary), var(--violet) 55%, var(--pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* Accessibility: honor reduced-motion globally (docs/05 §4). */
 @media (prefers-reduced-motion: reduce) {
   .view-anim > * { animation: none; }
+  .hero-orb-a, .hero-orb-b, .hero-float { animation: none; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;

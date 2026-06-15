@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Lock, Mail } from "lucide-react";
 import { forgotPassword } from "@/lib/api/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthHeading, BackLink, IconInput } from "../auth-ui";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
   const [pending, setPending] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -19,43 +19,43 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPassword(email);
     } finally {
-      // Always show the same outcome — the API never reveals whether the account exists.
-      setSent(true);
-      setPending(false);
+      // Always advance to the passcode screen — the API never reveals whether the account exists.
+      router.push(`/reset-password?email=${encodeURIComponent(email)}`);
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Reset password</CardTitle>
-        <CardDescription>We’ll email you a one-time code.</CardDescription>
-      </CardHeader>
-      {sent ? (
-        <div className="space-y-4">
-          <p className="text-[13px] text-[var(--t2)]">
-            If an account exists for <span className="font-semibold text-[var(--t1)]">{email}</span>,
-            a reset code has been sent. Enter it on the next screen.
-          </p>
-          <Link href={`/reset-password?email=${encodeURIComponent(email)}`}>
-            <Button className="w-full">Enter code</Button>
-          </Link>
+    <div>
+      <BackLink href="/login">Back to sign in</BackLink>
+
+      <span className="mt-5 grid h-12 w-12 place-items-center rounded-[var(--radius-md)] bg-[var(--primary-soft)] text-[var(--primary)]">
+        <Lock className="h-5 w-5" />
+      </span>
+
+      <AuthHeading
+        title="Forgot password?"
+        subtitle="Enter your account email and we’ll send a one-time passcode to reset it."
+        className="mt-4"
+      />
+
+      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <IconInput
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            icon={<Mail className="h-[17px] w-[17px]" />}
+            placeholder="you@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
-      ) : (
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" autoComplete="email" required
-                   value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Sending…" : "Send code"}
-          </Button>
-        </form>
-      )}
-      <p className="mt-5 text-center text-[13px] text-[var(--t2)]">
-        <Link href="/login" className="font-semibold text-[var(--ac)] hover:underline">Back to sign in</Link>
-      </p>
-    </Card>
+        <Button type="submit" className="w-full" disabled={pending}>
+          {pending ? "Sending…" : (<>Send OTP <Mail className="h-4 w-4" /></>)}
+        </Button>
+      </form>
+    </div>
   );
 }

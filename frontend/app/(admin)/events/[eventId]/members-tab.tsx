@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { assignMember, removeAssignment } from "@/lib/api/assignments";
 import { ApiError } from "@/lib/api/client";
-import type { AssignmentResponse, InviteRole, UserResponse } from "@/lib/api/types";
+import type { AssignmentResponse, CandidateResponse, InviteRole } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -12,23 +12,27 @@ const FIELD =
   "rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[13px] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]";
 
 /**
- * Members + Assign Handler (docs/03 §4.5): the event crew. Admins appoint Sub-admins (MANAGER);
- * managers/admins add Handlers. Removing a Sub-admin is Admin-only (the server enforces both).
+ * Members + Assign Handler (docs/03 §4.5): the event crew. Admins **and** event MANAGERs (Sub-admins)
+ * can add Handlers on their own event (`canManage`); only an Admin may appoint another Sub-admin
+ * (`isAdmin`) or remove an existing one. The server enforces all of this — the UI mirrors it.
  */
 export function MembersTab({
   eventId,
   assignments,
   candidates,
-  canPickUsers,
+  canManage,
+  isAdmin,
 }: {
   eventId: string;
   assignments: AssignmentResponse[];
-  candidates: UserResponse[];
-  canPickUsers: boolean;
+  candidates: CandidateResponse[];
+  canManage: boolean;
+  isAdmin: boolean;
 }) {
   const router = useRouter();
   const assignedIds = new Set(assignments.map((a) => a.userId));
-  const available = candidates.filter((u) => !assignedIds.has(u.id) && u.globalRole !== "ADMIN");
+  // The server already excludes Admins from candidates; just drop anyone already on the crew.
+  const available = candidates.filter((u) => !assignedIds.has(u.id));
 
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState<InviteRole>("HANDLER");
@@ -61,7 +65,7 @@ export function MembersTab({
 
   return (
     <div className="space-y-5">
-      {canPickUsers ? (
+      {canManage ? (
         <div className="flex flex-wrap items-end gap-2 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-2)] p-4">
           <div className="flex-1 min-w-[180px]">
             <label className="mb-1.5 block text-[12px] font-bold text-[var(--text)]">Member</label>
@@ -76,14 +80,15 @@ export function MembersTab({
             <label className="mb-1.5 block text-[12px] font-bold text-[var(--text)]">Role</label>
             <select className={FIELD} value={role} onChange={(e) => setRole(e.target.value as InviteRole)}>
               <option value="HANDLER">Handler</option>
-              <option value="SUB_ADMIN">Sub-admin</option>
+              {/* Appointing a Sub-admin (MANAGER) is Admin-only — the server enforces it too. */}
+              {isAdmin && <option value="SUB_ADMIN">Sub-admin</option>}
             </select>
           </div>
           <Button size="sm" disabled={busy || !userId} onClick={add}>Add to crew</Button>
         </div>
       ) : (
         <p className="rounded-[var(--radius-md)] bg-[var(--surface-2)] px-3 py-2 text-[12px] text-[var(--text-muted)]">
-          Appointing members from the directory requires an admin.
+          Only an event manager or admin can add crew.
         </p>
       )}
       {error && <p role="alert" className="text-[13px] font-semibold text-[var(--danger)]">{error}</p>}
@@ -110,7 +115,9 @@ export function MembersTab({
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <Button variant="ghost" size="sm" onClick={() => remove(a.id)}>Remove</Button>
+                  {canManage && (isAdmin || a.eventRole !== "MANAGER") && (
+                    <Button variant="ghost" size="sm" onClick={() => remove(a.id)}>Remove</Button>
+                  )}
                 </td>
               </tr>
             ))}
