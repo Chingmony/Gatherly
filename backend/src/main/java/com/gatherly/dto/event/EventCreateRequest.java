@@ -1,6 +1,8 @@
 package com.gatherly.dto.event;
 
+import com.gatherly.domain.EventCategory;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 
@@ -13,4 +15,7 @@ public record EventCreateRequest(
     @Size(max = 300) String venue,
     Instant startsAt,
     Instant endsAt,
-    Instant checkinOpensAt) {}
+    Instant checkinOpensAt,
+    EventCategory category,
+    @PositiveOrZero Integer capacity,
+    @Size(max = 512) String coverKey) {}

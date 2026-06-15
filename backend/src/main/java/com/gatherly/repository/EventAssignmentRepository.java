@@ -18,4 +18,10 @@ public interface EventAssignmentRepository extends JpaRepository<EventAssignment
 
   /** Event ids a user is assigned to → service-scoped event listing (M3). */
   List<EventAssignment> findByUserId(UUID userId);
+
+  /** Crew size (MANAGER + HANDLER assignments) for an event → card stat. */
+  long countByEventId(UUID eventId);
+
+  /** Assignment count for a specific event role (MANAGER / HANDLER) → split card stats. */
+  long countByEventIdAndEventRole(UUID eventId, EventRole eventRole);
 }

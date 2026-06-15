@@ -13,7 +13,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { listUsers, createUser, deleteUser as apiDeleteUser, updateUser, type UserResponse } from "@/lib/api/users";
+import { uploadAvatar } from "@/lib/api/storage";
 import { ApiError } from "@/lib/api/client";
+import { toast } from "@/components/ui/toast";
 
 const GENDERS = ["Male", "Female", "Other"];
 const ROLES = ["Admin", "Sub-admin", "User"];
@@ -29,6 +31,7 @@ interface MemberRow {
   role: string;        // display label
   createdAt: string;   // ISO
   hue: number;
+  avatarUrl: string | null; // presigned GET URL, or null
   // Raw values needed to prefill the edit form
   dateOfBirth: string; // "YYYY-MM-DD" or ""
   address: string;
@@ -67,6 +70,7 @@ function toRow(u: UserResponse, index: number): MemberRow {
     role: ROLE_LABEL[u.globalRole] ?? u.globalRole,
     createdAt: u.createdAt,
     hue: hueFromName(u.fullName || u.email),
+    avatarUrl: u.avatarUrl ?? null,
     dateOfBirth: u.dateOfBirth ?? "",
     address: u.address ?? "",
     status: STATUS_LABEL[u.status] ?? u.status,
@@ -86,6 +90,7 @@ export default function TeamPage() {
   const [editUser, setEditUser] = useState<MemberRow | null>(null);
   const [editForm, setEditForm] = useState({ name: "", gender: "Male", phone: "", role: "User", address: "", dateOfBirth: "", status: "Active" });
   const [editAvatar, setEditAvatar] = useState<string | null>(null);
+  const [editAvatarFile, setEditAvatarFile] = useState<File | null>(null);
   const [saving, setSaving]     = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   // Delete
@@ -95,6 +100,7 @@ export default function TeamPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState({ name: "", email: "", phone: "", role: "User" });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [creating, setCreating]     = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -102,11 +108,13 @@ export default function TeamPage() {
     if (!file) return;
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(URL.createObjectURL(file));
+    setAvatarFile(file);
   }
 
   function clearAvatar() {
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
     setAvatarPreview(null);
+    setAvatarFile(null);
   }
 
   function resetCreate() {
@@ -123,16 +131,20 @@ export default function TeamPage() {
       const tempPassword = Array.from(crypto.getRandomValues(new Uint8Array(12)))
         .map((b) => "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$"[b % 60])
         .join("");
+      // Upload the chosen profile image to Rustfs first, then persist its key on the new user.
+      const avatarKey = avatarFile ? await uploadAvatar(avatarFile) : null;
       const created = await createUser({
         email: createForm.email.trim(),
         password: tempPassword,
         fullName: createForm.name.trim(),
         phone: createForm.phone.trim() || null,
         globalRole: ROLE_ENUM[createForm.role],
+        avatarKey,
       });
       setMembers((prev) => [...prev, toRow(created, prev.length)]);
       setCreateOpen(false);
       resetCreate();
+      toast.success("Member created", `A set-password link was emailed to ${created.email}.`);
     } catch (e) {
       setCreateError(e instanceof ApiError ? e.message : "Failed to create member.");
     } finally {
@@ -156,6 +168,7 @@ export default function TeamPage() {
     setEditError(null);
     if (editAvatar) URL.revokeObjectURL(editAvatar);
     setEditAvatar(null);
+    setEditAvatarFile(null);
     setEditForm({
       name: u.name,
       gender: u.gender === "—" ? "Male" : u.gender,
@@ -171,11 +184,13 @@ export default function TeamPage() {
     if (!file) return;
     if (editAvatar) URL.revokeObjectURL(editAvatar);
     setEditAvatar(URL.createObjectURL(file));
+    setEditAvatarFile(file);
   }
 
   function clearEditAvatar() {
     if (editAvatar) URL.revokeObjectURL(editAvatar);
     setEditAvatar(null);
+    setEditAvatarFile(null);
   }
 
   async function saveEdit() {
@@ -183,6 +198,8 @@ export default function TeamPage() {
     setSaving(true);
     setEditError(null);
     try {
+      // If a new image was chosen, upload it to Rustfs first and persist its key.
+      const avatarKey = editAvatarFile ? await uploadAvatar(editAvatarFile) : undefined;
       const updated = await updateUser(editUser.id, {
         fullName: editForm.name.trim(),
         phone: editForm.phone.trim() || null,
@@ -191,10 +208,12 @@ export default function TeamPage() {
         address: editForm.address.trim() || null,
         globalRole: ROLE_ENUM[editForm.role],
         status: STATUS_ENUM[editForm.status],
+        ...(avatarKey ? { avatarKey } : {}),
       });
       setMembers((prev) => prev.map((m) => (m.id === editUser.id ? { ...m, ...toRow(updated, m.code - 1) } : m)));
       clearEditAvatar();
       setEditUser(null);
+      toast.success("User updated", `${updated.fullName}'s details were saved.`);
     } catch (e) {
       setEditError(e instanceof ApiError ? e.message : "Failed to update member.");
     } finally {
@@ -206,9 +225,11 @@ export default function TeamPage() {
     if (!deleteUser) return;
     setDeleting(true);
     try {
+      const removed = deleteUser.name;
       await apiDeleteUser(deleteUser.id);
       setMembers((prev) => prev.filter((m) => m.id !== deleteUser.id));
       setDeleteUser(null);
+      toast.success("User removed", `${removed} was removed from the organization.`);
     } catch (e) {
       setLoadError(e instanceof ApiError ? e.message : "Failed to delete member.");
     } finally {
@@ -223,7 +244,7 @@ export default function TeamPage() {
 
   return (
     <div className="flex flex-col gap-6 view-anim">
-      <PageHeader title="Team & Roles" sub="Manage who can do what across the organization">
+      <PageHeader title="Members" sub="Manage who can do what across the organization">
         <Button size="sm" variant="ghost" onClick={() => setCreateOpen(true)}><Plus size={14} /> Create new member</Button>
         <Button size="sm" onClick={() => setInviteOpen(true)}><Plus size={14} /> Invite member</Button>
       </PageHeader>
@@ -237,9 +258,7 @@ export default function TeamPage() {
           </div>
           <Card>
             <CardContent className="p-0">
-              <div className="px-6 pt-5 pb-1">
-                <h2 className="text-lg font-bold m-0" style={{ color: "var(--text-strong)" }}>Members</h2>
-              </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -268,7 +287,7 @@ export default function TeamPage() {
                         <td className="px-6 py-3.5 text-sm font-semibold" style={{ color: "var(--text-muted)" }}>{u.code}</td>
                         <td className="px-6 py-3.5">
                           <div className="flex items-center gap-3">
-                            <AvatarUser name={u.name} hue={u.hue} size={38} />
+                            <AvatarUser name={u.name} hue={u.hue} size={38} imageUrl={u.avatarUrl ?? undefined} />
                             <span className="font-bold text-sm whitespace-nowrap" style={{ color: "var(--text-strong)" }}>{u.name}</span>
                           </div>
                         </td>
@@ -443,7 +462,7 @@ export default function TeamPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={editAvatar} alt="avatar preview" className="w-full h-full object-cover" />
                   ) : editUser ? (
-                    <AvatarUser name={editUser.name} hue={editUser.hue} size={80} />
+                    <AvatarUser name={editUser.name} hue={editUser.hue} size={80} imageUrl={editUser.avatarUrl ?? undefined} />
                   ) : null}
                 </label>
                 {editAvatar && (

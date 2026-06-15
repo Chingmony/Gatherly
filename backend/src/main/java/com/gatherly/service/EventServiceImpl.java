@@ -4,6 +4,7 @@ import com.gatherly.common.error.ApiException;
 import com.gatherly.common.error.ErrorCode;
 import com.gatherly.domain.Event;
 import com.gatherly.domain.EventAssignment;
+import com.gatherly.domain.EventRole;
 import com.gatherly.domain.EventStatus;
 import com.gatherly.domain.GlobalRole;
 import com.gatherly.dto.event.EventCreateRequest;
@@ -13,6 +14,7 @@ import com.gatherly.dto.event.PublicEventResponse;
 import com.gatherly.mapper.EventMapper;
 import com.gatherly.repository.EventAssignmentRepository;
 import com.gatherly.repository.EventRepository;
+import com.gatherly.repository.RegistrationSubmissionRepository;
 import com.gatherly.security.UserPrincipal;
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -35,16 +37,27 @@ public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepository;
   private final EventAssignmentRepository assignmentRepository;
+  private final RegistrationSubmissionRepository submissionRepository;
   private final EventMapper eventMapper;
   private final SecureRandom random = new SecureRandom();
 
   public EventServiceImpl(
       EventRepository eventRepository,
       EventAssignmentRepository assignmentRepository,
+      RegistrationSubmissionRepository submissionRepository,
       EventMapper eventMapper) {
     this.eventRepository = eventRepository;
     this.assignmentRepository = assignmentRepository;
+    this.submissionRepository = submissionRepository;
     this.eventMapper = eventMapper;
+  }
+
+  /** Project an event to its response, attaching the registered + per-role crew counts. */
+  private EventResponse assemble(Event event) {
+    long registered = submissionRepository.countByEventId(event.getId());
+    long managers = assignmentRepository.countByEventIdAndEventRole(event.getId(), EventRole.MANAGER);
+    long handlers = assignmentRepository.countByEventIdAndEventRole(event.getId(), EventRole.HANDLER);
+    return eventMapper.toResponse(event, registered, managers, handlers);
   }
 
   @Override
@@ -53,7 +66,7 @@ public class EventServiceImpl implements EventService {
   public Page<EventResponse> list(String query, Pageable pageable, UserPrincipal principal) {
     String q = (query == null || query.isBlank()) ? null : query.trim();
     if (principal.role() == GlobalRole.ADMIN) {
-      return eventRepository.search(q, pageable).map(eventMapper::toResponse);
+      return eventRepository.search(q, pageable).map(this::assemble);
     }
     // Non-admins see only events they are assigned to (MANAGER or HANDLER).
     List<UUID> eventIds =
@@ -64,7 +77,7 @@ public class EventServiceImpl implements EventService {
     if (eventIds.isEmpty()) {
       return Page.empty(pageable);
     }
-    return eventRepository.searchScoped(eventIds, q, pageable).map(eventMapper::toResponse);
+    return eventRepository.searchScoped(eventIds, q, pageable).map(this::assemble);
   }
 
   @Override
@@ -89,16 +102,19 @@ public class EventServiceImpl implements EventService {
     event.setStartsAt(request.startsAt());
     event.setEndsAt(request.endsAt());
     event.setCheckinOpensAt(request.checkinOpensAt());
+    event.setCategory(request.category());
+    event.setCapacity(request.capacity());
+    event.setCoverKey(request.coverKey());
     event.setStatus(EventStatus.DRAFT);
     event.setCreatedBy(principal.id());
-    return eventMapper.toResponse(eventRepository.save(event));
+    return assemble(eventRepository.save(event));
   }
 
   @Override
   @PreAuthorize("@eventSecurity.canView(#eventId, authentication)")
   @Transactional(readOnly = true)
   public EventResponse get(UUID eventId) {
-    return eventMapper.toResponse(load(eventId));
+    return assemble(load(eventId));
   }
 
   @Override
@@ -124,7 +140,16 @@ public class EventServiceImpl implements EventService {
     if (request.checkinOpensAt() != null) {
       event.setCheckinOpensAt(request.checkinOpensAt());
     }
-    return eventMapper.toResponse(event);
+    if (request.category() != null) {
+      event.setCategory(request.category());
+    }
+    if (request.capacity() != null) {
+      event.setCapacity(request.capacity());
+    }
+    if (request.coverKey() != null) {
+      event.setCoverKey(request.coverKey());
+    }
+    return assemble(event);
   }
 
   @Override
@@ -154,7 +179,7 @@ public class EventServiceImpl implements EventService {
   public EventResponse rotateRegistrationQr(UUID eventId) {
     Event event = load(eventId);
     event.setRegistrationQrToken(randomToken());
-    return eventMapper.toResponse(event);
+    return assemble(event);
   }
 
   private EventResponse transition(UUID eventId, EventStatus target, String illegalMessage) {
@@ -163,7 +188,7 @@ public class EventServiceImpl implements EventService {
       throw new ApiException(ErrorCode.CONFLICT, illegalMessage);
     }
     event.setStatus(target);
-    return eventMapper.toResponse(event);
+    return assemble(event);
   }
 
   private Event load(UUID eventId) {

@@ -44,6 +44,18 @@ public class Event extends BaseEntity {
   @Column(nullable = false)
   private EventStatus status = EventStatus.DRAFT;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "category")
+  private EventCategory category;
+
+  /** Maximum registrations; drives the registration progress bar denominator. Null = uncapped. */
+  @Column(name = "capacity")
+  private Integer capacity;
+
+  /** Rustfs object key for the event cover image (not a URL). */
+  @Column(name = "cover_key")
+  private String coverKey;
+
   @Column(name = "registration_qr_token", unique = true)
   private String registrationQrToken;
 

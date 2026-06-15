@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, MoreHorizontal, Search, Trash2, Edit2, Package } from "lucide-react";
+import { Plus, Search, Trash2, ShoppingCart } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,32 +9,59 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-type SupplyStatus = "available" | "low" | "out-of-stock" | "ordered";
+type SupplyStatus = "in-stock" | "low" | "out-of-stock";
 
-const ITEMS = [
-  { id: "s1", name: "Folding chairs",         category: "Furniture",    qty: 200, status: "available" as SupplyStatus,    event: "NorthStar Leadership Summit" },
-  { id: "s2", name: "Name badge holders",     category: "Registration", qty: 500, status: "available" as SupplyStatus,    event: "All events" },
-  { id: "s3", name: "Wireless lapel mics",    category: "A/V",          qty: 4,   status: "low" as SupplyStatus,          event: "Lumen Design Festival" },
-  { id: "s4", name: "Extension cords (6ft)",  category: "Electrical",   qty: 0,   status: "out-of-stock" as SupplyStatus, event: "DevConnect Winter" },
-  { id: "s5", name: "Catering trays (large)", category: "Catering",     qty: 50,  status: "ordered" as SupplyStatus,      event: "Founders Circle — Q3" },
-  { id: "s6", name: "Branded lanyards",       category: "Registration", qty: 820, status: "available" as SupplyStatus,    event: "All events" },
+type SupplyItem = {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  unit: string;
+  onHand: number;
+  status: SupplyStatus;
+};
+
+const ITEMS: SupplyItem[] = [
+  { id: "s1", sku: "FUR-0420", name: "Folding Chairs",       category: "Furniture",    unit: "each", onHand: 480,  status: "in-stock" },
+  { id: "s2", sku: "FUR-0610", name: "Round Tables (6ft)",   category: "Furniture",    unit: "each", onHand: 58,   status: "low" },
+  { id: "s3", sku: "PRN-1100", name: "Lanyards + Badges",    category: "Print",        unit: "pack", onHand: 2000, status: "in-stock" },
+  { id: "s4", sku: "AV-0312",  name: "Wireless Microphones", category: "AV",           unit: "unit", onHand: 12,   status: "low" },
+  { id: "s5", sku: "AV-0440",  name: "LED Uplights",         category: "AV",           unit: "unit", onHand: 40,   status: "in-stock" },
 ];
 
-const STATUS_VARIANT: Record<SupplyStatus, "green" | "orange" | "danger" | "blue"> = { available: "green", low: "orange", "out-of-stock": "danger", ordered: "blue" };
-const STATUS_LABEL: Record<SupplyStatus, string> = { available: "Available", low: "Low stock", "out-of-stock": "Out of stock", ordered: "Ordered" };
-const CATEGORIES = ["Furniture", "Registration", "A/V", "Electrical", "Catering", "Other"];
+const STATUS_VARIANT: Record<SupplyStatus, "green" | "orange" | "danger"> = { "in-stock": "green", low: "orange", "out-of-stock": "danger" };
+const STATUS_LABEL: Record<SupplyStatus, string> = { "in-stock": "In stock", low: "Low stock", "out-of-stock": "Out of stock" };
+
+const CATEGORY_VARIANT: Record<string, "blue" | "violet" | "teal" | "orange" | "pink" | "gray"> = {
+  Furniture: "blue",
+  Print: "violet",
+  Registration: "violet",
+  AV: "teal",
+  "A/V": "teal",
+  Catering: "orange",
+  Electrical: "pink",
+};
+const CATEGORIES = ["Furniture", "Print", "AV", "Catering", "Electrical", "Other"];
+const UNITS = ["each", "pack", "unit", "box", "set"];
+
+function categoryVariant(c: string) {
+  return CATEGORY_VARIANT[c] ?? "gray";
+}
 
 export default function SupplyListPage() {
   const [search, setSearch]   = useState("");
   const [addOpen, setAddOpen] = useState(false);
-  const [form, setForm]       = useState({ name: "", category: CATEGORIES[0], qty: "", status: "available" as SupplyStatus, event: "" });
+  const [form, setForm]       = useState({ sku: "", name: "", category: CATEGORIES[0], unit: UNITS[0], onHand: "" });
 
-  const filtered = ITEMS.filter((it) =>
-    it.name.toLowerCase().includes(search.toLowerCase()) ||
-    it.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = ITEMS.filter((it) => {
+    const q = search.toLowerCase();
+    return (
+      it.name.toLowerCase().includes(q) ||
+      it.sku.toLowerCase().includes(q) ||
+      it.category.toLowerCase().includes(q)
+    );
+  });
 
   return (
     <div className="flex flex-col gap-6 view-anim">
@@ -43,19 +70,17 @@ export default function SupplyListPage() {
       </PageHeader>
 
       <div className="flex items-center gap-3 flex-wrap">
-        {(["available", "low", "out-of-stock", "ordered"] as SupplyStatus[]).map((s) => (
+        {(["in-stock", "low", "out-of-stock"] as SupplyStatus[]).map((s) => (
           <div key={s} className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: "var(--surface)", border: "1px solid var(--border-hex,#ecedf4)" }}>
-            <StatusBadge variant={STATUS_VARIANT[s]}>{STATUS_LABEL[s]}</StatusBadge>
+            <StatusBadge variant={STATUS_VARIANT[s]} dot>{STATUS_LABEL[s]}</StatusBadge>
             <span className="text-xs font-bold" style={{ color: "var(--text-strong)" }}>{ITEMS.filter((i) => i.status === s).length}</span>
           </div>
         ))}
       </div>
 
       <div className="relative max-w-sm">
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "var(--text-faint)" }} />
-        <input type="search" placeholder="Search items…" value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-[38px] pl-9 pr-3.5 rounded-[var(--radius-md)] border text-sm font-semibold transition-all focus:outline-none focus:border-[var(--primary-hex,#6366f1)]"
-          style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", color: "var(--text)" }} />
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10" style={{ color: "var(--text-faint)" }} />
+        <Input type="search" placeholder="Search items, SKU…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       <Card>
@@ -64,38 +89,43 @@ export default function SupplyListPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
-                  {["Item", "Category", "Qty", "Status", "Event", ""].map((h) => (
+                  {["ID", "Item", "Category", "Unit", "On hand", "Status"].map((h) => (
                     <th key={h} className="text-left text-xs font-bold uppercase tracking-wider px-5 py-3.5" style={{ color: "var(--text-muted)" }}>{h}</th>
                   ))}
+                  <th className="text-right text-xs font-bold uppercase tracking-wider px-5 py-3.5" style={{ color: "var(--text-muted)" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((item, i) => (
                   <tr key={item.id} className="transition-colors hover:bg-[var(--surface-2)]" style={{ borderBottom: i === filtered.length - 1 ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
+                    <td className="px-5 py-3.5 font-mono text-xs tracking-wide" style={{ color: "var(--text-faint)" }}>{item.sku}</td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-[var(--radius-sm)] flex items-center justify-center flex-shrink-0" style={{ background: "var(--primary-soft)" }}>
-                          <Package size={14} style={{ color: "var(--primary-hex,#6366f1)" }} />
+                          <ShoppingCart size={14} style={{ color: "var(--primary-hex,#6366f1)" }} />
                         </div>
                         <span className="font-bold" style={{ color: "var(--text-strong)" }}>{item.name}</span>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-sm" style={{ color: "var(--text-muted)" }}>{item.category}</td>
-                    <td className="px-5 py-3.5 font-bold text-sm" style={{ color: item.qty === 0 ? "var(--danger)" : "var(--text-strong)" }}>{item.qty}</td>
-                    <td className="px-5 py-3.5"><StatusBadge variant={STATUS_VARIANT[item.status]}>{STATUS_LABEL[item.status]}</StatusBadge></td>
-                    <td className="px-5 py-3.5 text-xs" style={{ color: "var(--text-muted)" }}>{item.event}</td>
+                    <td className="px-5 py-3.5"><StatusBadge variant={categoryVariant(item.category)}>{item.category}</StatusBadge></td>
+                    <td className="px-5 py-3.5 text-sm" style={{ color: "var(--text-muted)" }}>{item.unit}</td>
+                    <td className="px-5 py-3.5 font-bold text-sm tabular-nums" style={{ color: item.onHand === 0 ? "var(--danger)" : "var(--text-strong)" }}>{item.onHand.toLocaleString()}</td>
+                    <td className="px-5 py-3.5"><StatusBadge variant={STATUS_VARIANT[item.status]} dot>{STATUS_LABEL[item.status]}</StatusBadge></td>
                     <td className="px-5 py-3.5">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm"><MoreHorizontal size={15} /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem><Edit2 size={13} /> Edit item</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-[var(--danger)]"><Trash2 size={13} /> Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button variant="outline" size="sm">Edit</Button>
+                        <Button variant="danger" size="icon-sm" aria-label={`Delete ${item.name}`}><Trash2 size={15} /></Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-5 py-12 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+                      No items match “{search}”.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -109,22 +139,36 @@ export default function SupplyListPage() {
             <DialogDescription>Track a new item in the supply catalog.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-4 py-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="item-name">Item name</Label>
-              <Input id="item-name" placeholder="e.g. Folding chairs" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label>Category</Label>
-                <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                <Label htmlFor="item-sku">SKU ID</Label>
+                <Input id="item-sku" placeholder="e.g. FUR-0420" value={form.sku} onChange={(e) => setForm((p) => ({ ...p, sku: e.target.value }))} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="item-name">Item name</Label>
+                <Input id="item-name" placeholder="e.g. Folding Chairs" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="item-category">Category</Label>
+                <select id="item-category" value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
                   className="h-[42px] px-3 rounded-[var(--radius-md)] border text-sm font-semibold focus:outline-none"
                   style={{ background: "var(--surface-2)", borderColor: "var(--border-hex,#ecedf4)", color: "var(--text)" }}>
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="item-qty">Quantity</Label>
-                <Input id="item-qty" type="number" min="0" placeholder="0" value={form.qty} onChange={(e) => setForm((p) => ({ ...p, qty: e.target.value }))} />
+                <Label htmlFor="item-unit">Unit</Label>
+                <select id="item-unit" value={form.unit} onChange={(e) => setForm((p) => ({ ...p, unit: e.target.value }))}
+                  className="h-[42px] px-3 rounded-[var(--radius-md)] border text-sm font-semibold focus:outline-none"
+                  style={{ background: "var(--surface-2)", borderColor: "var(--border-hex,#ecedf4)", color: "var(--text)" }}>
+                  {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="item-onhand">On hand</Label>
+                <Input id="item-onhand" type="number" min="0" placeholder="0" value={form.onHand} onChange={(e) => setForm((p) => ({ ...p, onHand: e.target.value }))} />
               </div>
             </div>
           </div>

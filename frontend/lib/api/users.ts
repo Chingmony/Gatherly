@@ -46,6 +46,7 @@ export function createUser(body: {
   fullName: string;
   phone?: string | null;
   globalRole: GlobalRole;
+  avatarKey?: string | null;
 }): Promise<UserResponse> {
   return apiFetch<UserResponse>("/users", { method: "POST", body });
 }
@@ -66,6 +67,7 @@ export function updateUser(
     address: string | null;
     globalRole: GlobalRole;
     status: "ACTIVE" | "INACTIVE";
+    avatarKey: string | null;
   }>,
 ): Promise<UserResponse> {
   return apiFetch<UserResponse>(`/users/${userId}`, { method: "PUT", body });
