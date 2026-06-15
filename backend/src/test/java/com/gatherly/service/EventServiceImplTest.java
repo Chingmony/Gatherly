@@ -14,6 +14,8 @@ import com.gatherly.domain.EventStatus;
 import com.gatherly.mapper.EventMapper;
 import com.gatherly.repository.EventAssignmentRepository;
 import com.gatherly.repository.EventRepository;
+import com.gatherly.repository.FormTemplateRepository;
+import com.gatherly.repository.RegistrationFormRepository;
 import com.gatherly.repository.RegistrationSubmissionRepository;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,6 +32,8 @@ class EventServiceImplTest {
   @Mock private EventRepository eventRepository;
   @Mock private EventAssignmentRepository assignmentRepository;
   @Mock private RegistrationSubmissionRepository submissionRepository;
+  @Mock private FormTemplateRepository formTemplateRepository;
+  @Mock private RegistrationFormRepository formRepository;
   @Mock private EventMapper eventMapper;
 
   private EventServiceImpl service;
@@ -38,7 +42,12 @@ class EventServiceImplTest {
   void setUp() {
     service =
         new EventServiceImpl(
-            eventRepository, assignmentRepository, submissionRepository, eventMapper);
+            eventRepository,
+            assignmentRepository,
+            submissionRepository,
+            formTemplateRepository,
+            formRepository,
+            eventMapper);
     lenient().when(eventMapper.toResponse(any(), anyLong())).thenReturn(null);
   }
 
