@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import {
   Calendar,
@@ -37,9 +38,12 @@ import {
   getPublicEvent,
   getPublicEventForm,
   registerForEvent,
+  getTicket,
+  tokenFromTicketUrl,
   type PublicEvent,
   type PublicForm,
   type PublicFormField,
+  type PublicTicket,
   type RegistrationResult,
 } from "@/lib/api/events";
 
@@ -712,12 +716,29 @@ function AgendaCard() {
 
 /* ─────────────────────────── Success screen ─────────────────────────── */
 function SuccessScreen({ event, result }: { event: PublicEvent; result: RegistrationResult }) {
-  let ticketPath = "/explore";
-  try {
-    ticketPath = new URL(result.ticketUrl).pathname;
-  } catch {
-    if (result.ticketUrl?.startsWith("/")) ticketPath = result.ticketUrl;
-  }
+  const token = useMemo(() => tokenFromTicketUrl(result.ticketUrl), [result.ticketUrl]);
+  const ticketPath = token ? `/tickets/${token}` : "/explore";
+
+  // Fetch the real QR the backend rendered for this ticket (the on-screen fallback to the email).
+  const [ticket, setTicket] = useState<PublicTicket | null>(null);
+  const [qrState, setQrState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    if (!token) {
+      setQrState("error");
+      return;
+    }
+    const controller = new AbortController();
+    getTicket(token, controller.signal)
+      .then((t) => {
+        setTicket(t);
+        setQrState("ready");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setQrState("error");
+      });
+    return () => controller.abort();
+  }, [token]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: "var(--bg)" }}>
@@ -734,6 +755,29 @@ function SuccessScreen({ event, result }: { event: PublicEvent; result: Registra
             {result.message || "Check your email for your ticket and QR code."}
           </p>
         </div>
+
+        {/* Real check-in QR rendered by the backend */}
+        <div className="p-3 rounded-[var(--radius-md)]" style={{ background: "#fff", boxShadow: "var(--shadow-sm)" }}>
+          {qrState === "ready" && ticket ? (
+            <Image
+              src={ticket.qrImageDataUrl}
+              alt="Your check-in QR code"
+              width={180}
+              height={180}
+              unoptimized
+              style={{ display: "block", width: 180, height: 180 }}
+            />
+          ) : (
+            <div className="w-[180px] h-[180px] flex items-center justify-center text-center px-3" style={{ color: "var(--text-faint)" }}>
+              {qrState === "loading" ? (
+                <Loader2 size={22} className="animate-spin" />
+              ) : (
+                <span className="text-xs">Your QR is on your ticket page and in your email.</span>
+              )}
+            </div>
+          )}
+        </div>
+
         <div
           className="w-full rounded-[var(--radius-lg)] p-4 flex flex-col gap-1.5 text-left"
           style={{ background: "var(--surface-2)", border: "1px solid var(--border-hex,#ecedf4)" }}

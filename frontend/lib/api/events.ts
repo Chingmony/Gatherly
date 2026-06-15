@@ -115,6 +115,42 @@ export async function registerForEvent(
   });
 }
 
+/** Mirrors backend `TicketResponse` — a guest's QR ticket with the rendered on-screen QR image. */
+export interface PublicTicket {
+  checkinToken: string;
+  ticketStatus: string;
+  guestName: string | null;
+  eventTitle: string | null;
+  venue: string | null;
+  startsAt: string | null;
+  /** Base64 `data:image/png` URL of the real check-in QR — the on-screen fallback to the email. */
+  qrImageDataUrl: string;
+}
+
+/** Fetch a guest's ticket (real QR) by its check-in token. 404 if the token is unknown. */
+export async function getTicket(checkinToken: string, signal?: AbortSignal): Promise<PublicTicket> {
+  return apiFetch<PublicTicket>(`/public/tickets/${encodeURIComponent(checkinToken)}`, { signal });
+}
+
+/** Re-send the QR-ticket email. 409 `TICKET_INVALID` if the ticket is checked-in or revoked. */
+export async function resendTicket(checkinToken: string): Promise<RegistrationResult> {
+  return apiFetch<RegistrationResult>(
+    `/public/tickets/${encodeURIComponent(checkinToken)}/resend`,
+    { method: "POST" }
+  );
+}
+
+/** Pull the check-in token out of a ticket URL (`…/tickets/{token}`). */
+export function tokenFromTicketUrl(ticketUrl: string): string | null {
+  try {
+    const path = ticketUrl.startsWith("http") ? new URL(ticketUrl).pathname : ticketUrl;
+    const seg = path.split("/").filter(Boolean).pop();
+    return seg ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /* ─────────────────────── Authenticated event management ───────────────────────
  * Wraps the role-scoped `/events` endpoints (backend `EventController`). Auth is carried by the
  * httpOnly cookies `apiFetch` replays — ADMIN sees all events, others only events they're assigned
