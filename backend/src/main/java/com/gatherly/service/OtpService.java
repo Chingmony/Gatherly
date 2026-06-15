@@ -81,6 +81,18 @@ public class OtpService {
     return grant;
   }
 
+  /**
+   * Issue a single-use reset grant directly, bypassing the OTP step. Used for admin-created
+   * accounts: the grant is embedded in the welcome-email "set your password" link, so clicking it
+   * lets the new member set a password without first requesting a code. Redeemed via {@link
+   * #consumeGrant(UUID, String)} by the standard reset-password endpoint.
+   */
+  public String issueGrant(UUID userId, Duration ttl) {
+    String grant = UUID.randomUUID().toString();
+    redis.opsForValue().set(GRANT + userId, grant, ttl);
+    return grant;
+  }
+
   /** Atomically validate and consume a reset grant. Returns false if absent/mismatched. */
   public boolean consumeGrant(UUID userId, String grant) {
     String stored = redis.opsForValue().get(GRANT + userId);

@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import javax.imageio.spi.ServiceRegistry;
+
 public interface UserRepository extends JpaRepository<User, UUID> {
 
   Optional<User> findByEmailIgnoreCase(String email);
@@ -23,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
                        OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', CAST(:q AS string), '%')))
       """)
   Page<User> search(@Param("q") String q, Pageable pageable);
+
+    boolean findByEmail(String email);
 }

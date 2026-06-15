@@ -1,16 +1,30 @@
-# Local dev overrides. The Resend SMTP config (host=smtp.resend.com, username=resend, password=API
-# key) is inherited from application.yml — do NOT re-declare spring.mail.password here or an empty
-# default will shadow the key (535 Missing password).
+# Local dev overrides.
+#
+# Mail: by default we use the REAL Gmail SMTP from application.yml so members actually receive the
+# welcome / reset emails in their inbox. Real addresses deliver fine; only fake domains (e.g.
+# @example.com) produce a bounce-back to the sender — so test with real addresses.
+#
+# Prefer the local MailHog catcher instead (no real delivery, no bounces, view at
+# http://localhost:8025)? Start the app with:  MAIL_HOST=localhost MAIL_PORT=1025 MAIL_SMTP_AUTH=false MAIL_STARTTLS=false
 spring:
   jpa:
     show-sql: true
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_STARTTLS:true}
 
 app:
   email:
-    # OTP + QR-ticket emails via the SMTP in application.yml. Set EMAIL_ENABLED=false to log instead.
+    # Welcome / OTP / QR-ticket emails. EMAIL_ENABLED=false logs the message instead of sending.
     enabled: ${EMAIL_ENABLED:true}
-    # Gmail rewrites From to the authenticated account, so this must match spring.mail.username.
-    from-address: ${MAIL_FROM_ADDRESS:diffdb.official@gmail.com}
+    # Gmail rewrites From to the authenticated account, so this should match spring.mail.username.
+    from-address: ${MAIL_FROM_ADDRESS:gartherlyteam@gmail.com}
     from-name: ${MAIL_FROM_NAME:Gatherly}
   telegram:
     enabled: true

@@ -9,11 +9,13 @@ import com.gatherly.domain.GlobalRole;
 import com.gatherly.dto.event.EventCreateRequest;
 import com.gatherly.dto.event.EventResponse;
 import com.gatherly.dto.event.EventUpdateRequest;
+import com.gatherly.dto.event.PublicEventResponse;
 import com.gatherly.mapper.EventMapper;
 import com.gatherly.repository.EventAssignmentRepository;
 import com.gatherly.repository.EventRepository;
 import com.gatherly.security.UserPrincipal;
 import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
@@ -63,6 +65,16 @@ public class EventServiceImpl implements EventService {
       return Page.empty(pageable);
     }
     return eventRepository.searchScoped(eventIds, q, pageable).map(eventMapper::toResponse);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<PublicEventResponse> listPublic(
+      String query, Instant from, Instant to, Pageable pageable) {
+    String q = (query == null || query.isBlank()) ? null : query.trim();
+    return eventRepository
+        .searchPublic(q, from, to, pageable)
+        .map(eventMapper::toPublicResponse);
   }
 
   @Override

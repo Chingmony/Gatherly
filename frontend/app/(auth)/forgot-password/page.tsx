@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ChevronLeft } from 'lucide-react'
@@ -18,6 +18,12 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
+  // Pre-fill from the ?email= param so the welcome-email link lands ready to send.
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get('email')
+    if (param) setEmail(param)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
