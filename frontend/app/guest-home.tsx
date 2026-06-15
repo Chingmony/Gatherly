@@ -2,9 +2,11 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { CalendarDays, MapPin, Search, Tag } from "lucide-react";
 import { coverGradient } from "@/lib/covers";
 import type { PublicEventCard } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
+import { Select } from "@/components/ui/select";
 import { Reveal } from "@/components/motion/reveal";
 
 /**
@@ -185,7 +187,7 @@ export function GuestHome({ events }: { events: PublicEventCard[] }) {
           onSubmit={(e) => e.preventDefault()}
           className="relative z-10 -mt-8 grid grid-cols-1 gap-2 rounded-[var(--radius-xl)] border border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] p-2.5 shadow-[var(--shadow-pop)] backdrop-blur sm:grid-cols-[1.4fr_1fr_1fr_1fr_auto] sm:items-center"
         >
-          <Field label="Search">
+          <Field label="Search" icon={<Search size={16} aria-hidden />}>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -194,31 +196,39 @@ export function GuestHome({ events }: { events: PublicEventCard[] }) {
             />
           </Field>
 
-          <Field label="Date" divider>
-            <Select value={dateWindow} onChange={(v) => setDateWindow(v as DateWindow)}>
-              <option value="any">Any date</option>
-              <option value="week">This week</option>
-              <option value="month">This month</option>
-              <option value="upcoming">Upcoming</option>
-            </Select>
+          <Field label="Date" icon={<CalendarDays size={16} aria-hidden />} divider>
+            <Select
+              variant="bare"
+              value={dateWindow}
+              onChange={(v) => setDateWindow(v as DateWindow)}
+              aria-label="Date"
+              options={[
+                { value: "any", label: "Any date" },
+                { value: "week", label: "This week" },
+                { value: "month", label: "This month" },
+                { value: "upcoming", label: "Upcoming" },
+              ]}
+            />
           </Field>
 
-          <Field label="Location" divider>
-            <Select value={venue} onChange={setVenue}>
-              <option value="">Anywhere</option>
-              {venues.map((v) => (
-                <option key={v} value={v}>{v}</option>
-              ))}
-            </Select>
+          <Field label="Location" icon={<MapPin size={16} aria-hidden />} divider>
+            <Select
+              variant="bare"
+              value={venue}
+              onChange={setVenue}
+              aria-label="Location"
+              options={[{ value: "", label: "Anywhere" }, ...venues.map((v) => ({ value: v, label: v }))]}
+            />
           </Field>
 
-          <Field label="Type event" divider>
-            <Select value={category} onChange={setCategory}>
-              <option value="">Any type</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </Select>
+          <Field label="Type event" icon={<Tag size={16} aria-hidden />} divider>
+            <Select
+              variant="bare"
+              value={category}
+              onChange={setCategory}
+              aria-label="Type event"
+              options={[{ value: "", label: "Any type" }, ...categories.map((c) => ({ value: c, label: c }))]}
+            />
           </Field>
 
           <button
@@ -426,7 +436,17 @@ function Chip({
   );
 }
 
-function Field({ label, divider, children }: { label: string; divider?: boolean; children: React.ReactNode }) {
+function Field({
+  label,
+  icon,
+  divider,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  divider?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div
       className={`flex flex-col justify-center px-3 py-1.5 ${
@@ -434,28 +454,11 @@ function Field({ label, divider, children }: { label: string; divider?: boolean;
       }`}
     >
       <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[var(--text-faint)]">{label}</span>
-      <div className="mt-0.5">{children}</div>
+      <div className="mt-0.5 flex items-center gap-2">
+        {icon && <span className="shrink-0 text-[var(--text-faint)]">{icon}</span>}
+        <div className="min-w-0 flex-1">{children}</div>
+      </div>
     </div>
-  );
-}
-
-function Select({
-  value,
-  onChange,
-  children,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full cursor-pointer bg-transparent text-[14px] font-semibold text-[var(--text-strong)] outline-none"
-    >
-      {children}
-    </select>
   );
 }
 

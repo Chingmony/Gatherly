@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 
-/** Center nav (design GuestHome topbar) — anchors into the home events grid. */
+/** Center nav (design GuestHome topbar) — browse events, find a ticket, learn about Gatherly. */
 const NAV = [
   { label: "Events", href: "/#events" },
-  { label: "Tickets", href: "/#events" },
-  { label: "About", href: "/#events" },
+  { label: "Tickets", href: "/tickets" },
+  { label: "About", href: "/about" },
 ];
 
 /** Slim top bar for the public guest site (docs/05 §7 Guest). */

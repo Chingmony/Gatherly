@@ -7,9 +7,7 @@ import { ApiError } from "@/lib/api/client";
 import type { AssignmentResponse, CandidateResponse, InviteRole } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-const FIELD =
-  "rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[13px] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]";
+import { Select } from "@/components/ui/select";
 
 /**
  * Members + Assign Handler (docs/03 §4.5): the event crew. Admins **and** event MANAGERs (Sub-admins)
@@ -69,20 +67,27 @@ export function MembersTab({
         <div className="flex flex-wrap items-end gap-2 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-2)] p-4">
           <div className="flex-1 min-w-[180px]">
             <label className="mb-1.5 block text-[12px] font-bold text-[var(--text)]">Member</label>
-            <select className={`${FIELD} w-full`} value={userId} onChange={(e) => setUserId(e.target.value)}>
-              <option value="">Select a user…</option>
-              {available.map((u) => (
-                <option key={u.id} value={u.id}>{u.fullName} · {u.email}</option>
-              ))}
-            </select>
+            <Select
+              value={userId}
+              onChange={setUserId}
+              placeholder="Select a user…"
+              aria-label="Member"
+              options={available.map((u) => ({ value: u.id, label: u.fullName, hint: u.email }))}
+            />
           </div>
           <div>
             <label className="mb-1.5 block text-[12px] font-bold text-[var(--text)]">Role</label>
-            <select className={FIELD} value={role} onChange={(e) => setRole(e.target.value as InviteRole)}>
-              <option value="HANDLER">Handler</option>
-              {/* Appointing a Sub-admin (MANAGER) is Admin-only — the server enforces it too. */}
-              {isAdmin && <option value="SUB_ADMIN">Sub-admin</option>}
-            </select>
+            {/* Appointing a Sub-admin (MANAGER) is Admin-only — the server enforces it too. */}
+            <Select
+              className="min-w-[10rem]"
+              value={role}
+              onChange={(v) => setRole(v as InviteRole)}
+              aria-label="Role"
+              options={[
+                { value: "HANDLER", label: "Handler" },
+                ...(isAdmin ? [{ value: "SUB_ADMIN", label: "Sub-admin" }] : []),
+              ]}
+            />
           </div>
           <Button size="sm" disabled={busy || !userId} onClick={add}>Add to crew</Button>
         </div>

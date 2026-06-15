@@ -18,6 +18,14 @@ export function Dialog({ open, onClose, titleId, children }: DialogProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const restoreTo = React.useRef<HTMLElement | null>(null);
 
+  // Keep the latest onClose in a ref so the focus/listener effect below can depend
+  // on `open` ALONE. Depending on `onClose` (usually a fresh inline arrow each render)
+  // would re-run this effect on every keystroke and steal focus back to the first field.
+  const onCloseRef = React.useRef(onClose);
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   React.useEffect(() => {
     if (!open) return;
     restoreTo.current = document.activeElement as HTMLElement | null;
@@ -31,7 +39,7 @@ export function Dialog({ open, onClose, titleId, children }: DialogProps) {
 
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key === "Tab") {
@@ -56,7 +64,7 @@ export function Dialog({ open, onClose, titleId, children }: DialogProps) {
       document.body.style.overflow = prevOverflow;
       restoreTo.current?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

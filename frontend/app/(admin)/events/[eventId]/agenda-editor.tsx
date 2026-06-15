@@ -7,9 +7,8 @@ import { ApiError } from "@/lib/api/client";
 import type { AgendaResponse, AgendaTemplateResponse, EventResponse } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const FIELD =
-  "w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2.5 text-[14px] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:border-[var(--primary)]";
+import { Select } from "@/components/ui/select";
+import { DateField } from "@/components/ui/date-field";
 
 function isoToLocal(iso?: string): string {
   if (!iso) return "";
@@ -79,10 +78,14 @@ export function AgendaEditor({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end gap-2">
-        <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} className={`${FIELD} w-auto py-2`}>
-          <option value="">Apply a template…</option>
-          {templates.map((t) => <option key={t.id} value={t.id}>{t.name}{t.isDefault ? " (default)" : ""}</option>)}
-        </select>
+        <Select
+          value={templateId}
+          onChange={setTemplateId}
+          className="w-auto min-w-[12rem]"
+          placeholder="Apply a template…"
+          aria-label="Apply a template"
+          options={templates.map((t) => ({ value: t.id, label: `${t.name}${t.isDefault ? " (default)" : ""}` }))}
+        />
         <Button type="button" variant="ghost" size="sm" disabled={!templateId} onClick={applyTemplate}>Apply</Button>
       </div>
       {rows.length === 0 && <p className="text-[13px] text-[var(--text-muted)]">No agenda items yet.</p>}
@@ -93,8 +96,8 @@ export function AgendaEditor({
               <div className="flex-1 space-y-2">
                 <Input placeholder={`Item ${idx + 1}`} value={row.title} onChange={(e) => set(idx, { title: e.target.value })} />
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <input type="datetime-local" value={row.startsAt} onChange={(e) => set(idx, { startsAt: e.target.value })} className={FIELD} aria-label="Start" />
-                  <input type="datetime-local" value={row.endsAt} onChange={(e) => set(idx, { endsAt: e.target.value })} className={FIELD} aria-label="End" />
+                  <DateField value={row.startsAt} onChange={(v) => set(idx, { startsAt: v })} aria-label="Start" />
+                  <DateField value={row.endsAt} onChange={(v) => set(idx, { endsAt: v })} aria-label="End" />
                 </div>
               </div>
               <div className="flex flex-col gap-1">

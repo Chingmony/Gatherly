@@ -26,7 +26,8 @@ function LoginForm() {
     try {
       const user = await login(email, password);
       const next = params.get("next");
-      router.push(next || (user.globalRole === "ADMIN" ? "/users" : "/"));
+      // Admins land on the user console; organizers (Sub-admin/Handler) land on their events workspace.
+      router.push(next || (user.globalRole === "ADMIN" ? "/users" : "/events"));
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Login failed. Please try again.");

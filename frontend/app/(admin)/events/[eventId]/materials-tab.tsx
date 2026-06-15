@@ -10,6 +10,7 @@ import type {
   AssignmentResponse, MaterialHistoryResponse, MaterialResponse, MaterialStatus,
 } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import {
   MATERIAL_STATUSES, MaterialStatusBadge, materialStatusLabel,
 } from "@/components/material-status-badge";
@@ -115,14 +116,20 @@ export function MaterialsTab({
           </div>
           <div className="min-w-[160px]">
             <label className="mb-1.5 block text-[12px] font-bold text-[var(--text)]">Assign to</label>
-            <select className={`${FIELD} w-full`} value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-              <option value="">Unassigned</option>
-              {crew.map((c) => (
-                <option key={c.userId} value={c.userId}>
-                  {c.fullName ?? c.email} · {c.eventRole === "MANAGER" ? "Sub-admin" : "Handler"}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={assignedTo}
+              onChange={setAssignedTo}
+              placeholder="Unassigned"
+              aria-label="Assign to"
+              options={[
+                { value: "", label: "Unassigned" },
+                ...crew.map((c) => ({
+                  value: c.userId,
+                  label: c.fullName ?? c.email ?? "Unknown",
+                  hint: c.eventRole === "MANAGER" ? "Sub-admin" : "Handler",
+                })),
+              ]}
+            />
           </div>
           <Button size="sm" disabled={busy || !name.trim()} onClick={add}>Add material</Button>
         </div>
@@ -149,12 +156,13 @@ export function MaterialsTab({
                 <td className="px-4 py-3 text-[13px] text-[var(--text-muted)]">{m.assignedToName ?? "—"}</td>
                 <td className="px-4 py-3"><MaterialStatusBadge status={m.status} /></td>
                 <td className="px-4 py-3">
-                  <select className={FIELD} value={m.status}
-                    onChange={(e) => setStatus(m.id, e.target.value as MaterialStatus)}>
-                    {MATERIAL_STATUSES.map((s) => (
-                      <option key={s} value={s}>{materialStatusLabel(s)}</option>
-                    ))}
-                  </select>
+                  <Select
+                    className="min-w-[9rem]"
+                    value={m.status}
+                    onChange={(v) => setStatus(m.id, v as MaterialStatus)}
+                    aria-label="Status"
+                    options={MATERIAL_STATUSES.map((s) => ({ value: s, label: materialStatusLabel(s) }))}
+                  />
                 </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
                   <Button variant="ghost" size="sm" onClick={() => toggleHistory(m.id)}>History</Button>

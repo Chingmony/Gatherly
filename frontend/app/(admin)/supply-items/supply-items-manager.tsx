@@ -14,10 +14,10 @@ import {
   type SupplyStatus,
 } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 
 const CATEGORIES: SupplyCategory[] = [
   "FURNITURE", "PRINT", "AV", "STAGING", "CATERING", "COMMS",
@@ -306,13 +306,13 @@ function ItemDialog({
           </div>
           <div>
             <Label htmlFor="si-cat">Category</Label>
-            <select id="si-cat" className={FIELD} value={category}
-                    onChange={(e) => setCategory(e.target.value as SupplyCategory | "")}>
-              <option value="">Uncategorized</option>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{SUPPLY_CATEGORY_LABEL[c]}</option>
-              ))}
-            </select>
+            <Select id="si-cat" value={category}
+              onChange={(v) => setCategory(v as SupplyCategory | "")}
+              placeholder="Uncategorized"
+              options={[
+                { value: "", label: "Uncategorized" },
+                ...CATEGORIES.map((c) => ({ value: c, label: SUPPLY_CATEGORY_LABEL[c] })),
+              ]} />
           </div>
         </div>
         <div className="grid grid-cols-3 gap-3">

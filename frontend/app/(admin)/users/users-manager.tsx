@@ -18,12 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
+import { Select } from "@/components/ui/select";
 
 /** The Role column's three displayed tiers, mapped to (globalRole, defaultEventRole) on save. */
 type RoleChoice = "ADMIN" | "SUB_ADMIN" | "HANDLER";
-
-const FIELD =
-  "w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2.5 text-[14px] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:border-[var(--primary)]";
 
 export function UsersManager({
   initialUsers,
@@ -227,10 +225,11 @@ function InviteDialog({ onClose, onDone }: { onClose: () => void; onDone: () => 
         </div>
         <div>
           <Label htmlFor="i-role">Role</Label>
-          <select id="i-role" value={role} onChange={(e) => setRole(e.target.value as InviteRole)} className={FIELD}>
-            <option value="SUB_ADMIN">Sub-admin</option>
-            <option value="HANDLER">Handler</option>
-          </select>
+          <Select id="i-role" value={role} onChange={(v) => setRole(v as InviteRole)}
+            options={[
+              { value: "SUB_ADMIN", label: "Sub-admin" },
+              { value: "HANDLER", label: "Handler" },
+            ]} />
         </div>
         {error && <p className="text-[13px] font-semibold text-[var(--danger)]" role="alert">{error}</p>}
         <div className="flex justify-end gap-2 pt-1">
@@ -328,22 +327,26 @@ function EditDialog({ user, onClose, onDone }: { user: UserResponse; onClose: ()
         </div>
         <div>
           <Label htmlFor="e-role">Role</Label>
-          <select id="e-role" value={roleChoice} onChange={(e) => setRoleChoice(e.target.value as RoleChoice)} className={FIELD}>
-            <option value="ADMIN">Admin</option>
-            <option value="SUB_ADMIN">Sub-admin</option>
-            <option value="HANDLER">Handler</option>
-          </select>
+          <Select id="e-role" value={roleChoice} onChange={(v) => setRoleChoice(v as RoleChoice)}
+            options={[
+              { value: "ADMIN", label: "Admin" },
+              { value: "SUB_ADMIN", label: "Sub-admin" },
+              { value: "HANDLER", label: "Handler" },
+            ]} />
           {roleChoice === "ADMIN" && (
             <p className="mt-1 text-[12px] text-[var(--text-faint)]">Admins have full control of every event and the organization.</p>
           )}
         </div>
         <div>
           <Label htmlFor="e-status">Status</Label>
-          <select id="e-status" value={status} onChange={(e) => setStatus(e.target.value as UserStatus)} className={FIELD}>
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-            {user.status === "PENDING_ACTIVATION" && <option value="PENDING_ACTIVATION">Invited (pending activation)</option>}
-          </select>
+          <Select id="e-status" value={status} onChange={(v) => setStatus(v as UserStatus)}
+            options={[
+              { value: "ACTIVE", label: "Active" },
+              { value: "INACTIVE", label: "Inactive" },
+              ...(user.status === "PENDING_ACTIVATION"
+                ? [{ value: "PENDING_ACTIVATION", label: "Invited (pending activation)" }]
+                : []),
+            ]} />
         </div>
         {error && <p className="text-[13px] font-semibold text-[var(--danger)]" role="alert">{error}</p>}
         <div className="flex justify-end gap-2 pt-1">

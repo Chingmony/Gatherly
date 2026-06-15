@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
+import { DateField } from "@/components/ui/date-field";
 import { coverGradient, COVER_KEYS } from "@/lib/covers";
 
 const STATUS_LABEL: Record<EventStatus, string> = {
@@ -37,64 +38,18 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
   const router = useRouter();
   const [view, setView] = useState<ViewMode>("grid");
   const [modalOpen, setModalOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [venue, setVenue] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [cover, setCover] = useState("a");
-  const [startsAt, setStartsAt] = useState("");
-  const [endsAt, setEndsAt] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   // Restore the last-used view after mount (avoids SSR/client hydration mismatch).
   useEffect(() => {
     const saved = window.localStorage.getItem(VIEW_KEY);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- restoring the persisted view on mount
     if (saved === "grid" || saved === "list") setView(saved);
   }, []);
 
   function pickView(mode: ViewMode) {
     setView(mode);
     window.localStorage.setItem(VIEW_KEY, mode);
-  }
-
-  function openModal() {
-    setTitle("");
-    setVenue("");
-    setDescription("");
-    setCategory("");
-    setCapacity("");
-    setCover("a");
-    setStartsAt("");
-    setEndsAt("");
-    setError(null);
-    setModalOpen(true);
-  }
-
-  async function onCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setPending(true);
-    try {
-      await createEvent({
-        title,
-        venue: venue || undefined,
-        description: description || undefined,
-        category: category || undefined,
-        capacity: capacity ? Number(capacity) : undefined,
-        coverGradient: cover,
-        startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
-        endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
-      });
-      setModalOpen(false);
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not create event.");
-    } finally {
-      setPending(false);
-    }
   }
 
   async function run(id: string, action: () => Promise<unknown>) {
@@ -136,7 +91,7 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <ViewToggle view={view} onChange={pickView} />
-        <Button onClick={openModal}>Create Event</Button>
+        <Button onClick={() => setModalOpen(true)}>Create Event</Button>
       </div>
 
       {initialEvents.length === 0 ? (
@@ -188,89 +143,127 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
         </div>
       )}
 
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} titleId="create-event-title">
-        <h2 id="create-event-title" className="text-[15px] font-bold tracking-[-0.01em] text-[var(--t1)]">
-          Create Event
-        </h2>
-        <p className="mt-1 text-[13px] text-[var(--t2)]">It starts as a draft — publish it when ready.</p>
-        <form onSubmit={onCreate} className="mt-4 space-y-4">
-          <div>
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" required value={title} onChange={(e) => setTitle(e.target.value)} />
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="venue">Venue</Label>
-              <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Conference" />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="capacity">Capacity</Label>
-            <Input id="capacity" type="number" min={0} value={capacity}
-                   onChange={(e) => setCapacity(e.target.value)} placeholder="Unlimited" />
-          </div>
-          <div>
-            <Label>Cover</Label>
-            <div className="flex gap-2">
-              {COVER_KEYS.map((k) => (
-                <button type="button" key={k} aria-label={`Cover ${k}`} onClick={() => setCover(k)}
-                        className="h-8 w-12 rounded-[8px] transition-transform"
-                        style={{
-                          background: coverGradient(k),
-                          outline: cover === k ? "2px solid var(--primary)" : "none",
-                          outlineOffset: 2,
-                        }} />
-              ))}
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
-            />
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="startsAt">Starts</Label>
-              <input
-                id="startsAt"
-                type="datetime-local"
-                value={startsAt}
-                onChange={(e) => setStartsAt(e.target.value)}
-                className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
-              />
-            </div>
-            <div>
-              <Label htmlFor="endsAt">Ends</Label>
-              <input
-                id="endsAt"
-                type="datetime-local"
-                value={endsAt}
-                onChange={(e) => setEndsAt(e.target.value)}
-                className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
-              />
-            </div>
-          </div>
-          {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
-          <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={pending}>
-              {pending ? "Creating…" : "Create Event"}
-            </Button>
-          </div>
-        </form>
-      </Dialog>
+      {modalOpen && (
+        <CreateEventDialog
+          onClose={() => setModalOpen(false)}
+          onCreated={() => { setModalOpen(false); router.refresh(); }}
+        />
+      )}
     </div>
+  );
+}
+
+/**
+ * Create-event modal. Holds ALL form state locally so a keystroke re-renders only this small
+ * component — never the parent EventsManager (and its event list). Re-rendering the parent on every
+ * keystroke is what stole focus back to the first field; isolating state here fixes it for good.
+ * Mounted only while open, so it resets cleanly on each open.
+ */
+function CreateEventDialog({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [title, setTitle] = useState("");
+  const [venue, setVenue] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [capacity, setCapacity] = useState("");
+  const [cover, setCover] = useState("a");
+  const [startsAt, setStartsAt] = useState("");
+  const [endsAt, setEndsAt] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function onCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setPending(true);
+    try {
+      await createEvent({
+        title,
+        venue: venue || undefined,
+        description: description || undefined,
+        category: category || undefined,
+        capacity: capacity ? Number(capacity) : undefined,
+        coverGradient: cover,
+        startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
+        endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
+      });
+      onCreated();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not create event.");
+      setPending(false);
+    }
+  }
+
+  return (
+    <Dialog open onClose={onClose} titleId="create-event-title">
+      <h2 id="create-event-title" className="text-[15px] font-bold tracking-[-0.01em] text-[var(--t1)]">
+        Create Event
+      </h2>
+      <p className="mt-1 text-[13px] text-[var(--t2)]">It starts as a draft — publish it when ready.</p>
+      <form onSubmit={onCreate} className="mt-4 space-y-4">
+        <div>
+          <Label htmlFor="title">Title</Label>
+          <Input id="title" required value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="venue">Venue</Label>
+            <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="category">Category</Label>
+            <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Conference" />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="capacity">Capacity</Label>
+          <Input id="capacity" type="number" min={0} value={capacity}
+                 onChange={(e) => setCapacity(e.target.value)} placeholder="Unlimited" />
+        </div>
+        <div>
+          <Label>Cover</Label>
+          <div className="flex gap-2">
+            {COVER_KEYS.map((k) => (
+              <button type="button" key={k} aria-label={`Cover ${k}`} onClick={() => setCover(k)}
+                      className="h-8 w-12 rounded-[8px] transition-transform"
+                      style={{
+                        background: coverGradient(k),
+                        outline: cover === k ? "2px solid var(--primary)" : "none",
+                        outlineOffset: 2,
+                      }} />
+            ))}
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="startsAt">Starts</Label>
+            <DateField id="startsAt" value={startsAt} onChange={setStartsAt} />
+          </div>
+          <div>
+            <Label htmlFor="endsAt">Ends</Label>
+            <DateField id="endsAt" value={endsAt} onChange={setEndsAt} />
+          </div>
+        </div>
+        {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
+        <div className="flex justify-end gap-2 pt-1">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={pending}>
+            {pending ? "Creating…" : "Create Event"}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }
 

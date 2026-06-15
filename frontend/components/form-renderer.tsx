@@ -3,6 +3,8 @@
 import type { FormField } from "@/lib/api/types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { DateField } from "@/components/ui/date-field";
 
 const FIELD =
   "w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] px-3.5 py-2.5 text-[14px] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:border-[var(--primary)]";
@@ -84,12 +86,19 @@ function renderControl(
       );
     case "select":
       return (
-        <select {...common} className={field} value={(val as string) ?? ""} onChange={(e) => onChange(f.key, e.target.value)}>
-          <option value="">Select…</option>
-          {(f.options ?? []).map((o) => (
-            <option key={o} value={o}>{o}</option>
-          ))}
-        </select>
+        <Select
+          id={id}
+          disabled={disabled}
+          aria-invalid={invalid}
+          aria-label={f.label}
+          value={(val as string) ?? ""}
+          onChange={(v) => onChange(f.key, v)}
+          placeholder={f.placeholder ?? "Select…"}
+          options={[
+            { value: "", label: f.placeholder ?? "Select…" },
+            ...(f.options ?? []).map((o) => ({ value: o, label: o })),
+          ]}
+        />
       );
     case "multiselect": {
       const arr = Array.isArray(val) ? (val as string[]) : [];
@@ -130,8 +139,20 @@ function renderControl(
           Yes
         </label>
       );
+    case "date":
+      return (
+        <DateField
+          id={id}
+          disabled={disabled}
+          aria-label={f.label}
+          withTime={false}
+          placeholder={f.placeholder ?? "Pick a date"}
+          value={(val as string) ?? ""}
+          onChange={(v) => onChange(f.key, v)}
+        />
+      );
     default: {
-      const type = f.type === "phone" ? "tel" : f.type === "number" ? "number" : f.type === "date" ? "date" : f.type;
+      const type = f.type === "phone" ? "tel" : f.type === "number" ? "number" : f.type;
       return (
         <Input
           {...common}

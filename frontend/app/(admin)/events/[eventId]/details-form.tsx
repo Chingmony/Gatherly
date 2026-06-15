@@ -8,6 +8,7 @@ import type { EventResponse } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DateField } from "@/components/ui/date-field";
 import { coverGradient, COVER_KEYS } from "@/lib/covers";
 
 const FIELD =
@@ -121,8 +122,8 @@ export function DetailsForm({ event }: { event: EventResponse }) {
       </div>
       <div><Label htmlFor="d">Description</Label><textarea id="d" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className={FIELD} /></div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div><Label htmlFor="s">Starts</Label><input id="s" type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={FIELD} /></div>
-        <div><Label htmlFor="e">Ends</Label><input id="e" type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className={FIELD} /></div>
+        <div><Label htmlFor="s">Starts</Label><DateField id="s" value={startsAt} onChange={setStartsAt} /></div>
+        <div><Label htmlFor="e">Ends</Label><DateField id="e" value={endsAt} onChange={setEndsAt} /></div>
       </div>
       {msg && <p role={msg.ok ? "status" : "alert"} className={`text-[13px] font-semibold ${msg.ok ? "text-[var(--green-600)]" : "text-[var(--danger)]"}`}>{msg.text}</p>}
       <div className="flex justify-end"><Button type="submit" disabled={saving}>{saving ? "Saving…" : "Save details"}</Button></div>

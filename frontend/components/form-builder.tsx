@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Select } from "@/components/ui/select";
 
 const TYPES: FieldType[] = ["text", "textarea", "email", "phone", "number", "date", "select", "multiselect", "checkbox"];
 const FIELD =
@@ -167,11 +168,10 @@ export function FormBuilder({ eventId, initial }: { eventId: string; initial: Fo
                     <input className={FIELD} value={f.label} disabled={locked} aria-label="Question label"
                       onChange={(e) => patch(i, { label: e.target.value })} placeholder="Question label" />
                     <div className="flex flex-wrap items-center gap-2">
-                      <select className={`${FIELD} w-auto`} value={f.type} disabled={locked || isEmail}
+                      <Select className="w-auto min-w-[8rem]" value={f.type} disabled={locked || isEmail}
                         aria-label={`Field type for ${f.label || "field"}`}
-                        onChange={(e) => patch(i, { type: e.target.value as FieldType })}>
-                        {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                        onChange={(v) => patch(i, { type: v as FieldType })}
+                        options={TYPES.map((t) => ({ value: t, label: t }))} />
                       <label className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-[var(--text-muted)]">
                         <input type="checkbox" checked={!!f.required} disabled={locked || isEmail}
                           onChange={(e) => patch(i, { required: e.target.checked })} />

@@ -6,12 +6,10 @@ import Link from "next/link";
 import { changeMaterialStatus } from "@/lib/api/materials";
 import { ApiError } from "@/lib/api/client";
 import type { MaterialStatus, MyTaskResponse } from "@/lib/api/types";
+import { Select } from "@/components/ui/select";
 import {
   MATERIAL_STATUSES, MaterialStatusBadge, materialStatusLabel,
 } from "@/components/material-status-badge";
-
-const FIELD =
-  "rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface-2)] px-3 py-2 text-[13px] text-[var(--text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]";
 
 /**
  * Handler task board (docs/05 §6). Status changes go through the server, which enforces the state
@@ -62,12 +60,13 @@ export function MyTasksBoard({ tasks }: { tasks: MyTaskResponse[] }) {
                 </td>
                 <td className="px-4 py-3"><MaterialStatusBadge status={t.status} /></td>
                 <td className="px-4 py-3">
-                  <select className={FIELD} value={t.status}
-                    onChange={(e) => setStatus(t.id, e.target.value as MaterialStatus)}>
-                    {MATERIAL_STATUSES.map((s) => (
-                      <option key={s} value={s}>{materialStatusLabel(s)}</option>
-                    ))}
-                  </select>
+                  <Select
+                    className="min-w-[9rem]"
+                    value={t.status}
+                    onChange={(v) => setStatus(t.id, v as MaterialStatus)}
+                    aria-label="Status"
+                    options={MATERIAL_STATUSES.map((s) => ({ value: s, label: materialStatusLabel(s) }))}
+                  />
                 </td>
               </tr>
             ))}
