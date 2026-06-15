@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { login } from "@/lib/api/auth";
+import { login, isSetupRequired } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,15 @@ function LoginForm() {
     setError(null);
     setPending(true);
     try {
-      const user = await login(email, password);
+      const result = await login(email, password);
+      // Invited account: the code was accepted — go set a real password (no session yet).
+      if (isSetupRequired(result)) {
+        const q = new URLSearchParams({ email: result.email, grant: result.resetGrant });
+        router.push(`/set-password?${q.toString()}`);
+        return;
+      }
       const next = params.get("next");
-      router.push(next || (user.globalRole === "ADMIN" ? "/users" : "/"));
+      router.push(next || (result.globalRole === "ADMIN" ? "/users" : "/"));
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Login failed. Please try again.");
@@ -60,6 +66,9 @@ function LoginForm() {
         <Link href="/forgot-password" className="font-semibold text-[var(--ac)] hover:underline">
           Forgot your password?
         </Link>
+      </p>
+      <p className="mt-2 text-center text-[12px] text-[var(--t2)]">
+        Invited? Enter your email and the one-time code we emailed you.
       </p>
     </Card>
   );

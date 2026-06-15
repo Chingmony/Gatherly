@@ -169,9 +169,11 @@ server fetch, [`03` §4.2](03-api-routes-security.md)):
 - **"Add User" button** opens an **input modal** (accessible dialog: focus-trap, `Esc` to close, `aria-modal`, labelled title) with fields:
   - **Name** (text), **Email** (email), **Role** dropdown — options **`SUB_ADMIN`** and **`HANDLER`** only (**no `ADMIN`**, **no password field**).
   - On submit → Server Action / client call `POST /users { fullName, email, role }`; on success close the modal, toast "Invite sent", and `revalidate`/refresh the list (the new row appears as *Pending*). Server `fieldErrors` map back onto the form ([`07`](07-validation-and-error-handling.md)).
-- **Why no password:** the Admin never sets another user's secret. Creating the user emails them a set-password link; they activate themselves (docs/02 §5c).
+- **Why no password:** the Admin never sets another user's secret. Creating the user emails them a one-time code; they redeem it on the login page and set their own password (docs/02 §5c).
 
-**Set-password (activation) page** — `(auth)/set-password` reads the `token` query param, collects a new password (with confirm + strength rule mirroring the backend), and calls `POST /auth/set-password { token, newPassword }`. Success → redirect to `/login` with a "Your account is active — sign in" message; invalid/expired token → a clear "This link is invalid or has expired" state with a path to request a fresh one.
+**Login page (invite redemption)** — `(auth)/login` posts `{ email, password }`. When the password is an accepted invite code the backend returns `{ setupRequired, email, resetGrant }` (no session); the page detects this and routes to `set-password` carrying `email` + `grant`.
+
+**Set-password page** — `(auth)/set-password` reads the `email` + `grant` query params, collects a new password (with confirm + strength rule mirroring the backend), and calls `POST /auth/reset-password { email, resetGrant, newPassword }`. Success → redirect to `/login` with a "Your account is active — sign in" message; missing/invalid grant → a clear "This request is invalid or has expired" state with a path to request a fresh code. The same screen serves both invite activation (from login) and password reset (from the reset-password code step).
 
 ## 8. State management
 

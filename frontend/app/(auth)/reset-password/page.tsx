@@ -3,19 +3,22 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { resetPassword, verifyOtp } from "@/lib/api/auth";
+import { verifyOtp } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+/**
+ * Enter the emailed one-time code (docs/04 §3.2). On success we exchange it for a single-use grant
+ * and hand off to the shared set-password screen — the same final step as the invite flow.
+ */
 function ResetForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [email, setEmail] = useState(params.get("email") ?? "");
   const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -25,11 +28,10 @@ function ResetForm() {
     setPending(true);
     try {
       const { resetGrant } = await verifyOtp(email, code);
-      await resetPassword(email, resetGrant, newPassword);
-      router.push("/login");
-      router.refresh();
+      const q = new URLSearchParams({ email, grant: resetGrant });
+      router.push(`/set-password?${q.toString()}`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not reset password.");
+      setError(err instanceof ApiError ? err.message : "That code is incorrect or has expired.");
     } finally {
       setPending(false);
     }
@@ -39,7 +41,7 @@ function ResetForm() {
     <Card>
       <CardHeader>
         <CardTitle>Enter your code</CardTitle>
-        <CardDescription>Use the code we emailed you to set a new password.</CardDescription>
+        <CardDescription>Use the one-time code we emailed you.</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
@@ -48,18 +50,13 @@ function ResetForm() {
                  onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
-          <Label htmlFor="code">Reset code</Label>
-          <Input id="code" inputMode="numeric" required value={code}
+          <Label htmlFor="code">Code</Label>
+          <Input id="code" inputMode="numeric" autoComplete="one-time-code" required value={code}
                  onChange={(e) => setCode(e.target.value)} />
-        </div>
-        <div>
-          <Label htmlFor="newPassword">New password</Label>
-          <Input id="newPassword" type="password" autoComplete="new-password" required minLength={8}
-                 value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
         </div>
         {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
         <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? "Updating…" : "Set new password"}
+          {pending ? "Verifying…" : "Continue"}
         </Button>
       </form>
       <p className="mt-5 text-center text-[13px] text-[var(--t2)]">

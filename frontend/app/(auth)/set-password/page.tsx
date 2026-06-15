@@ -3,17 +3,23 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { setPassword } from "@/lib/api/auth";
+import { resetPassword } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+/**
+ * Set a password using a one-time grant (docs/04 §3.2). Reached from the login page after an
+ * invite code is accepted, and from the reset-password page after a forgot-password code is
+ * verified — the same screen serves both activation and reset.
+ */
 function SetPasswordForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const token = params.get("token") ?? "";
+  const email = params.get("email") ?? "";
+  const grant = params.get("grant") ?? "";
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,22 +34,22 @@ function SetPasswordForm() {
     }
     setPending(true);
     try {
-      await setPassword(token, newPassword);
+      await resetPassword(email, grant, newPassword);
       router.push("/login");
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "This link is invalid or has expired.");
+      setError(err instanceof ApiError ? err.message : "This request is invalid or has expired.");
     } finally {
       setPending(false);
     }
   }
 
-  if (!token) {
+  if (!email || !grant) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Invalid link</CardTitle>
-          <CardDescription>This activation link is missing its token.</CardDescription>
+          <CardTitle>Invalid request</CardTitle>
+          <CardDescription>This set-password link is missing its details. Start from sign in.</CardDescription>
         </CardHeader>
         <Link href="/login" className="text-[13px] font-semibold text-[var(--ac)] hover:underline">
           Back to sign in
@@ -56,7 +62,7 @@ function SetPasswordForm() {
     <Card>
       <CardHeader>
         <CardTitle>Set your password</CardTitle>
-        <CardDescription>Activate your account by choosing a password.</CardDescription>
+        <CardDescription>Choose a password for {email}.</CardDescription>
       </CardHeader>
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
@@ -72,7 +78,7 @@ function SetPasswordForm() {
         </div>
         {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
         <Button type="submit" className="w-full" disabled={pending}>
-          {pending ? "Activating…" : "Set password & activate"}
+          {pending ? "Saving…" : "Set password"}
         </Button>
       </form>
       <p className="mt-5 text-center text-[13px] text-[var(--t2)]">

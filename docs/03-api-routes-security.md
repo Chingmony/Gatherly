@@ -36,8 +36,7 @@
 | Logout | `POST /auth/logout` | revoke active refresh, clear cookies |
 | Forgot password | `POST /auth/forgot-password` | issue OTP to Redis (TTL) — see [`04`](04-external-integrations.md) |
 | Verify OTP | `POST /auth/verify-otp` | validate Redis OTP, return short-lived reset grant |
-| Reset password | `POST /auth/reset-password` | consume reset grant, set new BCrypt hash, revoke all refresh tokens |
-| Set password (activation) | `POST /auth/set-password` | validate single-use activation token → set first BCrypt hash, flip `PENDING_ACTIVATION→ACTIVE`, consume token |
+| Set / reset password | `POST /auth/reset-password` | consume single-use grant, set new BCrypt hash; if `PENDING_ACTIVATION` flip `→ACTIVE` (invite activation), else revoke all refresh tokens. One path for both invite-activation and password-reset. |
 
 ## 3. Authorization building blocks
 
@@ -59,8 +58,7 @@
 | POST | `/auth/logout` | authenticated | revoke refresh |
 | POST | `/auth/forgot-password` | public | start OTP reset |
 | POST | `/auth/verify-otp` | public | verify OTP → reset grant |
-| POST | `/auth/reset-password` | public (valid grant) | set new password |
-| POST | `/auth/set-password` | public (valid activation token) | **activate** an invited account: set the first password |
+| POST | `/auth/reset-password` | public (valid grant) | set new password — also **activates** an invited account (PENDING→ACTIVE) on first password |
 
 ### 4.2 Users — `/users/**` (Admin-only CRUD)
 | Method | Path | Gate |
@@ -74,7 +72,7 @@
 | PUT | `/me` | `#userId == authentication.principal.id` |
 | PUT | `/me/password` | self (requires current password) |
 
-> **Invite, not password-set (docs/02 §5c, docs/06 §3a).** `POST /users` is gated `hasRole('ADMIN')` and accepts `{ fullName, email, role }` where `role ∈ { SUB_ADMIN, HANDLER }` — **no password field is accepted** (the Admin never sets another user's password). The account is created `global_role=MEMBER`, `default_event_role = MANAGER` (Sub-admin) `| HANDLER`, `status=PENDING_ACTIVATION`; after commit a `UserCreatedEvent` triggers an emailed set-password link. The dropdown intentionally excludes `ADMIN` — new global Admins are not minted through this form. The list view (`GET /users`) returns `{ fullName, email, role (display), status }`; `role` renders the global Admin or the `default_event_role` designation.
+> **Invite, not password-set (docs/02 §5c, docs/06 §3a).** `POST /users` is gated `hasRole('ADMIN')` and accepts `{ fullName, email, role }` where `role ∈ { SUB_ADMIN, HANDLER }` — **no password field is accepted** (the Admin never sets another user's password). The account is created `global_role=MEMBER`, `default_event_role = MANAGER` (Sub-admin) `| HANDLER`, `status=PENDING_ACTIVATION`; after commit a `UserCreatedEvent` triggers an emailed **one-time invite code** (OTP). The invitee enters their email + code on the login page; the backend detects the PENDING account, verifies the code, and returns `{ setupRequired, email, resetGrant }` (no session) so the client routes to set-password (docs/04 §2.1). The dropdown intentionally excludes `ADMIN` — new global Admins are not minted through this form. The list view (`GET /users`) returns `{ fullName, email, role (display), status }`; `role` renders the global Admin or the `default_event_role` designation.
 
 ### 4.3 Organization — `/organization`
 | Method | Path | Gate |
@@ -181,16 +179,24 @@ The new check-in: an organizer scans the **guest's** QR at the venue.
 ```json
 // request
 { "fullName": "Dara Sok", "email": "dara@example.com", "role": "SUB_ADMIN" }
-// 201 (account is PENDING_ACTIVATION; set-password email queued)
+// 201 (account is PENDING_ACTIVATION; one-time invite code emailed)
 { "id": "…", "fullName": "Dara Sok", "email": "dara@example.com",
   "role": "SUB_ADMIN", "status": "PENDING_ACTIVATION" }
 ```
 
-**`POST /auth/set-password`** (invited user activates via the emailed link)
+**`POST /auth/login`** (invited user redeems the one-time code on the login page)
+```json
+// request — the emailed code is sent in the password field
+{ "email": "dara@example.com", "password": "123456" }
+// 200 — code accepted, NO session issued; client routes to set-password with the grant
+{ "setupRequired": true, "email": "dara@example.com", "resetGrant": "…" }
+```
+
+**`POST /auth/reset-password`** (set first password / reset — consumes the grant)
 ```json
 // request
-{ "token": "act_7f3c…", "newPassword": "•••••••••" }
-// 204 — password set, status PENDING_ACTIVATION → ACTIVE, token consumed
+{ "email": "dara@example.com", "resetGrant": "…", "newPassword": "•••••••••" }
+// 204 — password set; if PENDING_ACTIVATION → ACTIVE, grant consumed
 ```
 
 **`PATCH /materials/{id}/status`**

@@ -26,7 +26,6 @@ public enum ErrorCode {
     TICKET_INVALID(HttpStatus.CONFLICT),
     ILLEGAL_TRANSITION(HttpStatus.CONFLICT),
     NO_ACTIVE_FORM(HttpStatus.CONFLICT),
-    ACTIVATION_INVALID(HttpStatus.CONFLICT),
 
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS),
 

@@ -35,19 +35,25 @@ public class EmailService {
         this.fromName = fromName;
     }
 
-    public void sendActivation(String toEmail, String fullName, String activationLink) {
-        String subject = "You've been added to Gatherly — set your password";
+    /**
+     * Invite an added user (docs/06 §3a): email a one-time sign-in code. The user enters it (with
+     * their email) on the login page, which routes them to set a real password. Replaces the older
+     * activation-link flow with the same OTP mechanism as password reset.
+     */
+    public void sendInviteOtp(String toEmail, String fullName, String otp, int ttlMinutes) {
+        String subject = "You've been added to Gatherly — your sign-in code";
+        String validity = ttlMinutes >= 120 ? (ttlMinutes / 60) + " hours" : ttlMinutes + " minutes";
         String html = """
                 <p>Hi %s,</p>
                 <p>An administrator created a Gatherly account for you (%s).</p>
-                <p>Set your password to activate your account:</p>
-                <p><a href="%s">Set your password</a></p>
-                <p>If the link doesn't work, copy this URL into your browser:<br>%s</p>
+                <p>Sign in with your email and this one-time code, then choose your password:</p>
+                <p style="font-size:24px;font-weight:bold;letter-spacing:4px">%s</p>
+                <p>This code expires in %s.</p>
                 <p>— Gatherly</p>
-                """.formatted(escape(fullName), escape(toEmail), activationLink, activationLink);
+                """.formatted(escape(fullName), escape(toEmail), otp, validity);
 
         if (!enabled) {
-            log.warn("EMAIL disabled — activation link for {} is {}", toEmail, activationLink);
+            log.warn("EMAIL disabled — invite code for {} is {} (valid {})", toEmail, otp, validity);
             return;
         }
         send(toEmail, subject, html);

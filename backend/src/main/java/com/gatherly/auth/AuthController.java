@@ -3,7 +3,7 @@ package com.gatherly.auth;
 import com.gatherly.auth.dto.ForgotPasswordRequest;
 import com.gatherly.auth.dto.LoginRequest;
 import com.gatherly.auth.dto.ResetPasswordRequest;
-import com.gatherly.auth.dto.SetPasswordRequest;
+import com.gatherly.auth.dto.SetupRequiredResponse;
 import com.gatherly.auth.dto.VerifyOtpRequest;
 import com.gatherly.auth.dto.VerifyOtpResponse;
 import com.gatherly.user.UserMapper;
@@ -32,9 +32,17 @@ public class AuthController {
         this.authService = authService;
     }
 
+    /**
+     * Returns the user summary on a normal login, or a {@link SetupRequiredResponse} when an
+     * invited account redeemed its one-time code (the client then routes to set-password).
+     */
     @PostMapping("/login")
-    public UserResponse login(@Valid @RequestBody LoginRequest req, HttpServletResponse response) {
-        return UserMapper.toResponse(authService.login(req, response));
+    public ResponseEntity<Object> login(@Valid @RequestBody LoginRequest req, HttpServletResponse response) {
+        LoginOutcome outcome = authService.login(req, response);
+        if (outcome.setupRequired()) {
+            return ResponseEntity.ok(new SetupRequiredResponse(true, outcome.setupEmail(), outcome.resetGrant()));
+        }
+        return ResponseEntity.ok(UserMapper.toResponse(outcome.user()));
     }
 
     @PostMapping("/refresh")
@@ -60,15 +68,10 @@ public class AuthController {
         return new VerifyOtpResponse(authService.verifyOtp(req.email(), req.code()));
     }
 
+    /** Set a password via a one-time grant — used by both invite activation and password reset. */
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
         authService.resetPassword(req);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @PostMapping("/set-password")
-    public ResponseEntity<Void> setPassword(@Valid @RequestBody SetPasswordRequest req) {
-        authService.setPassword(req);
-        return ResponseEntity.noContent().build();
     }
 }

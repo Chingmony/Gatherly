@@ -33,9 +33,8 @@ Controller  →  Service  →  Repository  →  PostgreSQL
 
 | Service | Key responsibilities |
 |---------|----------------------|
-| `AuthService` | login, refresh-rotation, logout, forgot-password (OTP via Redis+Email), reset-password, **set-password (activation)** |
-| `OtpService` | Redis OTP create/verify/consume ([`04` §3](04-external-integrations.md)) |
-| `ActivationService` | mint / verify / consume the single-use set-password token (Redis, [`04` §3](04-external-integrations.md)) |
+| `AuthService` | login (incl. **invite-code redemption** for PENDING accounts → grant), refresh-rotation, logout, forgot-password (OTP via Redis+Email), reset-password (also **activates** invited accounts) |
+| `OtpService` | Redis OTP create/verify/consume — reset codes and invite codes (longer TTL) ([`04` §3](04-external-integrations.md)) |
 | `UserService` | global user **invite** (Admin, no password) + CRUD, self-profile, password change; publishes `UserCreatedEvent` |
 | `OrganizationService` | singleton org profile; logo/banner key persistence (Rustfs presign in `StorageService`) |
 | `EventService` | event CRUD, lifecycle `DRAFT→PUBLIC→ARCHIVED`, publish/delete (Admin), registration-QR token |
@@ -65,23 +64,26 @@ Controller  →  Service  →  Repository  →  PostgreSQL
         status = PENDING_ACTIVATION })
 4. publishEvent(new UserCreatedEvent(user.id))
 5. commit
-6. AFTER COMMIT (@TransactionalEventListener / @Async):
-       token = ActivationService.mint(user.id)              // CSPRNG; Redis setpw:{hash}=userId, TTL
-       EmailService.sendActivation(user, token)             // link to /auth/set-password?token=…
+6. AFTER COMMIT (@TransactionalEventListener):
+       code = OtpService.requestOtp(user.id, inviteTtl)      // Redis otp:pwd:{userId}=hash(code), invite TTL
+       EmailService.sendInviteOtp(user, code)               // one-time code, redeemed on /login
 return UserResponse{ …, role(display), status=PENDING_ACTIVATION }
 ```
 
-`AuthService.setPassword(token, newPassword)` — public:
+The invitee enters their **email + code on the login page**; `AuthService.login` detects the `PENDING_ACTIVATION` status, verifies the code as an OTP, and returns `{ setupRequired, email, resetGrant }` with **no session**. The client then calls `POST /auth/reset-password { email, resetGrant, newPassword }`, which sets the first password and flips the account to `ACTIVE` — the same service path used for password reset.
+
+`AuthService.resetPassword(email, resetGrant, newPassword)` — public (serves both invite-activation and password-reset):
 ```
 @Transactional
-1. userId = ActivationService.verify(token)                 ; if null → 404/409 (invalid/expired)
-2. user = load(userId); assert status == PENDING_ACTIVATION else 409 CONFLICT (already active)
-3. user.passwordHash = bcrypt(newPassword); user.status = ACTIVE
-4. ActivationService.consume(token)                          // single-use
-5. commit
+1. user = findByEmail(email).filter(ACTIVE || PENDING_ACTIVATION)  ; else → 401 OTP_INVALID
+2. assert OtpService.consumeGrant(user.id, resetGrant)              ; else → 401 OTP_INVALID (single-use)
+3. user.passwordHash = bcrypt(newPassword)
+4. if status == PENDING_ACTIVATION → status = ACTIVE                // invited account activates
+5. revoke all refresh tokens for user                              // reset path invalidates sessions
+6. commit
 ```
 - **No Admin-set passwords:** the Admin never knows or sets another user's secret; activation is user-driven.
-- **Token safety:** high-entropy, single-use, time-expiring ([`04` §3](04-external-integrations.md)); resolved server-side; the email send happens after commit so a mail failure can't roll back user creation (retry sweep re-sends stuck invites, §7).
+- **Code safety:** the invite/reset code is high-entropy, attempt-capped, single-use, time-expiring ([`04` §3](04-external-integrations.md)); resolved server-side; the email send happens after commit so a mail failure can't roll back user creation (retry sweep re-sends stuck invites, §7).
 
 ## 4. Attendance scan — idempotent, replay-safe (worked example)
 
