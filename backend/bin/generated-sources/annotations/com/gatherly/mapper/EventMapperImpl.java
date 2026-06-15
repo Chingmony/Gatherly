@@ -10,14 +10,14 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-14T19:54:13+0700",
+    date = "2026-06-15T01:15:11+0700",
     comments = "version: 1.6.0, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
 )
 @Component
 public class EventMapperImpl implements EventMapper {
 
     @Override
-    public EventResponse toResponse(Event event) {
+    public EventResponse toResponse(Event event, long registeredCount) {
         if ( event == null ) {
             return null;
         }
@@ -25,8 +25,12 @@ public class EventMapperImpl implements EventMapper {
         UUID id = null;
         String title = null;
         String slug = null;
+        String category = null;
+        Integer capacity = null;
         String description = null;
         String venue = null;
+        String coverColor = null;
+        String coverImageUrl = null;
         Instant startsAt = null;
         Instant endsAt = null;
         EventStatus status = null;
@@ -35,22 +39,29 @@ public class EventMapperImpl implements EventMapper {
         UUID createdBy = null;
         Instant createdAt = null;
         Instant updatedAt = null;
+        if ( event != null ) {
+            id = event.getId();
+            title = event.getTitle();
+            slug = event.getSlug();
+            category = event.getCategory();
+            capacity = event.getCapacity();
+            description = event.getDescription();
+            venue = event.getVenue();
+            coverColor = event.getCoverColor();
+            coverImageUrl = event.getCoverImageUrl();
+            startsAt = event.getStartsAt();
+            endsAt = event.getEndsAt();
+            status = event.getStatus();
+            registrationQrToken = event.getRegistrationQrToken();
+            checkinOpensAt = event.getCheckinOpensAt();
+            createdBy = event.getCreatedBy();
+            createdAt = event.getCreatedAt();
+            updatedAt = event.getUpdatedAt();
+        }
+        long registeredCount1 = 0L;
+        registeredCount1 = registeredCount;
 
-        id = event.getId();
-        title = event.getTitle();
-        slug = event.getSlug();
-        description = event.getDescription();
-        venue = event.getVenue();
-        startsAt = event.getStartsAt();
-        endsAt = event.getEndsAt();
-        status = event.getStatus();
-        registrationQrToken = event.getRegistrationQrToken();
-        checkinOpensAt = event.getCheckinOpensAt();
-        createdBy = event.getCreatedBy();
-        createdAt = event.getCreatedAt();
-        updatedAt = event.getUpdatedAt();
-
-        EventResponse eventResponse = new EventResponse( id, title, slug, description, venue, startsAt, endsAt, status, registrationQrToken, checkinOpensAt, createdBy, createdAt, updatedAt );
+        EventResponse eventResponse = new EventResponse( id, title, slug, category, capacity, description, venue, coverColor, coverImageUrl, startsAt, endsAt, status, registeredCount1, registrationQrToken, checkinOpensAt, createdBy, createdAt, updatedAt );
 
         return eventResponse;
     }

@@ -2,6 +2,7 @@ package com.gatherly.repository;
 
 import com.gatherly.domain.RegistrationSubmission;
 import com.gatherly.domain.TicketStatus;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,6 +31,23 @@ public interface RegistrationSubmissionRepository
       @Param("eventId") UUID eventId, @Param("q") String q, Pageable pageable);
 
   long countByEventId(UUID eventId);
+
+  /** Grouped registration counts for a set of events — one query for a page of event cards. */
+  @Query(
+      """
+      SELECT s.eventId AS eventId, COUNT(s) AS count
+      FROM RegistrationSubmission s
+      WHERE s.eventId IN :eventIds
+      GROUP BY s.eventId
+      """)
+  List<EventRegistrationCount> countByEventIdIn(@Param("eventIds") Collection<UUID> eventIds);
+
+  /** Projection for {@link #countByEventIdIn(Collection)}. */
+  interface EventRegistrationCount {
+    UUID getEventId();
+
+    long getCount();
+  }
 
   /** Retry source for the QR-email sweep ({@code docs/06} §7): tickets stuck PENDING. */
   List<RegistrationSubmission> findTop50ByQrStatusOrderBySubmittedAtAsc(TicketStatus qrStatus);

@@ -13,11 +13,11 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-15T02:54:41+0700",
+    date = "2026-06-14T23:38:29+0700",
     comments = "version: 1.6.0, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
 )
 @Component
-public class UserMapperImpl extends UserMapper {
+public class UserMapperImpl implements UserMapper {
 
     @Override
     public UserResponse toResponse(User user) {
@@ -49,9 +49,7 @@ public class UserMapperImpl extends UserMapper {
         createdAt = user.getCreatedAt();
         updatedAt = user.getUpdatedAt();
 
-        String avatarUrl = rustfs.presignGet(user.getAvatarKey());
-
-        UserResponse userResponse = new UserResponse( id, email, fullName, phone, gender, dateOfBirth, address, globalRole, status, createdAt, updatedAt, avatarUrl );
+        UserResponse userResponse = new UserResponse( id, email, fullName, phone, gender, dateOfBirth, address, globalRole, status, createdAt, updatedAt );
 
         return userResponse;
     }

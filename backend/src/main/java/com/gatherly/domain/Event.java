@@ -34,6 +34,20 @@ public class Event extends BaseEntity {
 
   @Column private String venue;
 
+  /** UI: event category label (Conference, Festival, Workshop, …). */
+  @Column private String category;
+
+  /** UI: optional max registrations; {@code null} = unlimited. */
+  @Column private Integer capacity;
+
+  /** UI: preset cover colour id / hex used for the card gradient. */
+  @Column(name = "cover_color")
+  private String coverColor;
+
+  /** UI: optional uploaded cover image (Rustfs object URL). */
+  @Column(name = "cover_image_url")
+  private String coverImageUrl;
+
   @Column(name = "starts_at")
   private Instant startsAt;
 
