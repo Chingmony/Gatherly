@@ -32,9 +32,9 @@ M0 Foundations ─┬─▶ M1 Auth & Users ─┬─▶ M2 Org & Events ─┬�
 ### M1 — Auth & Users
 - JWT issue/refresh-rotation/logout; Spring Security filter chain + method security; `EventSecurityService` skeleton ([`03`](03-api-routes-security.md), [`06`](06-backend-services-spec.md)).
 - Forgot-password via Redis OTP + **Email** delivery ([`04` §2.1/§3](04-external-integrations.md)).
-- **Admin user invite** (Add-User modal — name, email, role ∈ {`SUB_ADMIN`, `HANDLER`}, **no password**) → `UserCreatedEvent` → emailed **set-password** link; account is `PENDING_ACTIVATION` until activated ([`02` §5c](02-database-schema.md), [`06` §3a](06-backend-services-spec.md)). Account is global `MEMBER` + a `default_event_role` designation. User list columns: **Name · Email · Role · Active Status**. `/users` and `POST /users` gated `hasRole('ADMIN')`.
+- **Admin user invite** (Add-User modal — name, email, role ∈ {`SUB_ADMIN`, `HANDLER`}, **no password**) → `UserCreatedEvent` → emailed **one-time invite code**; account is `PENDING_ACTIVATION` until activated ([`02` §5c](02-database-schema.md), [`06` §3a](06-backend-services-spec.md)). Account is global `MEMBER` + a `default_event_role` designation. User list columns: **Name · Email · Role · Active Status**. `/users` and `POST /users` gated `hasRole('ADMIN')`.
 - Self-profile; bootstrap admin seed (created `ACTIVE`, env-injected — exempt from the invite flow).
-- **Demo:** log in as admin, invite a user (no password), activate it via the emailed set-password link, then recover a password via emailed OTP. *(Authorization matrix tests start here.)*
+- **Demo:** log in as admin, invite a user (no password), activate it by entering the emailed code on the login page → set password, then recover a password via emailed OTP. *(Authorization matrix tests start here.)*
 
 ### M2 — Organization & Events
 - Org profile (Admin) + Rustfs presign upload for logo/banner ([`04` §4](04-external-integrations.md)).

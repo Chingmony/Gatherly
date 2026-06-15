@@ -70,7 +70,7 @@ Indexes: `UNIQUE(email)`, `INDEX(global_role)`.
 
 > `ADMIN` = Super Admin. `MEMBER` is default; a member becomes **Sub-admin or Handler only through `event_assignment`** — there is no global SUB_ADMIN/HANDLER value, because those roles are inherently event-scoped.
 >
-> **Add-User invite (Admin-only):** the Add-User form creates **MEMBER** accounts only — it can never mint a new global Admin (elevation to `ADMIN` is a deliberate, separate action / bootstrap seed). Its role dropdown offers **Sub-admin** and **Handler**, persisted as `default_event_role` (`MANAGER`/`HANDLER`) and surfaced as the user's "Role" in the list; the actual privilege is granted per-event in M3. The admin enters **no password** — the user receives an emailed set-password link and activates their account (§5c).
+> **Add-User invite (Admin-only):** the Add-User form creates **MEMBER** accounts only — it can never mint a new global Admin (elevation to `ADMIN` is a deliberate, separate action / bootstrap seed). Its role dropdown offers **Sub-admin** and **Handler**, persisted as `default_event_role` (`MANAGER`/`HANDLER`) and surfaced as the user's "Role" in the list; the actual privilege is granted per-event in M3. The admin enters **no password** — the user receives an emailed one-time code, redeems it on the login page, and sets their own password to activate (§5c).
 
 ### 3.3 `event`
 | Column | Type | Notes |
@@ -312,21 +312,23 @@ Admin-created accounts are **invited**, not given a password by the Admin (docs/
     └─ create user { global_role=MEMBER, default_event_role=MANAGER|HANDLER,
                      password_hash=NULL, status=PENDING_ACTIVATION }
     └─ commit ─▶ AFTER COMMIT: publish UserCreatedEvent
-                    └─ ActivationService mints a single-use set-password token (Redis, TTL)
-                    └─ EmailService emails APP_PUBLIC_BASE_URL/auth/set-password?token=…
+                    └─ OtpService mints a one-time invite code (Redis otp:pwd:{userId}, invite TTL)
+                    └─ EmailService emails the code (no link)
 
- User opens link ──▶ POST /auth/set-password { token, newPassword }
-    └─ resolve token → user; set BCrypt password_hash; status PENDING_ACTIVATION → ACTIVE;
-       consume token (single-use)
+ User enters email + code on /login ──▶ POST /auth/login { email, password=code }
+    └─ account is PENDING_ACTIVATION → verify code as OTP → return { setupRequired, resetGrant }
+       (no session)
+ User sets password ──▶ POST /auth/reset-password { email, resetGrant, newPassword }
+    └─ consume grant; set BCrypt password_hash; status PENDING_ACTIVATION → ACTIVE
 ```
 
 | Transition | Trigger | Effect |
 |------------|---------|--------|
-| → `PENDING_ACTIVATION` | Admin invites a user | `password_hash` NULL; activation email queued (after commit) |
-| `PENDING_ACTIVATION` → `ACTIVE` | user sets a password via the emailed link | `password_hash` set; account usable for login |
+| → `PENDING_ACTIVATION` | Admin invites a user | `password_hash` NULL; one-time invite code emailed (after commit) |
+| `PENDING_ACTIVATION` → `ACTIVE` | user redeems the code on login, then sets a password | `password_hash` set; account usable for login |
 | `ACTIVE` ↔ `INACTIVE` | Admin deactivates / reactivates | login blocked while `INACTIVE` |
 
-> A `PENDING_ACTIVATION` user **cannot log in** (no password). The set-password token is high-entropy, single-use, time-expiring (TTL in [`04` §3](04-external-integrations.md)), and resolved server-side only. The bootstrap Admin seed and any future migration-seeded accounts are created `ACTIVE` with a password and are exempt from this flow.
+> A `PENDING_ACTIVATION` user **cannot log in** with a password (they have none); entering their email + one-time code on the login page routes them to set one. The invite code is high-entropy, attempt-capped, single-use, time-expiring (TTL in [`04` §3](04-external-integrations.md)), and resolved server-side only. The bootstrap Admin seed and any future migration-seeded accounts are created `ACTIVE` with a password and are exempt from this flow.
 
 ## 6. JSONB document structures (dynamic forms)
 

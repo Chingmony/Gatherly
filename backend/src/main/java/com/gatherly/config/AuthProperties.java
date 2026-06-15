@@ -19,8 +19,12 @@ public record AuthProperties(Jwt jwt, Cookie cookie, Otp otp) {
     public record Cookie(boolean secure, String sameSite, String domain) {
     }
 
-    /** OTP lifecycle (docs/04 §3.2/§3.3). */
+    /**
+     * OTP lifecycle (docs/04 §3.2/§3.3). {@code inviteTtlSeconds} is the (longer) lifetime of the
+     * one-time code emailed on invite, redeemed on the login page; {@code ttlSeconds} stays the
+     * short password-reset window.
+     */
     public record Otp(int ttlSeconds, int maxAttempts, int resendCooldownSeconds,
-                      int length, int grantTtlSeconds) {
+                      int length, int grantTtlSeconds, int inviteTtlSeconds) {
     }
 }

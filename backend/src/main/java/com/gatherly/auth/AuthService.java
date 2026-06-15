@@ -3,7 +3,6 @@ package com.gatherly.auth;
 import com.gatherly.auth.domain.RefreshToken;
 import com.gatherly.auth.dto.LoginRequest;
 import com.gatherly.auth.dto.ResetPasswordRequest;
-import com.gatherly.auth.dto.SetPasswordRequest;
 import com.gatherly.user.domain.UserStatus;
 import com.gatherly.common.Hashing;
 import com.gatherly.common.error.AppException;
@@ -42,34 +41,48 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final OtpService otpService;
-    private final ActivationService activationService;
     private final EmailService emailService;
     private final AuthCookies cookies;
     private final AuthProperties props;
 
     public AuthService(UserRepository users, RefreshTokenRepository refreshTokens,
                        PasswordEncoder passwordEncoder, JwtService jwtService, OtpService otpService,
-                       ActivationService activationService, EmailService emailService,
-                       AuthCookies cookies, AuthProperties props) {
+                       EmailService emailService, AuthCookies cookies, AuthProperties props) {
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.otpService = otpService;
-        this.activationService = activationService;
         this.emailService = emailService;
         this.cookies = cookies;
         this.props = props;
     }
 
-    /** Verify credentials, reject inactive accounts, and set the access + refresh cookies. */
-    public User login(LoginRequest req, HttpServletResponse response) {
+    /**
+     * Authenticate. An {@code ACTIVE} account logs in normally (cookies set) and yields a session
+     * outcome. A {@code PENDING_ACTIVATION} (invited) account has no password — the submitted
+     * "password" is treated as the one-time invite code; on a match we return a single-use grant
+     * (no session) so the client can route the user to set a real password. Every failure is the
+     * uniform {@code INVALID_CREDENTIALS} so neither account existence nor status leaks.
+     */
+    public LoginOutcome login(LoginRequest req, HttpServletResponse response) {
         User user = users.findByEmailIgnoreCase(req.email())
-                .filter(u -> passwordEncoder.matches(req.password(), u.getPasswordHash()))
-                .filter(User::isActive)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS, "Invalid email or password."));
+
+        if (user.getStatus() == UserStatus.PENDING_ACTIVATION) {
+            try {
+                String grant = otpService.verifyOtp(user.getId(), req.password());
+                return LoginOutcome.setupRequired(user.getEmail(), grant);
+            } catch (AppException ex) {
+                throw new AppException(ErrorCode.INVALID_CREDENTIALS, "Invalid email or password.");
+            }
+        }
+
+        if (!user.isActive() || !passwordEncoder.matches(req.password(), user.getPasswordHash())) {
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS, "Invalid email or password.");
+        }
         issueSession(user, response);
-        return user;
+        return LoginOutcome.session(user);
     }
 
     /**
@@ -117,59 +130,63 @@ public class AuthService {
 
     // ---- Forgot-password (OTP) ----------------------------------------------
 
-    /** Always succeeds from the caller's view (no account enumeration, docs/04 §3.5). */
+    /**
+     * Email a one-time code. Always succeeds from the caller's view (no account enumeration,
+     * docs/04 §3.5). Works for an {@code ACTIVE} account (password reset) and for a
+     * {@code PENDING_ACTIVATION} account (resend the invite code) — the latter fixes the dead-end
+     * where an invited-but-not-activated user had no way to (re)request their code.
+     */
     public void forgotPassword(String email) {
-        Optional<User> user = users.findByEmailIgnoreCase(email).filter(User::isActive);
-        if (user.isEmpty()) {
+        Optional<User> found = users.findByEmailIgnoreCase(email).filter(this::isResettable);
+        if (found.isEmpty()) {
             return; // do not reveal whether the account exists
         }
+        User user = found.get();
+        boolean pending = user.getStatus() == UserStatus.PENDING_ACTIVATION;
         try {
-            String otp = otpService.requestOtp(user.get().getId());
-            emailService.sendOtp(user.get().getEmail(), user.get().getFullName(),
-                    otp, props.otp().ttlSeconds() / 60);
+            if (pending) {
+                int ttl = props.otp().inviteTtlSeconds();
+                String otp = otpService.requestOtp(user.getId(), ttl);
+                emailService.sendInviteOtp(user.getEmail(), user.getFullName(), otp, ttl / 60);
+            } else {
+                String otp = otpService.requestOtp(user.getId());
+                emailService.sendOtp(user.getEmail(), user.getFullName(), otp, props.otp().ttlSeconds() / 60);
+            }
         } catch (com.gatherly.common.error.RateLimitExceededException ex) {
             // Within resend cooldown — silently no-op to preserve the uniform 202 response.
-            log.debug("OTP resend within cooldown for user {}", user.get().getId());
+            log.debug("OTP resend within cooldown for user {}", user.getId());
         }
     }
 
     public String verifyOtp(String email, String code) {
-        User user = users.findByEmailIgnoreCase(email).filter(User::isActive)
+        User user = users.findByEmailIgnoreCase(email).filter(this::isResettable)
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID, "Incorrect code."));
         return otpService.verifyOtp(user.getId(), code);
     }
 
     /**
-     * Activate an invited account (docs/06 §3a): consume the single-use activation token, set the
-     * first password, and flip {@code PENDING_ACTIVATION → ACTIVE}.
+     * Set a password using a single-use grant from {@link #verifyOtp} or the invite-login flow.
+     * One path for both: a {@code PENDING_ACTIVATION} account is activated ({@code → ACTIVE}) as it
+     * sets its first password; an {@code ACTIVE} account has its password reset. Existing sessions
+     * are revoked afterwards (docs/03 §2.3).
      */
-    public void setPassword(SetPasswordRequest req) {
-        java.util.UUID userId = activationService.verify(req.token());
-        if (userId == null) {
-            throw new AppException(ErrorCode.ACTIVATION_INVALID, "This link is invalid or has expired.");
-        }
-        User user = users.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.ACTIVATION_INVALID,
-                        "This link is invalid or has expired."));
-        if (user.getStatus() != UserStatus.PENDING_ACTIVATION) {
-            throw new AppException(ErrorCode.ACTIVATION_INVALID, "This account is already active.");
-        }
-        user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
-        user.setStatus(UserStatus.ACTIVE);
-        users.save(user);
-        activationService.consume(req.token());
-    }
-
     public void resetPassword(ResetPasswordRequest req) {
-        User user = users.findByEmailIgnoreCase(req.email()).filter(User::isActive)
+        User user = users.findByEmailIgnoreCase(req.email()).filter(this::isResettable)
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_INVALID, "Invalid or expired reset request."));
         if (!otpService.consumeGrant(user.getId(), req.resetGrant())) {
             throw new AppException(ErrorCode.OTP_INVALID, "Invalid or expired reset request.");
         }
         user.setPasswordHash(passwordEncoder.encode(req.newPassword()));
+        if (user.getStatus() == UserStatus.PENDING_ACTIVATION) {
+            user.setStatus(UserStatus.ACTIVE); // activate the invited account on first password
+        }
         users.save(user);
-        // Invalidate all existing sessions after a password reset (docs/03 §2.3).
         refreshTokens.revokeAllForUser(user.getId());
+    }
+
+    /** OTP flows apply to live accounts (ACTIVE) and invited ones (PENDING_ACTIVATION), not INACTIVE. */
+    private boolean isResettable(User u) {
+        return u.getStatus() == UserStatus.ACTIVE || u.getStatus() == UserStatus.PENDING_ACTIVATION;
     }
 
     // ---- helpers ------------------------------------------------------------

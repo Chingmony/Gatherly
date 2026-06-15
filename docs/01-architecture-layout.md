@@ -65,10 +65,10 @@ frontend/
 │   │   ├── tickets/[token]/page.tsx    # guest views QR / ticket status / "resend email"
 │   │   └── layout.tsx
 │   ├── (auth)/                         # login / forgot-password / OTP
-│   │   ├── login/page.tsx
+│   │   ├── login/page.tsx              # also redeems the invite code (email + code → set-password)
 │   │   ├── forgot-password/page.tsx    # request OTP
-│   │   ├── reset-password/page.tsx     # verify OTP + set new password
-│   │   └── set-password/page.tsx       # activate an invited account (token from email)
+│   │   ├── reset-password/page.tsx     # verify OTP → hands off to set-password
+│   │   └── set-password/page.tsx       # set new password via grant (invite activation + reset)
 │   ├── (admin)/                        # Admin-only console
 │   │   ├── users/                      # global user invite (Add-User modal) + CRUD
 │   │   ├── organization/page.tsx       # org profile (logo/banner upload → Rustfs)

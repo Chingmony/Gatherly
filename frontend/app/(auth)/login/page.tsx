@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Mail } from "lucide-react";
-import { login } from "@/lib/api/auth";
+import { login, isSetupRequired } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,10 +24,16 @@ function LoginForm() {
     setError(null);
     setPending(true);
     try {
-      const user = await login(email, password);
+      const result = await login(email, password);
+      // Invited account: the one-time code was accepted — go set a real password (no session yet).
+      if (isSetupRequired(result)) {
+        const q = new URLSearchParams({ email: result.email, grant: result.resetGrant });
+        router.push(`/set-password?${q.toString()}`);
+        return;
+      }
       const next = params.get("next");
       // Admins land on the user console; organizers (Sub-admin/Handler) land on their events workspace.
-      router.push(next || (user.globalRole === "ADMIN" ? "/users" : "/events"));
+      router.push(next || (result.globalRole === "ADMIN" ? "/users" : "/events"));
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Login failed. Please try again.");
@@ -54,7 +60,7 @@ function LoginForm() {
           />
         </div>
         <div>
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">Password or invite code</Label>
           <PasswordField
             id="password"
             autoComplete="current-password"
@@ -88,6 +94,9 @@ function LoginForm() {
           {pending ? "Signing in…" : (<>Sign in <ArrowRight className="h-4 w-4" /></>)}
         </Button>
       </form>
+      <p className="mt-4 text-center text-[12px] text-[var(--text-muted)]">
+        Invited? Enter your email and the one-time code we emailed you.
+      </p>
     </div>
   );
 }

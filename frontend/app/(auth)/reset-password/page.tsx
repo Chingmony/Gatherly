@@ -13,6 +13,10 @@ import { AuthHeading, BackLink, IconInput, OtpInput, PasswordField } from "../au
 /** Mirror of the server OTP lifetime (Redis TTL) — used only for the on-screen countdown. */
 const OTP_TTL_SECONDS = 300;
 
+/**
+ * Forgot-password code entry (docs/04 §3.2): enter the emailed one-time code and a new password in
+ * one step — verify the code for a single-use grant, then set the new password.
+ */
 function ResetForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -53,7 +57,7 @@ function ResetForm() {
       router.push("/login");
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not reset password.");
+      setError(err instanceof ApiError ? err.message : "That code is incorrect or has expired.");
     } finally {
       setPending(false);
     }

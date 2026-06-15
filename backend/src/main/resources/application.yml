@@ -102,6 +102,7 @@ gatherly:
       resend-cooldown-seconds: ${OTP_RESEND_COOLDOWN_SECONDS:60}
       length: ${OTP_LENGTH:6}
       grant-ttl-seconds: ${OTP_GRANT_TTL_SECONDS:300}
+      invite-ttl-seconds: ${OTP_INVITE_TTL_SECONDS:86400}  # 24h: invite code redeemed on login (docs/04 §3.2)
   email:
     enabled: ${EMAIL_ENABLED:false}
     from: ${MAIL_FROM:no-reply@gatherly.local}

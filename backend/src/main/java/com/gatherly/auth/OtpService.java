@@ -37,17 +37,27 @@ public class OtpService {
     }
 
     /**
-     * Generates and stores a fresh OTP for the user and returns the <b>raw</b> code (for the
-     * caller to email). Honors the resend cooldown — a too-soon request is rate-limited.
+     * Generates and stores a fresh OTP for the user (default password-reset TTL) and returns the
+     * <b>raw</b> code (for the caller to email). Honors the resend cooldown — a too-soon request
+     * is rate-limited.
      */
     public String requestOtp(UUID userId) {
+        return requestOtp(userId, cfg.ttlSeconds());
+    }
+
+    /**
+     * As {@link #requestOtp(UUID)} but with an explicit lifetime. Invites use a longer window
+     * ({@code gatherly.auth.otp.invite-ttl-seconds}) than password-reset codes, since the invitee
+     * may not check their inbox immediately. Honors the resend cooldown.
+     */
+    public String requestOtp(UUID userId, long ttlSeconds) {
         if (Boolean.TRUE.equals(redis.hasKey(COOLDOWN_KEY + userId))) {
             Long ttl = redis.getExpire(COOLDOWN_KEY + userId);
             throw new RateLimitExceededException("Please wait before requesting another code.",
                     ttl == null || ttl < 0 ? cfg.resendCooldownSeconds() : ttl);
         }
         String otp = generateNumericOtp(cfg.length());
-        Duration ttl = Duration.ofSeconds(cfg.ttlSeconds());
+        Duration ttl = Duration.ofSeconds(ttlSeconds);
         redis.opsForValue().set(OTP_KEY + userId, hash(otp), ttl);
         redis.opsForValue().set(ATTEMPTS_KEY + userId, "0", ttl);
         redis.opsForValue().set(COOLDOWN_KEY + userId, "1", Duration.ofSeconds(cfg.resendCooldownSeconds()));

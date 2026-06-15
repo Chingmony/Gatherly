@@ -1,6 +1,6 @@
 package com.gatherly.user.event;
 
-import com.gatherly.auth.ActivationService;
+import com.gatherly.auth.OtpService;
 import com.gatherly.integration.email.EmailService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -8,28 +8,28 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * After the invite transaction commits (docs/06 §2, §3a), mint a single-use activation token and
- * email the set-password link. Running after commit means a slow/failed mail server can never roll
- * back user creation; {@link EmailService} swallows its own send failures.
+ * After the invite transaction commits (docs/06 §2, §3a), mint a one-time sign-in code and email
+ * it. The invitee enters it (with their email) on the login page, which detects the OTP and routes
+ * them to set a password. Running after commit means a slow/failed mail server can never roll back
+ * user creation; {@link EmailService} swallows its own send failures.
  */
 @Component
 public class UserCreatedListener {
 
-    private final ActivationService activation;
+    private final OtpService otpService;
     private final EmailService email;
-    private final String publicBaseUrl;
+    private final long inviteTtlSeconds;
 
-    public UserCreatedListener(ActivationService activation, EmailService email,
-                               @Value("${gatherly.app.public-base-url:http://localhost:3000}") String publicBaseUrl) {
-        this.activation = activation;
+    public UserCreatedListener(OtpService otpService, EmailService email,
+                               @Value("${gatherly.auth.otp.invite-ttl-seconds:86400}") long inviteTtlSeconds) {
+        this.otpService = otpService;
         this.email = email;
-        this.publicBaseUrl = publicBaseUrl.replaceAll("/$", "");
+        this.inviteTtlSeconds = inviteTtlSeconds;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onUserCreated(UserCreatedEvent event) {
-        String token = activation.mint(event.userId());
-        String link = publicBaseUrl + "/auth/set-password?token=" + token;
-        email.sendActivation(event.email(), event.fullName(), link);
+        String otp = otpService.requestOtp(event.userId(), inviteTtlSeconds);
+        email.sendInviteOtp(event.email(), event.fullName(), otp, (int) (inviteTtlSeconds / 60));
     }
 }

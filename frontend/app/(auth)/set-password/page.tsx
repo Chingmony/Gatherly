@@ -3,16 +3,21 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check } from "lucide-react";
-import { setPassword } from "@/lib/api/auth";
+import { resetPassword } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { AuthHeading, BackLink, PasswordField } from "../auth-ui";
 
+/**
+ * Set a password using a one-time grant (docs/04 §3.2). Reached from the login page after an
+ * invited account's one-time code is accepted — the user activates by choosing a password.
+ */
 function SetPasswordForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const token = params.get("token") ?? "";
+  const email = params.get("email") ?? "";
+  const grant = params.get("grant") ?? "";
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -27,20 +32,20 @@ function SetPasswordForm() {
     }
     setPending(true);
     try {
-      await setPassword(token, newPassword);
+      await resetPassword(email, grant, newPassword);
       router.push("/login");
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "This link is invalid or has expired.");
+      setError(err instanceof ApiError ? err.message : "This request is invalid or has expired.");
     } finally {
       setPending(false);
     }
   }
 
-  if (!token) {
+  if (!email || !grant) {
     return (
       <div>
-        <AuthHeading title="Invalid link" subtitle="This activation link is missing its token." />
+        <AuthHeading title="Invalid request" subtitle="This set-password link is missing its details — start from sign in." />
         <div className="mt-6">
           <BackLink href="/login">Back to sign in</BackLink>
         </div>
