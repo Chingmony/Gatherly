@@ -45,6 +45,3 @@ CLAUDE.local.md
 # ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-
-application.yml
-docker-compose.yml
