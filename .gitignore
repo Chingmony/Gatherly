@@ -18,7 +18,12 @@ frontend/skills-lock.json
 backend/build/
 backend/.gradle/
 backend/out/
+backend/bin/
 backend/.env
+
+# ── JVM crash logs ────────────────────────────────────────────────────────────
+hs_err_pid*.log
+replay_pid*.log
 
 # ── Secrets / env ─────────────────────────────────────────────────────────────
 .env
