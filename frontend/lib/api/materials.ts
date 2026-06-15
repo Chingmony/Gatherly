@@ -9,6 +9,9 @@ import { apiFetch } from "./client";
 /** Mirrors backend `MaterialStatus`. */
 export type MaterialStatus = "PENDING" | "IN_PROGRESS" | "NEEDS_REVIEW" | "DONE" | "ISSUE";
 
+/** Mirrors backend `MaterialPriority`. */
+export type MaterialPriority = "HIGH" | "MEDIUM" | "LOW";
+
 /** Mirrors backend `MaterialResponse`. */
 export interface MaterialResponse {
   id: string;
@@ -17,6 +20,9 @@ export interface MaterialResponse {
   name: string;
   description: string | null;
   quantity: number | null;
+  category: string | null;
+  priority: MaterialPriority;
+  dueAt: string | null;
   status: MaterialStatus;
   assignedTo: string | null;
   createdBy: string | null;
@@ -31,6 +37,9 @@ export interface MaterialWriteBody {
   quantity?: number | null;
   catalogItemId?: string | null;
   assignedTo?: string | null;
+  category?: string | null;
+  priority?: MaterialPriority;
+  dueAt?: string | null;
 }
 
 /** Paginated, searchable list of an event's materials. Returns the page content. */
@@ -88,4 +97,13 @@ export const MATERIAL_STATUS_LABEL: Record<MaterialStatus, string> = {
   NEEDS_REVIEW: "Needs Review",
   DONE: "Done",
   ISSUE: "Issue",
+};
+
+/** Priority options for the Grid/List pickers, highest first. */
+export const MATERIAL_PRIORITIES: MaterialPriority[] = ["HIGH", "MEDIUM", "LOW"];
+
+export const MATERIAL_PRIORITY_LABEL: Record<MaterialPriority, string> = {
+  HIGH: "High",
+  MEDIUM: "Medium",
+  LOW: "Low",
 };

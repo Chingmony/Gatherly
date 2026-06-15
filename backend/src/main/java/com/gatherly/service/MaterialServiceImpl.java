@@ -3,6 +3,7 @@ package com.gatherly.service;
 import com.gatherly.common.error.ApiException;
 import com.gatherly.common.error.ErrorCode;
 import com.gatherly.domain.Material;
+import com.gatherly.domain.MaterialPriority;
 import com.gatherly.domain.MaterialStatus;
 import com.gatherly.domain.MaterialStatusHistory;
 import com.gatherly.dto.material.MaterialHistoryResponse;
@@ -81,6 +82,9 @@ public class MaterialServiceImpl implements MaterialService {
     material.setName(request.name());
     material.setDescription(request.description());
     material.setQuantity(request.quantity());
+    material.setCategory(request.category());
+    material.setPriority(request.priority() != null ? request.priority() : MaterialPriority.MEDIUM);
+    material.setDueAt(request.dueAt());
     material.setCatalogItemId(request.catalogItemId());
     material.setAssignedTo(request.assignedTo());
     material.setStatus(MaterialStatus.PENDING);
@@ -99,6 +103,9 @@ public class MaterialServiceImpl implements MaterialService {
     material.setName(request.name());
     material.setDescription(request.description());
     material.setQuantity(request.quantity());
+    material.setCategory(request.category());
+    material.setPriority(request.priority() != null ? request.priority() : MaterialPriority.MEDIUM);
+    material.setDueAt(request.dueAt());
     if (request.catalogItemId() != null) {
       material.setCatalogItemId(request.catalogItemId());
     }

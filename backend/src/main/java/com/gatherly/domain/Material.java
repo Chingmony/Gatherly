@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,16 @@ public class Material extends BaseEntity {
   @Column private String description;
 
   @Column private Integer quantity;
+
+  @Column(length = 50)
+  private String category;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private MaterialPriority priority = MaterialPriority.MEDIUM;
+
+  @Column(name = "due_at")
+  private Instant dueAt;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

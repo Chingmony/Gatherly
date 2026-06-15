@@ -1,6 +1,7 @@
 package com.gatherly.mapper;
 
 import com.gatherly.domain.Material;
+import com.gatherly.domain.MaterialPriority;
 import com.gatherly.domain.MaterialStatus;
 import com.gatherly.domain.MaterialStatusHistory;
 import com.gatherly.dto.material.MaterialHistoryResponse;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-15T08:33:15+0700",
+    date = "2026-06-15T11:47:35+0700",
     comments = "version: 1.6.0, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 21.0.10 (Eclipse Adoptium)"
 )
 @Component
@@ -30,6 +31,9 @@ public class MaterialMapperImpl implements MaterialMapper {
         String name = null;
         String description = null;
         Integer quantity = null;
+        String category = null;
+        MaterialPriority priority = null;
+        Instant dueAt = null;
         MaterialStatus status = null;
         UUID assignedTo = null;
         UUID createdBy = null;
@@ -42,13 +46,16 @@ public class MaterialMapperImpl implements MaterialMapper {
         name = material.getName();
         description = material.getDescription();
         quantity = material.getQuantity();
+        category = material.getCategory();
+        priority = material.getPriority();
+        dueAt = material.getDueAt();
         status = material.getStatus();
         assignedTo = material.getAssignedTo();
         createdBy = material.getCreatedBy();
         createdAt = material.getCreatedAt();
         updatedAt = material.getUpdatedAt();
 
-        MaterialResponse materialResponse = new MaterialResponse( id, eventId, catalogItemId, name, description, quantity, status, assignedTo, createdBy, createdAt, updatedAt );
+        MaterialResponse materialResponse = new MaterialResponse( id, eventId, catalogItemId, name, description, quantity, category, priority, dueAt, status, assignedTo, createdBy, createdAt, updatedAt );
 
         return materialResponse;
     }
