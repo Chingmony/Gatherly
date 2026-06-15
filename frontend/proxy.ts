@@ -8,8 +8,11 @@ import type { NextRequest } from "next/server";
  *
  * Route groups like {@code (admin)} don't add a path segment, so the admin user console lives at
  * {@code /users}; the admin-only prefixes below are gated to the global ADMIN role.
+ *
+ * {@code /users} and {@code /organization} are intentionally NOT here — organizers (Sub-admin/
+ * Handler) may VIEW them read-only; the API enforces that writes stay Admin-only.
  */
-const ADMIN_PREFIXES = ["/dashboard", "/users", "/organization", "/supply-list"];
+const ADMIN_PREFIXES = ["/dashboard", "/supply-items"];
 
 export function proxy(request: NextRequest) {
   const access = request.cookies.get("access_token")?.value;
@@ -46,8 +49,8 @@ export const config = {
     "/users/:path*",
     "/organization",
     "/organization/:path*",
-    "/supply-list",
-    "/supply-list/:path*",
+    "/supply-items",
+    "/supply-items/:path*",
     "/events",
     "/events/:path*",
     "/my-tasks/:path*",

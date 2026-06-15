@@ -26,9 +26,11 @@ type RoleChoice = "ADMIN" | "SUB_ADMIN" | "HANDLER";
 export function UsersManager({
   initialUsers,
   currentUserId,
+  canManage,
 }: {
   initialUsers: UserResponse[];
   currentUserId: string | null;
+  canManage: boolean;
 }) {
   const router = useRouter();
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -46,9 +48,11 @@ export function UsersManager({
             Manage who can do what across the organization
           </p>
         </div>
-        <Button onClick={() => setInviteOpen(true)}>
-          <Plus className="h-4 w-4" /> Invite member
-        </Button>
+        {canManage && (
+          <Button onClick={() => setInviteOpen(true)}>
+            <Plus className="h-4 w-4" /> Invite member
+          </Button>
+        )}
       </div>
 
       {/* Members card */}
@@ -96,17 +100,21 @@ export function UsersManager({
                       <IconAction label={`View ${u.fullName}`} onClick={() => setViewUser(u)}>
                         <Eye className="h-[17px] w-[17px]" />
                       </IconAction>
-                      <IconAction label={`Edit ${u.fullName}`} onClick={() => setEditUser(u)}>
-                        <Pencil className="h-[16px] w-[16px]" />
-                      </IconAction>
-                      <IconAction
-                        label={u.id === currentUserId ? "You can’t delete your own account" : `Delete ${u.fullName}`}
-                        onClick={() => setDeleteTarget(u)}
-                        disabled={u.id === currentUserId}
-                        danger
-                      >
-                        <Trash2 className="h-[16px] w-[16px]" />
-                      </IconAction>
+                      {canManage && (
+                        <>
+                          <IconAction label={`Edit ${u.fullName}`} onClick={() => setEditUser(u)}>
+                            <Pencil className="h-[16px] w-[16px]" />
+                          </IconAction>
+                          <IconAction
+                            label={u.id === currentUserId ? "You can’t delete your own account" : `Delete ${u.fullName}`}
+                            onClick={() => setDeleteTarget(u)}
+                            disabled={u.id === currentUserId}
+                            danger
+                          >
+                            <Trash2 className="h-[16px] w-[16px]" />
+                          </IconAction>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

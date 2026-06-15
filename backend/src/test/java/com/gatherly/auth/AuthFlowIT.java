@@ -57,15 +57,19 @@ class AuthFlowIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void memberIsForbiddenFromAdminUserList() {
+    void memberCanReadUserListButNotManage() {
         HttpTestClient c = new HttpTestClient(port);
         login(c, "member@gatherly.test", MEMBER_PW);
 
-        HttpResponse<String> res = c.get("/api/v1/users");
-        assertThat(res.statusCode()).isEqualTo(403);
-        assertThat(res.body()).contains("FORBIDDEN");
-        // ...but the member can read their own profile.
+        // Organizers may VIEW the team roster (read-only)...
+        assertThat(c.get("/api/v1/users").statusCode()).isEqualTo(200);
         assertThat(c.get("/api/v1/me").statusCode()).isEqualTo(200);
+
+        // ...but every mutation stays Admin-only.
+        HttpResponse<String> invite = c.post("/api/v1/users",
+                "{\"fullName\":\"X\",\"email\":\"x@gatherly.test\",\"role\":\"HANDLER\"}");
+        assertThat(invite.statusCode()).isEqualTo(403);
+        assertThat(invite.body()).contains("FORBIDDEN");
     }
 
     @Test

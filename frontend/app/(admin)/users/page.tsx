@@ -35,5 +35,11 @@ export default async function UsersPage() {
     );
   }
 
-  return <UsersManager initialUsers={page?.content ?? []} currentUserId={me?.id ?? null} />;
+  return (
+    <UsersManager
+      initialUsers={page?.content ?? []}
+      currentUserId={me?.id ?? null}
+      canManage={me?.globalRole === "ADMIN"}
+    />
+  );
 }

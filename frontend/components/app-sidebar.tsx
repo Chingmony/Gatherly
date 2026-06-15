@@ -21,21 +21,29 @@ import { Logo } from "@/components/ui/logo";
  * treatment, and a role "promo" card pinned at the bottom. Only implemented routes are rendered —
  * routes a role cannot reach are hidden entirely (design Roles §"Sidebar visibility").
  */
-type NavItem = { href: string; label: string; icon: LucideIcon; section: "Main Menu" | "Others" };
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  section: "Main Menu" | "Others";
+  /** Hidden from non-Admins (organizers can't reach these — avoids dead links to /forbidden). */
+  adminOnly?: boolean;
+};
 
 const NAV: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, section: "Main Menu" },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, section: "Main Menu", adminOnly: true },
   { href: "/events", label: "Events", icon: CalendarDays, section: "Main Menu" },
   { href: "/my-tasks", label: "My Tasks", icon: ListChecks, section: "Main Menu" },
   { href: "/users", label: "User Management", icon: Users, section: "Others" },
-  { href: "/supply-items", label: "Supply List", icon: Boxes, section: "Others" },
+  { href: "/supply-items", label: "Supply List", icon: Boxes, section: "Others", adminOnly: true },
   { href: "/organization", label: "Organization", icon: Building2, section: "Others" },
 ];
 
 const SECTIONS: NavItem["section"][] = ["Main Menu", "Others"];
 
-export function AppSidebar({ roleLabel = "Admin" }: { roleLabel?: string }) {
+export function AppSidebar({ roleLabel = "Admin", isAdmin = true }: { roleLabel?: string; isAdmin?: boolean }) {
   const pathname = usePathname();
+  const nav = NAV.filter((n) => isAdmin || !n.adminOnly);
   return (
     <aside
       className="sticky top-0 flex h-screen shrink-0 flex-col border-r border-[var(--border)] bg-[var(--sidebar)]"
@@ -51,7 +59,7 @@ export function AppSidebar({ roleLabel = "Admin" }: { roleLabel?: string }) {
             <div className="px-3 pb-[9px] pt-[18px] text-[11px] font-bold uppercase tracking-[0.13em] text-[var(--text-faint)]">
               {section}
             </div>
-            {NAV.filter((n) => n.section === section).map((item) => {
+            {nav.filter((n) => n.section === section).map((item) => {
               const active =
                 pathname === item.href || pathname.startsWith(item.href + "/");
               const Icon = item.icon;

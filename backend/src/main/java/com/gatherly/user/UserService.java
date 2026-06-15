@@ -28,9 +28,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * User management (docs/06 §3). Admin-only global CRUD plus self-service profile/password.
- * Authorization gates live here on the service layer (docs/06 §1); delete is a deactivation
- * ({@code status=INACTIVE}), never a hard delete (docs/02 §1).
+ * User management (docs/06 §3). Reads (list/get/scope) are open to any authenticated user so
+ * organizers can view the team roster read-only; all mutations (invite/update/delete) stay
+ * Admin-only. Authorization gates live here on the service layer (docs/06 §1).
  */
 @Service
 @Transactional
@@ -51,7 +51,7 @@ public class UserService {
 
     // ---- Admin global CRUD (docs/03 §4.2) -----------------------------------
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public Page<User> list(String query, Pageable pageable) {
         if (query == null || query.isBlank()) {
@@ -60,7 +60,7 @@ public class UserService {
         return users.findByEmailContainingIgnoreCaseOrFullNameContainingIgnoreCase(query, query, pageable);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public User get(UUID userId) {
         return findOrThrow(userId);
@@ -70,7 +70,7 @@ public class UserService {
      * Event-assignment scope for a page of users (docs/03 §4.2) — one grouped query, not N counts.
      * Users with no assignments are absent from the map (caller treats absent as {@link UserScope#NONE}).
      */
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public Map<UUID, UserScope> scopeFor(Collection<UUID> userIds) {
         if (userIds == null || userIds.isEmpty()) {

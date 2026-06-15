@@ -1,6 +1,6 @@
 import { serverFetch } from "@/lib/api/server";
 import { ApiError } from "@/lib/api/client";
-import type { OrganizationResponse } from "@/lib/api/types";
+import type { OrganizationResponse, UserResponse } from "@/lib/api/types";
 import { OrganizationForm } from "./organization-form";
 
 /**
@@ -10,10 +10,14 @@ import { OrganizationForm } from "./organization-form";
  */
 export default async function OrganizationPage() {
   let org: OrganizationResponse | null = null;
+  let me: UserResponse | null = null;
   let denied = false;
 
   try {
-    org = await serverFetch<OrganizationResponse>("/organization");
+    [org, me] = await Promise.all([
+      serverFetch<OrganizationResponse>("/organization"),
+      serverFetch<UserResponse>("/me").catch(() => null),
+    ]);
   } catch (e) {
     if (e instanceof ApiError && (e.status === 403 || e.status === 401)) {
       denied = true;
@@ -35,9 +39,11 @@ export default async function OrganizationPage() {
     <div className="mx-auto max-w-2xl space-y-4">
       <div>
         <h1 className="text-[20px] font-bold tracking-[-0.01em] text-[var(--t1)]">Organization</h1>
-        <p className="text-[12px] font-medium text-[var(--t3)]">Branding & contact details</p>
+        <p className="text-[12px] font-medium text-[var(--t3)]">
+          Branding & contact details{me?.globalRole === "ADMIN" ? "" : " · view only"}
+        </p>
       </div>
-      <OrganizationForm initial={org} />
+      <OrganizationForm initial={org} canEdit={me?.globalRole === "ADMIN"} />
     </div>
   );
 }

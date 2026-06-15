@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar roleLabel={me ? displayRole(me) : "Admin"} />
+      <AppSidebar roleLabel={me ? displayRole(me) : "Admin"} isAdmin={me?.globalRole === "ADMIN"} />
       <div
         className="flex min-w-0 flex-1 flex-col"
         style={{
