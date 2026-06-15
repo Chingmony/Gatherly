@@ -1,0 +1,259 @@
+
+> gatherly-frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.2.0.2:3000
+- Environments: .env.local
+✓ Ready in 522ms
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of D:\AI_Training\Gatherly\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * D:\AI_Training\Gatherly\frontend\package-lock.json
+
+- Experiments (use with caution):
+  · optimizePackageImports
+
+ GET /explore 200 in 3.2s (next.js: 2.9s, application-code: 296ms)
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 200 in 991ms (next.js: 885ms, application-code: 107ms)
+ GET /icon?a493926b4b9f6a40 200 in 422ms (next.js: 239ms, application-code: 183ms)
+ GET /api/pwa-icon/192 200 in 898ms (next.js: 885ms, application-code: 13ms)
+ GET /tickets/RESENDTESTTOKEN0001 200 in 67ms (next.js: 14ms, application-code: 53ms)
+ GET /explore 200 in 46ms (next.js: 4ms, application-code: 42ms)
+ GET /explore 200 in 414ms (next.js: 6ms, application-code: 409ms)
+ GET /api/pwa-icon/192 200 in 52ms (next.js: 22ms, application-code: 30ms)
+ GET /events/kiki/register 200 in 2.3s (next.js: 2.1s, application-code: 245ms)
+ GET /api/pwa-icon/192 200 in 78ms (next.js: 32ms, application-code: 46ms)
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 200 in 116ms (next.js: 33ms, application-code: 84ms)
+ GET /api/pwa-icon/192 200 in 40ms (next.js: 18ms, application-code: 22ms)
+⨯ ./frontend/lib/api/events.ts:168:8
+Expected '{', got 'interface'
+  166 |
+  167 | /** Full event projection — mirrors backend `EventResponse`. */
+> 168 | export interface AdminEvent {
+      |        ^^^^^^^^^
+  169 |   id: string;
+  170 |   title: string;
+  171 |   slug: string;
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./frontend/lib/api/events.ts [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./frontend/lib/api/events.ts [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+
+✓ Compiled in 215ms
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 500 in 1143ms (next.js: 999ms, application-code: 144ms)
+⨯ ./frontend/lib/api/events.ts:168:8
+Expected '{', got 'interface'
+  166 |
+  167 | /** Full event projection — mirrors backend `EventResponse`. */
+> 168 | export interface AdminEvent {
+      |        ^^^^^^^^^
+  169 |   id: string;
+  170 |   title: string;
+  171 |   slug: string;
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./frontend/lib/api/events.ts [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./frontend/lib/api/events.ts [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 500 in 19ms (next.js: 7ms, application-code: 12ms)
+⨯ ./frontend/lib/api/events.ts:168:8
+Expected '{', got 'interface'
+  166 |
+  167 | /** Full event projection — mirrors backend `EventResponse`. */
+> 168 | export interface AdminEvent {
+      |        ^^^^^^^^^
+  169 |   id: string;
+  170 |   title: string;
+  171 |   slug: string;
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./frontend/lib/api/events.ts [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./frontend/lib/api/events.ts [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+
+⨯ ./frontend/lib/api/events.ts:168:8
+Expected '{', got 'interface'
+  166 |
+  167 | /** Full event projection — mirrors backend `EventResponse`. */
+> 168 | export interface AdminEvent {
+      |        ^^^^^^^^^
+  169 |   id: string;
+  170 |   title: string;
+  171 |   slug: string;
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./frontend/lib/api/events.ts [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./frontend/lib/api/events.ts [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 500 in 23ms (next.js: 7ms, application-code: 16ms)
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 500 in 29ms (next.js: 20ms, application-code: 9ms)
+⨯ ./frontend/lib/api/events.ts:168:8
+Expected '{', got 'interface'
+  166 |
+  167 | /** Full event projection — mirrors backend `EventResponse`. */
+> 168 | export interface AdminEvent {
+      |        ^^^^^^^^^
+  169 |   id: string;
+  170 |   title: string;
+  171 |   slug: string;
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./frontend/lib/api/events.ts [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./frontend/lib/api/events.ts [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 500 in 19ms (next.js: 6ms, application-code: 14ms)
+⨯ ./frontend/lib/api/events.ts:168:8
+Expected '{', got 'interface'
+  166 |
+  167 | /** Full event projection — mirrors backend `EventResponse`. */
+> 168 | export interface AdminEvent {
+      |        ^^^^^^^^^
+  169 |   id: string;
+  170 |   title: string;
+  171 |   slug: string;
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./frontend/lib/api/events.ts [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component Browser]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./frontend/lib/api/events.ts [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Client Component SSR]
+    ./frontend/app/(public)/tickets/[token]/page.tsx [Server Component]
+
+
+[browser] Uncaught Error: ./frontend/lib/api/events.ts:168:8
+Expected '{', got 'interface'
+  166 |
+  167 | /** Full event projection — mirrors backend `EventResponse`. */
+> 168 | export interface AdminEvent {
+      |        ^^^^^^^^^
+  169 |   id: string;
+  170 |   title: string;
+  171 |   slug: string;
+
+Parsing ecmascript source code failed
+
+Import traces:
+  Client Component Browser:
+    ./frontend/lib/api/events.ts [Client Component Browser]
+    ./frontend/app/(public)/explore/explore-view.tsx [Client Component Browser]
+    ./frontend/app/(public)/explore/explore-view.tsx [Server Component]
+    ./frontend/app/(public)/explore/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./frontend/lib/api/events.ts [Client Component SSR]
+    ./frontend/app/(public)/explore/explore-view.tsx [Client Component SSR]
+    ./frontend/app/(public)/explore/explore-view.tsx [Server Component]
+    ./frontend/app/(public)/explore/page.tsx [Server Component]
+
+
+    at <unknown> (Error: ./frontend/lib/api/events.ts:168:8)
+    at <unknown> (Error: (./frontend/lib/api/events.ts:168:8)
+✓ Compiled in 148ms
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 200 in 387ms (next.js: 167ms, application-code: 220ms)
+ GET /api/pwa-icon/192 200 in 97ms (next.js: 74ms, application-code: 24ms)
+  Reload env: .env.local
+ GET /tickets/RV9tGJ1KURxUXzpSJ6naXpP11vSit8wD 200 in 196ms (next.js: 125ms, application-code: 71ms)
+ GET /api/pwa-icon/192 200 in 57ms (next.js: 41ms, application-code: 17ms)
+ GET / 307 in 375ms (next.js: 34ms, application-code: 341ms)
+ GET /login 200 in 2.0s (next.js: 1698ms, application-code: 325ms)
+ GET /api/pwa-icon/192 200 in 38ms (next.js: 18ms, application-code: 21ms)
+ GET /dashboard 200 in 1786ms (next.js: 1523ms, proxy.ts: 150ms, application-code: 113ms)
+ GET /api/pwa-icon/192 200 in 64ms (next.js: 24ms, application-code: 40ms)
+ GET /events 200 in 1032ms (next.js: 962ms, proxy.ts: 8ms, application-code: 61ms)
+ GET /api/pwa-icon/192 200 in 40ms (next.js: 15ms, application-code: 24ms)
+ GET /events/new 200 in 1804ms (next.js: 1729ms, proxy.ts: 9ms, application-code: 66ms)
+ GET /api/pwa-icon/192 200 in 52ms (next.js: 21ms, application-code: 30ms)
+ GET /events 200 in 109ms (next.js: 10ms, proxy.ts: 10ms, application-code: 89ms)
+ GET /api/pwa-icon/192 200 in 63ms (next.js: 24ms, application-code: 40ms)
+ GET /events/ba3f4383-a6ba-400f-a86b-67cf280d4d66/workspace 200 in 1656ms (next.js: 1446ms, proxy.ts: 8ms, application-code: 202ms)
+ GET /api/pwa-icon/192 200 in 40ms (next.js: 23ms, application-code: 17ms)
+ GET /login 200 in 127ms (next.js: 9ms, application-code: 117ms)
+ GET /api/pwa-icon/192 200 in 37ms (next.js: 18ms, application-code: 19ms)
+ GET / 307 in 306ms (next.js: 12ms, application-code: 294ms)
+ GET /login 200 in 178ms (next.js: 8ms, application-code: 170ms)
+ GET /dashboard 200 in 120ms (next.js: 13ms, proxy.ts: 33ms, application-code: 74ms)
+ GET /api/pwa-icon/192 200 in 45ms (next.js: 24ms, application-code: 20ms)
+ GET /scanner 200 in 944ms (next.js: 882ms, application-code: 62ms)
+ GET /api/pwa-icon/192 200 in 39ms (next.js: 19ms, application-code: 20ms)
+ GET /explore 200 in 521ms (next.js: 68ms, application-code: 454ms)
+ GET /tasks 200 in 1338ms (next.js: 1217ms, proxy.ts: 42ms, application-code: 79ms)
+ GET /api/pwa-icon/192 200 in 61ms (next.js: 32ms, application-code: 28ms)
+ GET /dashboard 200 in 262ms (next.js: 27ms, proxy.ts: 44ms, application-code: 192ms)
+ GET /api/pwa-icon/192 200 in 35ms (next.js: 16ms, application-code: 19ms)
+ GET /settings 200 in 1283ms (next.js: 1139ms, proxy.ts: 27ms, application-code: 116ms)
+ GET /api/pwa-icon/192 200 in 39ms (next.js: 16ms, application-code: 23ms)
+ GET /dashboard 200 in 92ms (next.js: 10ms, proxy.ts: 13ms, application-code: 69ms)
+ GET /api/pwa-icon/192 200 in 53ms (next.js: 26ms, application-code: 26ms)
+ GET /settings 200 in 77ms (next.js: 6ms, proxy.ts: 7ms, application-code: 65ms)
+ GET /api/pwa-icon/192 200 in 43ms (next.js: 17ms, application-code: 25ms)
+ GET /login 200 in 92ms (next.js: 10ms, application-code: 83ms)
+ GET /api/pwa-icon/192 200 in 53ms (next.js: 19ms, application-code: 34ms)
+ GET /dashboard 200 in 87ms (next.js: 7ms, proxy.ts: 8ms, application-code: 73ms)
+ GET /api/pwa-icon/192 200 in 99ms (next.js: 71ms, application-code: 28ms)
+ GET /events 200 in 88ms (next.js: 7ms, proxy.ts: 7ms, application-code: 73ms)
+ GET /api/pwa-icon/192 200 in 76ms (next.js: 40ms, application-code: 37ms)
+ GET /events/5e9c7bd6-0b95-41a6-bb5f-1a015e6736eb/workspace 200 in 96ms (next.js: 24ms, proxy.ts: 6ms, application-code: 66ms)
+ GET /api/pwa-icon/192 200 in 51ms (next.js: 21ms, application-code: 30ms)
+ GET /events 200 in 100ms (next.js: 8ms, proxy.ts: 9ms, application-code: 83ms)
+ GET /api/pwa-icon/192 200 in 87ms (next.js: 61ms, application-code: 26ms)
+ GET /events/5e9c7bd6-0b95-41a6-bb5f-1a015e6736eb/workspace 200 in 85ms (next.js: 24ms, proxy.ts: 8ms, application-code: 53ms)
+ GET /api/pwa-icon/192 200 in 34ms (next.js: 15ms, application-code: 19ms)
