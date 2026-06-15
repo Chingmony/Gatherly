@@ -113,6 +113,21 @@ public class AuthController {
   }
 
   @Operation(
+      summary = "Resend the password-reset OTP",
+      description =
+          "Re-issues the OTP for an in-progress reset (the verify-otp \"resend code\" action)."
+              + " Behaves like forgot-password: always responds 202 with a neutral message to"
+              + " prevent account enumeration. A 60s per-account cooldown (silently enforced) plus"
+              + " the per-IP OTP limit throttle abuse. Errors: 429 RATE_LIMITED when the per-IP OTP"
+              + " request limit is exceeded.")
+  @PostMapping("/resend-otp")
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  public ApiResponse<Void> resendOtp(@Valid @RequestBody ForgotPasswordRequest request) {
+    authService.forgotPassword(request.email());
+    return ApiResponse.ok("If an account exists for that email, a reset code has been sent.");
+  }
+
+  @Operation(
       summary = "Verify the password-reset OTP",
       description =
           "Validates the emailed OTP for the given email and returns a short-lived reset grant"

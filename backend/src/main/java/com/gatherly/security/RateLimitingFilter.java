@@ -65,6 +65,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
       return new Bucket("login", props.loginPerMinute());
     }
     if (matcher.match("/api/v1/auth/forgot-password", uri)
+        || matcher.match("/api/v1/auth/resend-otp", uri)
         || matcher.match("/api/v1/auth/verify-otp", uri)) {
       return new Bucket("otp", props.otpPerMinute());
     }
