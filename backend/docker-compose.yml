@@ -19,7 +19,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       # Datasource — point at the postgres service on the compose network
-      - DB_URL=jdbc:postgresql://postgres:5432/gatherly
+      - DB_URL=jdbc:postgresql://postgres:5455/gatherly
       - DB_USERNAME=postgres
       - DB_PASSWORD=123
       # Redis (OTP, rate limiting, ShedLock)
@@ -27,7 +27,7 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       # Rustfs (S3-compatible object storage)
-      - RUSTFS_ENDPOINT=http://96.9.81.187:9000
+      - RUSTFS_ENDPOINT=http://rustfs:9000
       - RUSTFS_REGION=us-east-1
       - RUSTFS_ACCESS_KEY=admin
       - RUSTFS_SECRET_KEY=admin123
@@ -49,7 +49,7 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5434:5432"   # host 5434 -> container 5432
+      - "5455:5432"   # host 5434 -> container 5432
     environment:
       - POSTGRES_DB=gatherly
       - POSTGRES_USER=postgres
