@@ -14,6 +14,7 @@ import { getEvent, updateEvent } from "@/lib/api/events";
 import { uploadEventCover } from "@/lib/api/storage";
 import { ApiError } from "@/lib/api/client";
 import { toast } from "@/components/ui/toast";
+import { mediaUrl } from "@/lib/media";
 
 // Free-form category labels (the backend stores category as a string and matches it against the
 // form templates by name); keep these aligned with the create-event / template event types.
@@ -125,7 +126,7 @@ export default function EditEventPage() {
             {previewCover ? (
               <div className="relative h-40 rounded-[var(--radius-md)] overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={previewCover} alt="cover" className="w-full h-full object-cover" />
+                <img src={mediaUrl(previewCover)} alt="cover" className="w-full h-full object-cover" />
                 <label htmlFor="cover" className="absolute inset-0 cursor-pointer" title="Change cover" />
                 {coverPreview && (
                   <button type="button" onClick={clearCover} aria-label="Discard new cover"

@@ -165,7 +165,7 @@ export default function OrganizationPage() {
                       className={`relative flex items-center justify-center gap-2 ${h} w-full rounded-[var(--radius-md)] overflow-hidden transition-colors ${url ? "border" : "border-2 border-dashed hover:bg-[var(--primary-soft)]"} ${busy ? "cursor-wait" : "cursor-pointer"}`}
                       style={{ borderColor: url ? "var(--border-hex,#ecedf4)" : "var(--border-strong)", background: url ? "var(--surface)" : "var(--surface-2)" }}
                     >
-                      {url && <Image src={url} alt={label} fill className="object-cover" unoptimized />}
+                      {url && <Image src={url} alt={label} fill className="object-cover" />}
                       {busy ? (
                         <span className="relative z-10 flex items-center gap-2 px-2 py-1 rounded-[var(--radius-sm)]" style={{ background: "var(--surface)", color: "var(--text-muted)" }}>
                           <Loader2 size={16} className="animate-spin" /> <span className="text-sm font-semibold">Uploading…</span>
@@ -213,9 +213,9 @@ export default function OrganizationPage() {
             <span className="text-sm font-extrabold" style={{ color: "var(--text-strong)" }}>Live preview</span>
           </div>
           <div className="relative h-[84px]" style={{ background: "linear-gradient(120deg, var(--primary-hex,#6366f1), color-mix(in srgb, var(--primary-hex,#6366f1) 55%, #22c55e))" }}>
-            {org?.bannerUrl && <Image src={org.bannerUrl} alt="Banner" fill className="object-cover" unoptimized />}
+            {org?.bannerUrl && <Image src={org.bannerUrl} alt="Banner" fill className="object-cover" />}
             <div className="absolute left-4 -bottom-6 w-14 h-14 rounded-xl flex items-center justify-center border-4 overflow-hidden" style={{ background: "var(--surface)", borderColor: "var(--surface)", boxShadow: "var(--shadow-sm)" }}>
-              {org?.logoUrl ? <Image src={org.logoUrl} alt="Logo" width={56} height={56} className="object-cover" unoptimized /> : <Logo size={26} showText={false} />}
+              {org?.logoUrl ? <Image src={org.logoUrl} alt="Logo" width={56} height={56} className="object-cover" /> : <Logo size={26} showText={false} />}
             </div>
           </div>
           <div className="px-5 pt-9 pb-5 flex flex-col gap-1.5">

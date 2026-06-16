@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AvatarUser } from "@/components/ui/avatar-user";
+import { mediaUrl } from "@/lib/media";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { getEvent, listEvents, deleteEvent, type AdminEvent } from "@/lib/api/events";
 import {
@@ -54,7 +55,7 @@ const CATEGORY_GRADIENT: Record<string, string> = {
 const STRIPES = "repeating-linear-gradient(135deg, rgba(255,255,255,0.07) 0, rgba(255,255,255,0.07) 1px, transparent 1px, transparent 13px)";
 function bannerStyle(ev: AdminEvent): React.CSSProperties {
   if (ev.coverImageUrl) {
-    return { backgroundImage: `linear-gradient(120deg, rgba(0,0,0,0.5), rgba(0,0,0,0.25)), url(${ev.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" };
+    return { backgroundImage: `linear-gradient(120deg, rgba(0,0,0,0.5), rgba(0,0,0,0.25)), url(${mediaUrl(ev.coverImageUrl)})`, backgroundSize: "cover", backgroundPosition: "center" };
   }
   const g = CATEGORY_GRADIENT[(ev.category ?? "").toUpperCase()] || CATEGORY_GRADIENT.OTHER;
   return { backgroundImage: `${STRIPES}, ${g}` };

@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { listEvents, deleteEvent, type AdminEvent } from "@/lib/api/events";
 import { ApiError } from "@/lib/api/client";
 import { toast } from "@/components/ui/toast";
+import { mediaUrl } from "@/lib/media";
 
 // Banner gradient per category (matched case-insensitively against the free-form category string).
 const CATEGORY_GRADIENT: Record<string, string> = {
@@ -163,7 +164,7 @@ export function EventsView() {
                   className="relative h-[150px] p-4"
                   style={
                     ev.coverImageUrl
-                      ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.28)), url(${ev.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                      ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.28)), url(${mediaUrl(ev.coverImageUrl)})`, backgroundSize: "cover", backgroundPosition: "center" }
                       : { background: gradientFor(ev.category) }
                   }
                 >

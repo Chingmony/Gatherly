@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChipIco, type ChipIcoProps } from "@/components/ui/chip-ico";
 import type { Role } from "@/lib/roles";
+import { mediaUrl } from "@/lib/media";
 import { HandlerDashboard } from "./_components/handler-dashboard";
 import { listEvents, type AdminEvent } from "@/lib/api/events";
 import { ApiError } from "@/lib/api/client";
@@ -234,7 +235,7 @@ function FeaturedEvent({ ev }: { ev: AdminEvent | undefined }) {
     );
   }
   const cover = ev.coverImageUrl
-    ? `url(${ev.coverImageUrl}) center/cover no-repeat`
+    ? `url(${mediaUrl(ev.coverImageUrl)}) center/cover no-repeat`
     : ev.coverColor || "var(--surface-3)";
   return (
     <Card className="overflow-hidden">

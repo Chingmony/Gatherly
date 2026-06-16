@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { mediaUrl } from "@/lib/media";
 import {
   Calendar,
   MapPin,
@@ -236,7 +237,7 @@ export function ExploreView() {
 function EventCard({ ev }: { ev: PublicEvent }) {
   const theme = coverTheme(ev.coverColor);
   const coverStyle: React.CSSProperties = ev.coverImageUrl
-    ? { backgroundImage: `url(${ev.coverImageUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+    ? { backgroundImage: `url(${mediaUrl(ev.coverImageUrl)})`, backgroundSize: "cover", backgroundPosition: "center" }
     : { background: `linear-gradient(135deg, ${theme.from}, ${theme.to})` };
 
   const remaining = ev.capacity != null ? ev.capacity - ev.registeredCount : null;
