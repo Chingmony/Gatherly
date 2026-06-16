@@ -86,7 +86,7 @@ services:
 
   rustfs:
     image: rustfs/rustfs:latest
-    container_name: gatherly-rustfs
+    container_name: gartherly-rustfs
     security_opt:
       - "no-new-privileges:true"
     ports:
