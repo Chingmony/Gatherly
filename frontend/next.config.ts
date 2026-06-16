@@ -36,7 +36,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
+        hostname: '96.9.81.187',
         port: '9000',
         pathname: '/gatherly/**',
       },

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 
 interface AvatarUserProps {
@@ -26,8 +27,16 @@ export function AvatarUser({ name, initials, imageUrl, hue = 230, size = 38, rin
       className={cn("flex-shrink-0 overflow-hidden", className)}
       style={{ width: size, height: size, borderRadius: "50%" }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageUrl} alt={name ?? "avatar"} width={size} height={size} style={{ width: size, height: size, objectFit: "cover" }} />
+      {/* next/image so an HTTP object-storage URL is fetched server-side and re-served
+          over HTTPS — a raw <img> would be blocked as mixed content on the HTTPS site. */}
+      <Image
+        src={imageUrl}
+        alt={name ?? "avatar"}
+        width={size}
+        height={size}
+        style={{ width: size, height: size, objectFit: "cover" }}
+        unoptimized={imageUrl.startsWith("blob:") || imageUrl.startsWith("data:")}
+      />
     </div>
   ) : (
     <div
