@@ -2,6 +2,7 @@ package com.gatherly.service;
 
 import com.gatherly.common.error.ApiException;
 import com.gatherly.common.error.ErrorCode;
+import com.gatherly.domain.AssetPurpose;
 import com.gatherly.domain.Event;
 import com.gatherly.domain.EventAssignment;
 import com.gatherly.domain.EventStatus;
@@ -47,6 +48,7 @@ public class EventServiceImpl implements EventService {
   private final FormTemplateRepository formTemplateRepository;
   private final RegistrationFormRepository formRepository;
   private final EventMapper eventMapper;
+  private final StorageService storageService;
   private final SecureRandom random = new SecureRandom();
 
   public EventServiceImpl(
@@ -55,13 +57,15 @@ public class EventServiceImpl implements EventService {
       RegistrationSubmissionRepository submissionRepository,
       FormTemplateRepository formTemplateRepository,
       RegistrationFormRepository formRepository,
-      EventMapper eventMapper) {
+      EventMapper eventMapper,
+      StorageService storageService) {
     this.eventRepository = eventRepository;
     this.assignmentRepository = assignmentRepository;
     this.submissionRepository = submissionRepository;
     this.formTemplateRepository = formTemplateRepository;
     this.formRepository = formRepository;
     this.eventMapper = eventMapper;
+    this.storageService = storageService;
   }
 
   @Override
@@ -203,6 +207,16 @@ public class EventServiceImpl implements EventService {
     if (request.checkinOpensAt() != null) {
       event.setCheckinOpensAt(request.checkinOpensAt());
     }
+    return toResponse(event);
+  }
+
+  @Override
+  @PreAuthorize("@eventSecurity.canManage(#eventId, authentication)")
+  @Transactional
+  public EventResponse uploadCover(UUID eventId, byte[] content, String contentType) {
+    Event event = load(eventId);
+    String key = storageService.store(AssetPurpose.EVENT_COVER, content, contentType);
+    event.setCoverImageUrl(key);
     return toResponse(event);
   }
 

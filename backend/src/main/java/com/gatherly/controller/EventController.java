@@ -2,6 +2,8 @@ package com.gatherly.controller;
 
 import com.gatherly.common.ApiResponse;
 import com.gatherly.common.PageMeta;
+import com.gatherly.common.error.ApiException;
+import com.gatherly.common.error.ErrorCode;
 import com.gatherly.common.paging.PageRequests;
 import com.gatherly.dto.event.EventCreateRequest;
 import com.gatherly.dto.event.EventResponse;
@@ -12,12 +14,14 @@ import com.gatherly.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Events ({@code docs/03} §4.4). Thin: each method delegates to one {@link EventService} call whose
@@ -105,6 +110,31 @@ public class EventController {
   public ApiResponse<EventResponse> update(
       @PathVariable UUID eventId, @Valid @RequestBody EventUpdateRequest request) {
     return ApiResponse.ok("Event updated successfully.", eventService.update(eventId, request));
+  }
+
+  @Operation(
+      summary = "Upload an event cover image",
+      description =
+          "Uploads a cover image (PNG/JPEG/WebP, max 5 MB) for the event. The API brokers the bytes"
+              + " to object storage and persists the key; the updated event (with a viewable"
+              + " coverImageUrl) is returned. Allowed for ADMIN or the event's MANAGER. Errors: 400"
+              + " VALIDATION_ERROR for an empty file or unsupported type/size; 403 FORBIDDEN; 404"
+              + " NOT_FOUND.")
+  @PostMapping(value = "/{eventId}/cover", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ApiResponse<EventResponse> uploadCover(
+      @PathVariable UUID eventId, @RequestParam("file") MultipartFile file) {
+    if (file.isEmpty()) {
+      throw new ApiException(ErrorCode.VALIDATION_ERROR, "No file provided.");
+    }
+    byte[] bytes;
+    try {
+      bytes = file.getBytes();
+    } catch (IOException e) {
+      throw new ApiException(ErrorCode.VALIDATION_ERROR, "Could not read the uploaded file.");
+    }
+    return ApiResponse.ok(
+        "Cover image uploaded successfully.",
+        eventService.uploadCover(eventId, bytes, file.getContentType()));
   }
 
   @Operation(

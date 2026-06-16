@@ -28,6 +28,12 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: false
 
+  servlet:
+    multipart:
+      # Match the 5 MB cap enforced in StorageService (avatar + event cover uploads).
+      max-file-size: ${MAX_UPLOAD_SIZE:5MB}
+      max-request-size: ${MAX_UPLOAD_SIZE:5MB}
+
   data:
     redis:
       host: ${REDIS_HOST:96.9.81.187}

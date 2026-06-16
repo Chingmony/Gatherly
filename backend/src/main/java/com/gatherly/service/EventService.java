@@ -28,6 +28,13 @@ public interface EventService {
 
   EventResponse update(UUID eventId, EventUpdateRequest request);
 
+  /**
+   * Stores an uploaded cover image for the event and persists its object key. Allowed for ADMIN or
+   * the event's MANAGER (same gate as {@link #update}). The returned response carries a viewable
+   * (presigned) cover URL.
+   */
+  EventResponse uploadCover(UUID eventId, byte[] content, String contentType);
+
   /** DRAFT → PUBLIC (Admin). */
   EventResponse publish(UUID eventId);
 

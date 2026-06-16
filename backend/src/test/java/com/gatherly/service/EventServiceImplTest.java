@@ -35,6 +35,7 @@ class EventServiceImplTest {
   @Mock private FormTemplateRepository formTemplateRepository;
   @Mock private RegistrationFormRepository formRepository;
   @Mock private EventMapper eventMapper;
+  @Mock private StorageService storageService;
 
   private EventServiceImpl service;
 
@@ -47,7 +48,8 @@ class EventServiceImplTest {
             submissionRepository,
             formTemplateRepository,
             formRepository,
-            eventMapper);
+            eventMapper,
+            storageService);
     lenient().when(eventMapper.toResponse(any(), anyLong())).thenReturn(null);
   }
 
