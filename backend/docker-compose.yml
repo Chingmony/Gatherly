@@ -110,3 +110,4 @@ services:
 volumes:
   postgres_data:
   rustfs_data:
+  redis_data:
