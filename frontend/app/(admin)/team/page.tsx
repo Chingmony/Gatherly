@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, UserPlus, Plus, MoreHorizontal, Edit2, Trash2, ShieldCheck, User, Loader2, Camera, X, UserCog } from "lucide-react";
+import { Search, Plus, MoreHorizontal, Edit2, Trash2, ShieldCheck, User, Loader2, Camera, X, UserCog } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,9 +78,6 @@ export default function TeamPage() {
   const [members, setMembers]     = useState<MemberRow[]>([]);
   const [loading, setLoading]     = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole]  = useState("MEMBER");
 
   // Edit
   const [editUser, setEditUser] = useState<MemberRow | null>(null);
@@ -224,8 +221,7 @@ export default function TeamPage() {
   return (
     <div className="flex flex-col gap-6 view-anim">
       <PageHeader title="Team & Roles" sub="Manage who can do what across the organization">
-        <Button size="sm" variant="ghost" onClick={() => setCreateOpen(true)}><Plus size={14} /> Create new member</Button>
-        <Button size="sm" onClick={() => setInviteOpen(true)}><Plus size={14} /> Invite member</Button>
+        <Button size="sm" onClick={() => setCreateOpen(true)}><Plus size={14} /> Create new member</Button>
       </PageHeader>
 
       <div className="flex flex-col gap-4">
@@ -301,36 +297,6 @@ export default function TeamPage() {
             </CardContent>
           </Card>
       </div>
-
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Invite team member</DialogTitle>
-            <DialogDescription>Send an invite email to add a new user.</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="invite-email">Email address</Label>
-              <Input id="invite-email" type="email" placeholder="colleague@company.io" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Global role</Label>
-              <div className="flex gap-2">
-                {["MEMBER", "ADMIN"].map((r) => (
-                  <button key={r} type="button" onClick={() => setInviteRole(r)} className="px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer"
-                    style={{ background: inviteRole === r ? "var(--primary-soft)" : "var(--surface-2)", borderColor: inviteRole === r ? "var(--primary-hex,#6366f1)" : "var(--border-hex,#ecedf4)", color: inviteRole === r ? "var(--primary-hex,#6366f1)" : "var(--text-muted)" }}>
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setInviteOpen(false)}>Cancel</Button>
-            <Button onClick={() => { setInviteOpen(false); setInviteEmail(""); }}><UserPlus size={14} /> Send invite</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Create new member */}
       <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) resetCreate(); }}>

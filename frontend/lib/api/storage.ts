@@ -48,3 +48,9 @@ export const uploadAvatar = (file: File) => uploadImage(file, "USER_AVATAR");
 
 /** Upload an event cover image; returns its object key. */
 export const uploadEventCover = (file: File) => uploadImage(file, "EVENT_COVER");
+
+/** Upload the organization logo (ADMIN); returns its object key. */
+export const uploadOrgLogo = (file: File) => uploadImage(file, "ORG_LOGO");
+
+/** Upload the organization banner (ADMIN); returns its object key. */
+export const uploadOrgBanner = (file: File) => uploadImage(file, "ORG_BANNER");
