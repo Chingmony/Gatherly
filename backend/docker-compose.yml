@@ -2,12 +2,11 @@
 # Run from backend/:  docker compose up --build
 # The app listens on 9091 (see src/main/resources/application.yml: server.port).
 services:
-
   backend:
     build:
       context: .
       dockerfile: Dockerfile
-    image: gatherly-backend:local
+    image: gartherly-api:latest
     depends_on:
       postgres:
         condition: service_healthy
@@ -22,7 +21,7 @@ services:
       # Datasource — point at the postgres service on the compose network
       - DB_URL=jdbc:postgresql://postgres:5432/gatherly
       - DB_USERNAME=postgres
-      - DB_PASSWORD=postgres
+      - DB_PASSWORD=123
       # Redis (OTP, rate limiting, ShedLock)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -37,8 +36,8 @@ services:
       - APP_PUBLIC_BASE_URL=http://localhost:3000
       - CORS_ALLOWED_ORIGIN=http://localhost:3000
       # Keep non-critical integrations quiet for local container runs
-      - EMAIL_ENABLED=false
-      - TELEGRAM_ENABLED=false
+      - EMAIL_ENABLED=true
+      - TELEGRAM_ENABLED=true
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:9091/actuator/health"]
       interval: 10s
@@ -54,7 +53,7 @@ services:
     environment:
       - POSTGRES_DB=gatherly
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=123
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
