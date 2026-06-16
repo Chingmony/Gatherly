@@ -33,8 +33,8 @@ services:
       - RUSTFS_SECRET_KEY=admin123
       - RUSTFS_BUCKET=gatherly
       # App
-      - APP_PUBLIC_BASE_URL=http://localhost:3000
-      - CORS_ALLOWED_ORIGIN=http://localhost:3000
+      - APP_PUBLIC_BASE_URL=https://gatherly-cyan.vercel.app
+      - CORS_ALLOWED_ORIGIN=https://gatherly-cyan.vercel.app
       # Keep non-critical integrations quiet for local container runs
       - EMAIL_ENABLED=true
       - TELEGRAM_ENABLED=true

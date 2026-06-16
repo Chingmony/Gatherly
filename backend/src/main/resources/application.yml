@@ -109,7 +109,7 @@ app:
     resend-cooldown-seconds: ${OTP_RESEND_COOLDOWN_SECONDS:60}
     length: ${OTP_LENGTH:6}
 
-  public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:3000}
+  public-base-url: ${APP_PUBLIC_BASE_URL:https://gatherly-cyan.vercel.app}
 
   # ShedLock-guarded scheduled jobs (retry sweeps + cleanup). Needs Redis; the local profile
   # disables it so dev without Redis stays quiet.
@@ -124,4 +124,4 @@ app:
     register-per-minute: ${RATE_LIMIT_REGISTER:20}
 
   cors:
-    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000,http://192.168.200.119:3000}
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000,http://192.168.200.119:3000,https://gatherly-cyan.vercel.app}
