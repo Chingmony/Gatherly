@@ -95,12 +95,12 @@ app:
     api-base: ${TELEGRAM_API_BASE:https://api.telegram.org}
 
   rustfs:
-    endpoint: ${RUSTFS_ENDPOINT:http://rustfs:9000}
+    endpoint: ${RUSTFS_ENDPOINT:http://96.9.81.187:9000}
     region: ${RUSTFS_REGION:us-east-1}
     access-key: ${RUSTFS_ACCESS_KEY:admin}
     secret-key: ${RUSTFS_SECRET_KEY:admin123}
     bucket: ${RUSTFS_BUCKET:gatherly}
-    public-base-url: ${RUSTFS_PUBLIC_BASE_URL:}
+    public-base-url: ${RUSTFS_PUBLIC_BASE_URL:http://96.9.81.187:9000}
     presign-ttl-seconds: ${RUSTFS_PRESIGN_TTL_SECONDS:300}
 
   otp:
