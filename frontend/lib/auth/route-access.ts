@@ -29,6 +29,11 @@ export const ROUTE_RULES: RouteRule[] = [
   { test: /^\/events\/[^/]+\/workspace(\/|$)/, roles: ['admin', 'subadmin'] },
   { test: /^\/events\/[^/]+\/guests(\/|$)/, roles: ['admin', 'subadmin'] },
   { test: /^\/events\/new(\/|$)/, roles: ['admin', 'subadmin'] },
+  // Handlers reach the events list and the read-only event detail (`/events/[id]`);
+  // both are single-segment. Deeper `/events/[id]/edit` etc. fall through to the
+  // generic admin/subadmin rule below.
+  { test: /^\/events$/, roles: ALL },
+  { test: /^\/events\/[^/]+$/, roles: ALL },
   { test: /^\/events(\/|$)/, roles: ['admin', 'subadmin'] },
   { test: /^\/dashboard(\/|$)/, roles: ALL },
   { test: /^\/tasks(\/|$)/, roles: ['subadmin', 'handler'] }, // admin blocked → dashboard

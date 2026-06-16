@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { apiFetch, ApiError } from "@/lib/api/client";
+import { toast } from "@/components/ui/toast";
 import type { EventResponse, MaterialResponse, MaterialStatus, UserResponse } from "@/lib/types";
 
 type UIStatus = "IN_PROGRESS" | "NEEDS_REVIEW" | "PENDING" | "ISSUE" | "DONE";
@@ -35,6 +38,16 @@ const STATUS_LABEL: Record<UIStatus, string> = {
   DONE:         "Done",
 };
 
+// Accent (stripe / header dot / event chip) per status. `color` is the solid hue,
+// `soft` its tinted background.
+const STATUS_COLORS: Record<UIStatus, { color: string; soft: string }> = {
+  IN_PROGRESS:  { color: "var(--primary-hex,#6366f1)", soft: "var(--primary-soft)" },
+  NEEDS_REVIEW: { color: "var(--orange)",              soft: "var(--orange-soft)" },
+  PENDING:      { color: "var(--text-muted)",          soft: "var(--surface-3)" },
+  ISSUE:        { color: "var(--danger)",              soft: "var(--danger-soft)" },
+  DONE:         { color: "var(--green-600)",           soft: "var(--green-soft)" },
+};
+
 const NEXT_STATUSES: Record<MaterialStatus, MaterialStatus[]> = {
   PENDING:      ["IN_PROGRESS", "ISSUE"],
   IN_PROGRESS:  ["NEEDS_REVIEW", "ISSUE"],
@@ -49,19 +62,30 @@ function formatDate(iso: string | null | undefined) {
 }
 
 export default function HandlerTasksPage() {
+  // useSearchParams needs a Suspense boundary in the App Router (Next 16) — without it the
+  // page is forced into fully client-side rendering and the build complains.
+  return (
+    <Suspense fallback={null}>
+      <HandlerTasksContent />
+    </Suspense>
+  );
+}
+
+function HandlerTasksContent() {
+  const searchParams = useSearchParams();
   const [me, setMe]               = useState<UserResponse | null>(null);
   const [events, setEvents]       = useState<EventResponse[]>([]);
   const [materials, setMaterials] = useState<MaterialResponse[]>([]);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState<string | null>(null);
-  const [eventFilter, setEventFilter] = useState<string>("all");
+  // Deep-link from the dashboard's "Your events" cards: /tasks?event=<id> preselects that event.
+  const [eventFilter, setEventFilter] = useState<string>(() => searchParams.get("event") ?? "all");
 
   // Dialog state
   const [selected, setSelected]     = useState<MaterialResponse | null>(null);
   const [nextStatus, setNextStatus] = useState<MaterialStatus | null>(null);
   const [note, setNote]             = useState("");
   const [updating, setUpdating]     = useState(false);
-  const [updateError, setUpdateError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -96,7 +120,6 @@ export default function HandlerTasksPage() {
     setSelected(m);
     setNextStatus(null);
     setNote("");
-    setUpdateError(null);
   }, []);
 
   const closeDialog = useCallback(() => {
@@ -107,7 +130,6 @@ export default function HandlerTasksPage() {
   const handleUpdate = useCallback(async () => {
     if (!selected || !nextStatus) return;
     setUpdating(true);
-    setUpdateError(null);
     try {
       await apiFetch(`/materials/${selected.id}/status`, {
         method: "PATCH",
@@ -117,10 +139,10 @@ export default function HandlerTasksPage() {
       setMaterials((prev) =>
         prev.map((m) => m.id === selected.id ? { ...m, status: nextStatus } : m)
       );
+      toast.success("Task updated", `"${selected.name}" moved to ${STATUS_LABEL[nextStatus]}`);
       setSelected(null);
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : "Failed to update status";
-      setUpdateError(msg);
+      toast.error("Couldn't update task", err instanceof ApiError ? err.message : "Failed to update status");
     } finally {
       setUpdating(false);
     }
@@ -137,7 +159,7 @@ export default function HandlerTasksPage() {
       <PageHeader title="My Tasks" sub="All tasks across your assigned events" />
 
       {error && (
-        <div className="rounded-xl px-4 py-3 text-sm" style={{ background: "var(--danger-soft)", color: "var(--danger)" }}>
+        <div className="rounded-[var(--radius-lg)] px-4 py-3 text-sm" style={{ background: "var(--danger-soft)", color: "var(--danger)" }}>
           {error}
         </div>
       )}
@@ -178,47 +200,85 @@ export default function HandlerTasksPage() {
       {!loading && STATUS_ORDER.map((status) => {
         const group = filtered.filter((m) => (m.status as MaterialStatus) === status);
         if (group.length === 0) return null;
+        const c = STATUS_COLORS[status];
         return (
-          <div key={status} className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <StatusBadge variant={STATUS_VARIANT[status]}>{STATUS_LABEL[status]}</StatusBadge>
-              <span className="text-sm font-bold" style={{ color: "var(--text-faint)" }}>{group.length}</span>
+          <div key={status} className="flex flex-col gap-2.5">
+            {/* Group header — dot · STATUS · count pill */}
+            <div className="flex items-center gap-2 px-1">
+              <span className="w-2 h-2 rounded-full" style={{ background: c.color }} />
+              <span className="text-xs font-extrabold uppercase tracking-wider" style={{ color: c.color }}>
+                {STATUS_LABEL[status]}
+              </span>
+              <span
+                className="ml-auto text-xs font-bold px-2.5 py-0.5 rounded-full"
+                style={{ background: c.soft, color: c.color }}
+              >
+                {group.length}
+              </span>
             </div>
-            <div className="flex flex-col gap-2">
+
+            <div className="flex flex-col gap-2.5">
               {group.map((m) => {
                 const event = eventMap.get(m.eventId);
                 const isDone = m.status === "DONE";
                 return (
-                  <button
+                  <div
                     key={m.id}
-                    type="button"
-                    onClick={() => !isDone && openDialog(m)}
-                    disabled={isDone}
-                    className="flex items-center gap-3 px-4 py-4 rounded-[var(--radius-lg)] border min-h-[56px] transition-colors hover:bg-[var(--surface-2)] active:opacity-80 w-full overflow-hidden text-left"
+                    role={isDone ? undefined : "button"}
+                    tabIndex={isDone ? undefined : 0}
+                    onClick={() => { if (!isDone) openDialog(m); }}
+                    onKeyDown={(e) => {
+                      if (!isDone && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDialog(m); }
+                    }}
+                    className="relative flex items-center gap-3 pl-5 pr-4 py-4 rounded-[var(--radius-lg)] border overflow-hidden transition-all hover:shadow-[var(--shadow-card)] active:scale-[.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-hex,#6366f1)]"
                     style={{
                       background: "var(--surface)",
                       borderColor: "var(--border-hex,#ecedf4)",
                       cursor: isDone ? "default" : "pointer",
                     }}
                   >
-                    <div className="flex-1 min-w-0">
-                      <span className="font-bold text-base leading-snug" style={{ color: "var(--text-strong)" }}>{m.name}</span>
-                    </div>
+                    {/* Left status stripe */}
                     <span
-                      className="text-xs px-2 py-1 rounded-full font-semibold flex-shrink-0 max-w-[100px] truncate"
-                      style={{ background: "var(--primary-soft)", color: "var(--primary-hex,#6366f1)" }}
-                    >
-                      {event?.title ?? "—"}
-                    </span>
-                    <span className="text-xs flex-shrink-0" style={{ color: "var(--text-muted)" }}>
-                      {formatDate(event?.startsAt)}
-                    </span>
+                      className="absolute left-0 top-2.5 bottom-2.5 w-1.5 rounded-full"
+                      style={{ background: c.color }}
+                    />
+
+                    {isDone && (
+                      <CheckCircle2 size={20} className="flex-shrink-0" style={{ color: "var(--green-600)" }} />
+                    )}
+
+                    <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                      <span
+                        className="font-bold text-base leading-snug truncate"
+                        style={{
+                          color: isDone ? "var(--text-faint)" : "var(--text-strong)",
+                          textDecoration: isDone ? "line-through" : "none",
+                        }}
+                      >
+                        {m.name}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full font-semibold max-w-[120px] truncate"
+                          style={{ background: c.soft, color: c.color }}
+                        >
+                          {event?.title ?? "—"}
+                        </span>
+                        <span className="text-xs" style={{ color: "var(--text-faint)" }}>
+                          {formatDate(event?.startsAt)}
+                        </span>
+                      </div>
+                    </div>
+
                     {!isDone && (
-                      <span className="text-xs font-semibold flex-shrink-0" style={{ color: "var(--primary-hex,#6366f1)" }}>
-                        Update →
+                      <span
+                        className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-full text-white flex-shrink-0"
+                        style={{ background: "linear-gradient(135deg, var(--primary-hex,#6366f1), #7c5cf5)" }}
+                      >
+                        Update <ArrowUpRight size={13} strokeWidth={2.5} />
                       </span>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -237,7 +297,7 @@ export default function HandlerTasksPage() {
       {/* Status update dialog */}
       <Dialog open={!!selected} onOpenChange={(open) => { if (!open) closeDialog(); }}>
         {selected && (
-          <DialogContent className="max-w-sm mx-4">
+          <DialogContent className="w-[calc(100%-2rem)] max-w-sm">
             <DialogHeader>
               <DialogTitle>{selected.name}</DialogTitle>
               <div className="flex items-center gap-2 mt-1">
@@ -255,21 +315,27 @@ export default function HandlerTasksPage() {
                     Move to
                   </span>
                   <div className="flex flex-wrap gap-2">
-                    {NEXT_STATUSES[selected.status].map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setNextStatus(s)}
-                        className="px-3 py-2 rounded-[var(--radius-md)] border text-sm font-bold transition-all"
-                        style={{
-                          background:  nextStatus === s ? "var(--primary-hex,#6366f1)" : "var(--surface-2)",
-                          borderColor: nextStatus === s ? "var(--primary-hex,#6366f1)" : "var(--border-hex,#ecedf4)",
-                          color:       nextStatus === s ? "#fff" : "var(--text-strong)",
-                        }}
-                      >
-                        {STATUS_LABEL[s]}
-                      </button>
-                    ))}
+                    {NEXT_STATUSES[selected.status].map((s) => {
+                      const sc = STATUS_COLORS[s];
+                      const isSel = nextStatus === s;
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => setNextStatus(s)}
+                          className="px-3 py-2 rounded-[var(--radius-md)] border text-sm font-bold transition-all"
+                          style={{
+                            // Active → filled with the target status's colour; idle → that colour as
+                            // text on a neutral chip, so each option reads (orange = review, red = issue…).
+                            background:  isSel ? sc.color : "var(--surface-2)",
+                            borderColor: isSel ? sc.color : "var(--border-hex,#ecedf4)",
+                            color:       isSel ? "#fff" : sc.color,
+                          }}
+                        >
+                          {STATUS_LABEL[s]}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -293,9 +359,6 @@ export default function HandlerTasksPage() {
                   />
                 </div>
 
-                {updateError && (
-                  <p className="text-sm" style={{ color: "var(--danger)" }}>{updateError}</p>
-                )}
               </div>
             ) : (
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>

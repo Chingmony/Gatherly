@@ -43,6 +43,7 @@ export const config = {
     '/organization/:path*',
     '/team/:path*',
     '/events',
+    '/events/:id',
     '/events/new/:path*',
     '/events/:id/workspace/:path*',
     '/events/:id/guests/:path*',

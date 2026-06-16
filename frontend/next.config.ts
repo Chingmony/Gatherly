@@ -19,7 +19,6 @@ const devOrigins = (process.env.DEV_ORIGINS ?? '')
   .filter(Boolean)
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['192.168.42.244'],
   output: 'standalone',
   allowedDevOrigins: devOrigins,
   turbopack: {},

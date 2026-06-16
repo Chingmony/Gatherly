@@ -24,7 +24,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { section: "Main Menu" },
   { id: "dashboard",   label: "Dashboard",        href: "/dashboard",   icon: LayoutDashboard, roles: ["admin", "subadmin", "handler"] },
-  { id: "events",      label: "Events",           href: "/events",      icon: Calendar,        roles: ["admin", "subadmin"] },
+  { id: "events",      label: "Events",           href: "/events",      icon: Calendar,        roles: ["admin", "subadmin", "handler"] },
   { id: "tasks",       label: "My Tasks",         href: "/tasks",       icon: CheckSquare,     roles: ["subadmin", "handler"], badge: "tasks" },
   { id: "scanner",     label: "Check-in Scanner", href: "/scanner",                 icon: QrCode,    roles: ["admin", "subadmin", "handler"] },
   { id: "formbuilder", label: "Form Builder",     href: "/events/ev1/form-builder", icon: FileText, roles: ["admin", "subadmin"] },

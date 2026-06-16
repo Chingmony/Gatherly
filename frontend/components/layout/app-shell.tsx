@@ -3,6 +3,7 @@ import { Topbar } from "./topbar";
 import { MobileNav } from "./mobile-nav";
 import { HandlerFab } from "./handler-fab";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import type { Role } from "@/lib/roles";
 
 interface AppShellProps {
@@ -26,6 +27,7 @@ export function AppShell({ role, title, subtitle, children }: AppShellProps) {
       </div>
       {role === "handler" && <MobileNav />}
       {role === "handler" && <HandlerFab />}
+      <Toaster />
     </ThemeProvider>
   );
 }

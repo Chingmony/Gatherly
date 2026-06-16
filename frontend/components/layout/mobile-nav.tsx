@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, QrCode, Settings } from "lucide-react";
+import { LayoutDashboard, Calendar, CheckSquare, QrCode, Settings } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const HANDLER_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/events",    label: "Events",    icon: Calendar },
   { href: "/tasks",     label: "Tasks",     icon: CheckSquare },
   { href: "/scanner",   label: "Scanner",   icon: QrCode },
   { href: "/settings",  label: "Settings",  icon: Settings },
@@ -40,21 +41,26 @@ export function MobileNav() {
             key={href}
             href={href}
             className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-[3px] transition-colors",
+              "flex flex-1 flex-col items-center justify-center gap-1 transition-[transform,color] duration-200 ease-out",
               active
-                ? "text-[var(--primary-hex,#6366f1)]"
+                ? "text-[var(--primary-hex,#6366f1)] -translate-y-1 motion-reduce:translate-y-0"
                 : "text-[var(--text-faint)]"
             )}
           >
             <span
               className={cn(
-                "flex items-center justify-center w-9 h-6 rounded-full transition-all",
-                active && "bg-[var(--primary-soft)]"
+                "flex items-center justify-center w-10 h-7 rounded-full transition-all duration-200 ease-out",
+                active
+                  ? "bg-[var(--primary-soft)] scale-110 shadow-[0_6px_14px_var(--primary-ring)] motion-reduce:scale-100"
+                  : ""
               )}
             >
-              <Icon size={20} />
+              <Icon
+                size={20}
+                className={cn("transition-transform duration-200 ease-out", active && "scale-110 motion-reduce:scale-100")}
+              />
             </span>
-            <span className="text-[10px] font-bold">{label}</span>
+            <span className={cn("text-[10px] transition-all", active ? "font-extrabold" : "font-bold")}>{label}</span>
           </Link>
         );
       })}

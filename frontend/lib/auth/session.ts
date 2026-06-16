@@ -87,6 +87,27 @@ export function getUser(): UserResponse | null {
 }
 
 /**
+ * Single source of truth for the client-side UI role. Prefers `sessionStorage`,
+ * then falls back to the persistent `gatherly_role` cookie. This matters for the
+ * installed PWA (Add to Home Screen): `sessionStorage` is per-browsing-context and
+ * starts EMPTY on each standalone launch, whereas the cookie (Path=/, 7-day) is
+ * shared — so without the cookie fallback the shell loses the role and hides the
+ * handler bottom nav + FAB. Returns null when signed out / no valid role. Client-only.
+ */
+export function getRole(): Role | null {
+  if (typeof window === 'undefined') return null
+  const fromCookie =
+    typeof document !== 'undefined'
+      ? (document.cookie
+          .split('; ')
+          .find((c) => c.startsWith(`${ROLE_KEY}=`))
+          ?.split('=')[1] ?? null)
+      : null
+  const r = sessionStorage.getItem(ROLE_KEY) ?? fromCookie
+  return r === 'admin' || r === 'subadmin' || r === 'handler' ? r : null
+}
+
+/**
  * Carry state across the three reset steps: forgot-password (email) →
  * verify-otp (exchanges the OTP for a single-use reset token) → reset-password
  * (consumes the token to set the new password). Stored in sessionStorage so it

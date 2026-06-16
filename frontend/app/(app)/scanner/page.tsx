@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { QrCode, Calendar, MapPin, ChevronRight } from "lucide-react";
+import { Loader2, QrCode } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card, CardContent } from "@/components/ui/card";
-import { apiFetch } from "@/lib/api/client";
-import type { EventResponse } from "@/lib/types";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
+import { EmptyState } from "@/components/ui/empty-state";
+import { listEvents, type AdminEvent } from "@/lib/api/events";
+import { ApiError } from "@/lib/api/client";
+import { HandlerEventCard } from "../events/_components/event-card";
 
 function isToday(iso: string): boolean {
   const d = new Date(iso);
@@ -22,105 +18,76 @@ function isToday(iso: string): boolean {
   );
 }
 
+/**
+ * Should this event appear in the scanner picker right now? An event qualifies when its
+ * check-in window covers the current moment, OR it simply starts today (so it's reachable
+ * before check-in formally opens). The window is [checkinOpensAt ?? startsAt … endsAt],
+ * with a null `endsAt` treated as "runs through the end of the start day" so a single-day
+ * event without an explicit end still shows. This catches events that are happening now but
+ * started on a previous calendar day — which a strict `isToday(startsAt)` check misses.
+ */
+function isScannableNow(e: AdminEvent, now: number): boolean {
+  if (e.status === "ARCHIVED" || !e.startsAt) return false;
+  if (isToday(e.startsAt)) return true;
+
+  const opens = new Date(e.checkinOpensAt ?? e.startsAt).getTime();
+  if (Number.isNaN(opens) || now < opens) return false;
+
+  if (e.endsAt) {
+    const ends = new Date(e.endsAt).getTime();
+    return Number.isNaN(ends) || now <= ends;
+  }
+  // No explicit end: keep it visible until the end of its start calendar day.
+  const endOfStartDay = new Date(e.startsAt);
+  endOfStartDay.setHours(23, 59, 59, 999);
+  return now <= endOfStartDay.getTime();
+}
+
 export default function ScannerPickerPage() {
-  const router = useRouter();
-  const [events, setEvents] = useState<EventResponse[]>([]);
+  const [events, setEvents] = useState<AdminEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiFetch<EventResponse[]>("/events?size=100")
+    let cancelled = false;
+    listEvents({ size: 100 })
       .then((data) => {
-        const evs = (data ?? []).filter((e) => isToday(e.startsAt));
-        if (evs.length === 1) {
-          router.replace(`/events/${evs[0].id}/scanner`);
-          return;
-        }
-        setEvents(evs);
+        if (cancelled) return;
+        const now = Date.now();
+        // Always list — even a single event. Entering /scanner never auto-routes;
+        // the handler picks an event, and tapping a card navigates to its scanner.
+        setEvents((data ?? []).filter((e) => isScannableNow(e, now)));
       })
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load events"))
-      .finally(() => setLoading(false));
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-5 view-anim">
-        <PageHeader title="Select Event" sub="Showing events scheduled for today" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 rounded-[var(--radius-lg)] animate-pulse" style={{ background: "var(--surface-2)" }} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col gap-5 view-anim">
-        <PageHeader title="Select Event" sub="Showing events scheduled for today" />
-        <div className="rounded-xl px-4 py-3 text-sm" style={{ background: "var(--danger-soft)", color: "var(--danger)" }}>
-          {error}
-        </div>
-      </div>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <div className="flex flex-col gap-5 view-anim">
-        <PageHeader title="Select Event" sub="Showing events scheduled for today" />
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 px-5 py-14 text-center">
-            <QrCode size={36} style={{ color: "var(--text-faint)" }} />
-            <p className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>No events today</p>
-            <p className="text-xs" style={{ color: "var(--text-faint)" }}>There are no events scheduled for today. Check back on the day of your event.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+      .catch((err) => { if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load events"); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="flex flex-col gap-5 view-anim">
-      <PageHeader title="Select Event" sub="Showing events scheduled for today" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {events.map((event) => (
-          <button
-            key={event.id}
-            type="button"
-            onClick={() => router.push(`/events/${event.id}/scanner`)}
-            className="text-left w-full transition-transform active:scale-[.98]"
-          >
-            <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
-              <CardContent className="px-5 py-4 flex items-center gap-4">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "var(--primary-soft)" }}
-                >
-                  <QrCode size={18} style={{ color: "var(--primary-hex,#6366f1)" }} />
-                </div>
-                <div className="flex-1 min-w-0 flex flex-col gap-1">
-                  <p className="text-sm font-bold truncate" style={{ color: "var(--text-strong)" }}>
-                    {event.title}
-                  </p>
-                  {event.venue && (
-                    <p className="flex items-center gap-1 text-xs truncate" style={{ color: "var(--text-muted)" }}>
-                      <MapPin size={11} className="flex-shrink-0" />
-                      {event.venue}
-                    </p>
-                  )}
-                  <p className="flex items-center gap-1 text-xs" style={{ color: "var(--text-faint)" }}>
-                    <Calendar size={11} className="flex-shrink-0" />
-                    {formatDate(event.startsAt)}
-                  </p>
-                </div>
-                <ChevronRight size={16} className="flex-shrink-0" style={{ color: "var(--text-faint)" }} />
-              </CardContent>
-            </Card>
-          </button>
-        ))}
-      </div>
+      <PageHeader title="Select Event" sub="Showing events you can check in to right now" />
+
+      {loading ? (
+        <div className="py-24 flex items-center justify-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+          <Loader2 size={18} className="animate-spin" /> Loading events…
+        </div>
+      ) : error ? (
+        <div className="rounded-xl px-4 py-3 text-sm" style={{ background: "var(--danger-soft)", color: "var(--danger)" }}>
+          {error}
+        </div>
+      ) : events.length === 0 ? (
+        <EmptyState
+          icon={QrCode}
+          title="Nothing to check in"
+          description="No events are open for check-in right now. They appear here while they're happening."
+        />
+      ) : (
+        <div className="flex flex-wrap gap-5">
+          {events.map((event) => (
+            <HandlerEventCard key={event.id} event={event} href={`/events/${event.id}/scanner`} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function PageHeader({ title, sub, children, className }: PageHeaderProps)
     <div className={cn("flex items-center gap-4 mb-6", className)}>
       <div className="flex flex-col gap-0.5 min-w-0 flex-1">
         <h1
-          className="text-[25px] font-extrabold tracking-tight leading-tight truncate"
+          className="text-[20px] sm:text-[25px] font-extrabold tracking-tight leading-tight truncate"
           style={{ color: "var(--text-strong)", margin: 0 }}
         >
           {title}

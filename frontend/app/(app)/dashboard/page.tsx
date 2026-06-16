@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChipIco } from "@/components/ui/chip-ico";
 import type { Role } from "@/lib/roles";
+import { getRole } from "@/lib/auth/session";
 import { HandlerDashboard } from "./_components/handler-dashboard";
 
 const EVENTS = [
@@ -228,9 +229,11 @@ function ManagerDashboard() {
 export default function DashboardPage() {
   const [role, setRole] = useState<Role>("handler");
 
+  // getRole() reads sessionStorage then the persistent gatherly_role cookie, so an
+  // installed-PWA launch (empty sessionStorage) still resolves the real role.
   useEffect(() => {
-    const stored = sessionStorage.getItem("gatherly_role") as Role | null;
-    if (stored === "admin" || stored === "subadmin" || stored === "handler") setRole(stored);
+    const r = getRole();
+    if (r) setRole(r);
   }, []);
 
   if (role === "admin")    return <AdminDashboard />;

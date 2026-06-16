@@ -17,7 +17,7 @@ interface CheckinResponse {
 
 type ScanResult =
   | { type: "success";      token: string; name: string }
-  | { type: "already_used"; token: string }
+  | { type: "already_used"; token: string; detail?: string }
   | { type: "invalid";      token: string }
   | { type: "unauthorized"; token: string };
 
@@ -25,6 +25,20 @@ type ScanEntry = ScanResult & { time: string };
 
 function now() {
   return new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+/**
+ * The backend's ALREADY_CHECKED_IN error carries the original check-in time as
+ * `"Guest already checked in at <ISO instant>."`. Pull that instant out and format
+ * it so the organizer sees *when* the guest first checked in (per the §4 user
+ * story), falling back to the raw message for the concurrent-race case (no instant).
+ */
+function originalCheckinDetail(message: string): string {
+  const match = message.match(/\d{4}-\d{2}-\d{2}T[0-9:.]+Z?/);
+  if (!match) return message;
+  const d = new Date(match[0]);
+  if (Number.isNaN(d.getTime())) return message;
+  return `Checked in at ${d.toLocaleString("en-US", { month: "short", day: "2-digit", hour: "numeric", minute: "2-digit" })}`;
 }
 
 const RESULT_STYLE: Record<ScanResult["type"], { bg: string; border: string; color: string; icon: React.ReactNode; label: string }> = {
@@ -73,7 +87,7 @@ export default function ScannerPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.code === "ALREADY_CHECKED_IN") {
-          handleScan({ type: "already_used", token });
+          handleScan({ type: "already_used", token, detail: originalCheckinDetail(err.message) });
         } else if (err.code === "FORBIDDEN") {
           handleScan({ type: "unauthorized", token });
         } else {
@@ -216,6 +230,9 @@ export default function ScannerPage() {
                 {lastResult.type === "success" && (
                   <p className="text-sm font-semibold m-0" style={{ color: "#ccc" }}>{lastResult.name}</p>
                 )}
+                {lastResult.type === "already_used" && lastResult.detail && (
+                  <p className="text-sm font-semibold m-0" style={{ color: "#ccc" }}>{lastResult.detail}</p>
+                )}
                 <code className="text-xs px-2 py-1 rounded" style={{ background: "rgba(255,255,255,.08)", color: "#aaa" }}>
                   {lastResult.token}
                 </code>
@@ -297,6 +314,9 @@ export default function ScannerPage() {
                       <div className="flex-1 min-w-0">
                         {entry.type === "success" && (
                           <div className="text-sm font-bold truncate" style={{ color: "var(--text-strong)" }}>{entry.name}</div>
+                        )}
+                        {entry.type === "already_used" && entry.detail && (
+                          <div className="text-xs font-semibold truncate" style={{ color: "var(--text-muted)" }}>{entry.detail}</div>
                         )}
                         <code className="text-[11px]" style={{ color: "var(--text-muted)" }}>{entry.token}</code>
                       </div>

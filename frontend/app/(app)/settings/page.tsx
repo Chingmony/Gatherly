@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { User, ShieldCheck, Check, Lock, Camera, Loader2 } from "lucide-react";
+import { User, ShieldCheck, Check, Lock, Camera, Loader2, Building2, Mail, Phone, ContactRound } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { AvatarUser } from "@/components/ui/avatar-user";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getMe, updateMe, changePassword, uploadAvatar } from "@/lib/api/me";
+import { getOrganization, type OrganizationResponse } from "@/lib/api/organization";
 import type { UserResponse } from "@/lib/api/auth";
 import type { Gender } from "@/lib/types";
 import { uiRoleFromGlobal, ROLE_META } from "@/lib/roles";
@@ -35,6 +36,9 @@ export default function SettingsPage() {
   const [pwForm, setPwForm]       = useState({ current: "", next: "", confirm: "" });
   const [pwError, setPwError]     = useState("");
   const [pwSaved, setPwSaved]     = useState(false);
+  // Organization profile — read-only here for every role (the matrix grants all members view).
+  const [org, setOrg]             = useState<OrganizationResponse | null>(null);
+  const [orgLoading, setOrgLoading] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,6 +47,14 @@ export default function SettingsPage() {
       .then((u) => seedFromUser(u))
       .catch(() => {})
       .finally(() => setLoading(false));
+  }, []);
+
+  // Independent of the profile fetch so a slow/failed org read never blocks the profile UI.
+  useEffect(() => {
+    getOrganization()
+      .then((o) => setOrg(o))
+      .catch(() => {})
+      .finally(() => setOrgLoading(false));
   }, []);
 
   /** Seed every editable field from a fresh UserResponse (fetch + after-save). */
@@ -126,7 +138,10 @@ export default function SettingsPage() {
     <div className="flex flex-col gap-6 view-anim">
       <PageHeader title="Settings" sub="Manage your profile and credentials" />
 
-      {/* ── Profile ── */}
+      {/* ── Profile (user info) + Organization (org info), side by side ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+      {/* ── Profile (identity) ── */}
       <Card>
         <CardContent className="px-4 md:px-6 py-6 flex flex-col gap-5">
 
@@ -203,6 +218,110 @@ export default function SettingsPage() {
                 Member since {formatDate(me.createdAt)}
               </span>
             )}
+          </div>
+
+        </CardContent>
+      </Card>
+
+      {/* ── Organization (read-only) — sits before the user's own info ── */}
+      <Card>
+        <CardContent className="px-4 md:px-6 py-6 flex flex-col gap-5">
+
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "var(--primary-soft)" }}
+            >
+              <Building2 size={18} style={{ color: "var(--primary-hex,#6366f1)" }} />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold m-0" style={{ color: "var(--text-strong)" }}>Organization</p>
+              <p className="text-sm m-0" style={{ color: "var(--text-faint)" }}>Your organization profile (view only)</p>
+            </div>
+          </div>
+
+          <Separator />
+
+          {orgLoading ? (
+            <div className="h-24 rounded-[var(--radius-lg)] animate-pulse" style={{ background: "var(--surface-2)" }} />
+          ) : !org ? (
+            <p className="text-sm m-0" style={{ color: "var(--text-faint)" }}>
+              Organization profile is unavailable.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {/* Banner */}
+              {org.bannerUrl && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={org.bannerUrl}
+                  alt={`${org.name} banner`}
+                  className="w-full h-28 object-cover rounded-[var(--radius-lg)]"
+                  style={{ background: "var(--surface-2)" }}
+                />
+              )}
+
+              {/* Logo + name + description */}
+              <div className="flex items-center gap-4">
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                  style={{ background: "var(--surface-2)", border: "1px solid var(--border-hex,#ecedf4)" }}
+                >
+                  {org.logoUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={org.logoUrl} alt={`${org.name} logo`} className="w-full h-full object-cover" />
+                  ) : (
+                    <Building2 size={22} style={{ color: "var(--text-faint)" }} />
+                  )}
+                </div>
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <span className="text-base font-extrabold truncate" style={{ color: "var(--text-strong)" }}>
+                    {org.name}
+                  </span>
+                  {org.description && (
+                    <span className="text-sm" style={{ color: "var(--text-muted)" }}>{org.description}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact */}
+              {(org.contactEmail || org.contactPhone) && (
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                  {org.contactEmail && (
+                    <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+                      <Mail size={14} style={{ color: "var(--text-faint)" }} /> {org.contactEmail}
+                    </span>
+                  )}
+                  {org.contactPhone && (
+                    <span className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
+                      <Phone size={14} style={{ color: "var(--text-faint)" }} /> {org.contactPhone}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+        </CardContent>
+      </Card>
+
+      </div>
+
+      {/* ── Personal Information (editable details) ── */}
+      <Card>
+        <CardContent className="px-4 md:px-6 py-6 flex flex-col gap-5">
+
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "var(--primary-soft)" }}
+            >
+              <ContactRound size={18} style={{ color: "var(--primary-hex,#6366f1)" }} />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold m-0" style={{ color: "var(--text-strong)" }}>Personal Information</p>
+              <p className="text-sm m-0" style={{ color: "var(--text-faint)" }}>Your details</p>
+            </div>
           </div>
 
           <Separator />
