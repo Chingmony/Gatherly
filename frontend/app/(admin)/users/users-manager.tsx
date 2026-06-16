@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
 import { inviteUser, updateUser, deleteUser } from "@/lib/api/users";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -37,6 +38,25 @@ export function UsersManager({
   const [viewUser, setViewUser] = useState<UserResponse | null>(null);
   const [editUser, setEditUser] = useState<UserResponse | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<UserResponse | null>(null);
+  const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState<UserStatus | "ALL">("ALL");
+  const [sort, setSort] = useState<"name" | "recent">("name");
+
+  const users = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = initialUsers.filter((u) => {
+      if (roleFilter !== "ALL" && displayRole(u) !== roleFilter) return false;
+      if (statusFilter !== "ALL" && u.status !== statusFilter) return false;
+      if (!q) return true;
+      return `${u.fullName} ${u.email}`.toLowerCase().includes(q);
+    });
+    return [...filtered].sort((a, b) =>
+      sort === "recent"
+        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        : a.fullName.localeCompare(b.fullName),
+    );
+  }, [initialUsers, query, roleFilter, statusFilter, sort]);
 
   return (
     <div className="space-y-6">
@@ -55,9 +75,51 @@ export function UsersManager({
         )}
       </div>
 
+      {/* Toolbar: search + filters + sort */}
+      <div className="flex flex-wrap items-center gap-2">
+        <SearchInput value={query} onChange={setQuery} placeholder="Search name or email…" className="min-w-[220px] flex-1" />
+        <Select
+          value={roleFilter}
+          onChange={setRoleFilter}
+          aria-label="Filter by role"
+          className="w-auto min-w-[8.5rem]"
+          options={[
+            { value: "ALL", label: "All roles" },
+            { value: "Admin", label: "Admin" },
+            { value: "Sub-admin", label: "Sub-admin" },
+            { value: "Handler", label: "Handler" },
+            { value: "Member", label: "Member" },
+          ]}
+        />
+        <Select
+          value={statusFilter}
+          onChange={(v) => setStatusFilter(v as UserStatus | "ALL")}
+          aria-label="Filter by status"
+          className="w-auto min-w-[8.5rem]"
+          options={[
+            { value: "ALL", label: "All statuses" },
+            { value: "ACTIVE", label: "Active" },
+            { value: "PENDING_ACTIVATION", label: "Invited" },
+            { value: "INACTIVE", label: "Inactive" },
+          ]}
+        />
+        <Select
+          value={sort}
+          onChange={(v) => setSort(v as "name" | "recent")}
+          aria-label="Sort members"
+          className="w-auto min-w-[9.5rem]"
+          options={[
+            { value: "name", label: "Name: A–Z" },
+            { value: "recent", label: "Recently added" },
+          ]}
+        />
+      </div>
+
       {/* Members card */}
       <div className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-card)]">
-        <h2 className="px-6 pb-3 pt-5 text-[16px] font-extrabold text-[var(--text-strong)]">Members</h2>
+        <h2 className="px-6 pb-3 pt-5 text-[16px] font-extrabold text-[var(--text-strong)]">
+          Members <span className="text-[13px] font-semibold text-[var(--text-faint)]">({users.length})</span>
+        </h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left">
             <thead>
@@ -70,14 +132,14 @@ export function UsersManager({
               </tr>
             </thead>
             <tbody>
-              {initialUsers.length === 0 && (
+              {users.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-[13px] text-[var(--text-faint)]">
-                    No members yet.
+                    {initialUsers.length === 0 ? "No members yet." : "No members match your filters."}
                   </td>
                 </tr>
               )}
-              {initialUsers.map((u) => (
+              {users.map((u) => (
                 <tr key={u.id} className="border-b border-[var(--border)] last:border-0 transition-colors hover:bg-[var(--surface-2)]">
                   <td className="px-6 py-3.5">
                     <div className="flex items-center gap-3">

@@ -174,7 +174,8 @@ reset-password → consume pwdreset:grant:{userId}, set new BCrypt hash,
 
 ### 3.5 OTP delivery channel
 - OTP is delivered by the **Email service (§2.1)** to the user's email-on-file (transactional). The Redis lifecycle is channel-agnostic; the delivery adapter is pluggable (SMS later if desired).
-- **Security:** store only the hash; single-use; capped attempts; per-IP and per-user rate limits; never reveal whether an email exists (always respond `202 Accepted`).
+- **Security:** store only the hash; single-use; capped attempts; per-IP and per-user rate limits.
+- **Account discovery (invite-only product):** Gatherly is a single-organization, invite-only tool with no public self-signup, so forgot-password does **not** use the public-web anti-enumeration `202`-for-everything pattern. A known resettable account → `202 Accepted` (code sent); an unknown/non-resettable email → `404 ACCOUNT_NOT_FOUND` so the UI can tell the person this is for internal organizers and to contact an admin. Per-IP rate limiting on the endpoint bounds the residual enumeration surface.
 
 ---
 

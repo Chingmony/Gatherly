@@ -56,6 +56,7 @@ public class AgendaService {
             AgendaItem item = new AgendaItem();
             item.setEventId(eventId);
             item.setTitle(r.title());
+            item.setSection(blankToNull(r.section()));
             item.setStartsAt(r.startsAt());
             item.setEndsAt(r.endsAt());
             item.setPosition(position++);
@@ -70,6 +71,11 @@ public class AgendaService {
                 .map(t -> new AgendaTemplateResponse(
                         t.getId(), t.getName(), jsonMapper.readTree(t.getItems()), t.isDefault()))
                 .toList();
+    }
+
+    /** Normalise an optional section label: blank/whitespace becomes null. */
+    private static String blankToNull(String s) {
+        return (s == null || s.isBlank()) ? null : s.trim();
     }
 
     private List<AgendaItemResponse> fetch(UUID eventId) {

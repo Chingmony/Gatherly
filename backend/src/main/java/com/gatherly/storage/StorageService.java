@@ -22,7 +22,7 @@ import java.util.UUID;
  * Brokers presigned PUT URLs to Rustfs (docs/04 §4.4, docs/06 §3). Binaries never traverse the
  * Java heap — the client uploads straight to storage and commits the returned object key back to
  * the data model. Authorization is purpose-scoped here on the service layer (docs/04 §4.4 step 2):
- * {@code ORG_*} require Admin; {@code USER_AVATAR} is self-scoped to the caller.
+ * {@code ORG_*} and {@code EVENT_COVER} require Admin; {@code USER_AVATAR} is self-scoped to the caller.
  */
 @Service
 public class StorageService {
@@ -67,6 +67,12 @@ public class StorageService {
             case ORG_LOGO, ORG_BANNER -> {
                 if (!isAdmin()) {
                     throw new AccessDeniedException("Only an admin may upload organization assets.");
+                }
+            }
+            case EVENT_COVER -> {
+                // Event creation is Admin-only (EventService#create), so the cover that backs it is too.
+                if (!isAdmin()) {
+                    throw new AccessDeniedException("Only an admin may upload an event cover.");
                 }
             }
             case USER_AVATAR -> {

@@ -8,6 +8,7 @@ public enum StoragePurpose {
 
     ORG_LOGO("org/logo/"),
     ORG_BANNER("org/banner/"),
+    EVENT_COVER("event/cover/"),
     USER_AVATAR("user/"); // key becomes user/{userId}/avatar/{uuid}.{ext}
 
     private final String prefix;

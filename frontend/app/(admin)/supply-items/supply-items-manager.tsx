@@ -39,6 +39,21 @@ const STATUS_VARIANT: Record<SupplyStatus, BadgeProps["variant"]> = {
   OUT_OF_STOCK: "danger",
 };
 
+/** Sort order for "Status" — most-urgent first, so low/out-of-stock surfaces at the top. */
+const STATUS_ORDER: Record<SupplyStatus, number> = {
+  OUT_OF_STOCK: 0,
+  LOW_STOCK: 1,
+  IN_STOCK: 2,
+};
+
+type SupplySort = "name" | "onhand-desc" | "onhand-asc" | "status";
+const SUPPLY_SORTS: { value: SupplySort; label: string }[] = [
+  { value: "name", label: "Name: A–Z" },
+  { value: "onhand-desc", label: "On hand: high → low" },
+  { value: "onhand-asc", label: "On hand: low → high" },
+  { value: "status", label: "Status: urgent first" },
+];
+
 type Editing = SupplyItemResponse | "new" | null;
 
 /**
@@ -55,20 +70,30 @@ export function SupplyItemsManager({
 }) {
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState<SupplyCategory | "ALL">("ALL");
+  const [sort, setSort] = useState<SupplySort>("name");
   const [editing, setEditing] = useState<Editing>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((i) => {
+    const filtered = items.filter((i) => {
       if (activeCat !== "ALL" && i.category !== activeCat) return false;
       if (!q) return true;
       return (
         i.name.toLowerCase().includes(q) || (i.sku?.toLowerCase().includes(q) ?? false)
       );
     });
-  }, [items, query, activeCat]);
+    return [...filtered].sort((a, b) => {
+      switch (sort) {
+        case "onhand-desc": return b.onHand - a.onHand;
+        case "onhand-asc": return a.onHand - b.onHand;
+        case "status": return STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+        case "name":
+        default: return a.name.localeCompare(b.name);
+      }
+    });
+  }, [items, query, activeCat, sort]);
 
   async function remove(item: SupplyItemResponse) {
     setError(null);
@@ -108,6 +133,13 @@ export function SupplyItemsManager({
               className="w-[230px] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] py-2.5 pl-9 pr-3 text-[13px] text-[var(--text)] shadow-[var(--shadow-sm)] placeholder:text-[var(--text-faint)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]"
             />
           </div>
+          <Select
+            value={sort}
+            onChange={(v) => setSort(v as SupplySort)}
+            aria-label="Sort items"
+            className="w-auto min-w-[11rem]"
+            options={SUPPLY_SORTS}
+          />
           {canEdit && (
             <Button onClick={() => { setError(null); setEditing("new"); }}>
               <Plus className="size-4" /> Add Item

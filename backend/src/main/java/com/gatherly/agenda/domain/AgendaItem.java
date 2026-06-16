@@ -23,6 +23,10 @@ public class AgendaItem extends BaseEntity {
     @Column(nullable = false)
     private String title;
 
+    /** Optional track/grouping label shown on the Schedule view (e.g. Main Stage, Workshop). */
+    @Column
+    private String section;
+
     @Column(name = "starts_at")
     private Instant startsAt;
 
@@ -50,6 +54,14 @@ public class AgendaItem extends BaseEntity {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getSection() {
+        return section;
+    }
+
+    public void setSection(String section) {
+        this.section = section;
     }
 
     public Instant getStartsAt() {

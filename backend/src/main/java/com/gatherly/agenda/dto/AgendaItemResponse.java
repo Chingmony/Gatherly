@@ -7,6 +7,7 @@ import java.util.UUID;
 public record AgendaItemResponse(
         UUID id,
         String title,
+        String section,
         Instant startsAt,
         Instant endsAt,
         int position

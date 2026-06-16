@@ -245,7 +245,9 @@ function AgendaTimeline({ items, startsAt }: { items: AgendaItemResponse[]; star
       )}
       <ol className="mt-4 space-y-3.5">
         {items.map((item) => {
-          const track = trackOf(item.title);
+          // Prefer the organizer-set section; fall back to deriving a track from the title.
+          const section = item.section?.trim();
+          const track = section ? { label: section, color: trackOf(section).color } : trackOf(item.title);
           return (
             <li key={item.id} className="flex gap-3.5">
               <div className="w-[52px] shrink-0 text-right">

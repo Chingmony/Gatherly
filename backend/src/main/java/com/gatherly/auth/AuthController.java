@@ -58,8 +58,9 @@ public class AuthController {
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        // 202 when a code was (re)sent; 404 ACCOUNT_NOT_FOUND for an unknown email so the UI can tell
+        // the person to contact an admin — Gatherly is invite-only, not public (docs/04 §3.5).
         authService.forgotPassword(req.email());
-        // Always 202 — never reveal whether the account exists (docs/04 §3.5).
         return ResponseEntity.accepted().build();
     }
 

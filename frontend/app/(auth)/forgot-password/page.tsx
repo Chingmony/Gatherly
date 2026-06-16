@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail } from "lucide-react";
 import { forgotPassword } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { AuthHeading, BackLink, IconInput } from "../auth-ui";
@@ -12,15 +13,24 @@ export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
     setPending(true);
     try {
       await forgotPassword(email);
-    } finally {
-      // Always advance to the passcode screen — the API never reveals whether the account exists.
+      // Code sent — advance to the passcode screen.
       router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+    } catch (err) {
+      // Gatherly is invite-only: an unknown email isn't an organizer account, so we say so.
+      if (err instanceof ApiError && err.code === "ACCOUNT_NOT_FOUND") {
+        setError(err.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+      setPending(false);
     }
   }
 
@@ -34,7 +44,7 @@ export default function ForgotPasswordPage() {
 
       <AuthHeading
         title="Forgot password?"
-        subtitle="Enter your account email and we’ll send a one-time passcode to reset it."
+        subtitle="Enter your organizer account email and we’ll send a one-time passcode to reset it."
         className="mt-4"
       />
 
@@ -52,6 +62,10 @@ export default function ForgotPasswordPage() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
+        {error && (
+          <p className="text-[13px] font-semibold text-[var(--danger)]" role="alert">{error}</p>
+        )}
+
         <Button type="submit" className="w-full" disabled={pending}>
           {pending ? "Sending…" : (<>Send OTP <Mail className="h-4 w-4" /></>)}
         </Button>

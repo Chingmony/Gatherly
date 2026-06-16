@@ -1,18 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createEvent, publishEvent, archiveEvent, deleteEvent } from "@/lib/api/events";
-import { ApiError } from "@/lib/api/client";
+import { publishEvent, archiveEvent, deleteEvent } from "@/lib/api/events";
 import type { EventResponse, EventStatus } from "@/lib/api/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Dialog } from "@/components/ui/dialog";
-import { DateField } from "@/components/ui/date-field";
-import { coverGradient, COVER_KEYS } from "@/lib/covers";
+import { Select } from "@/components/ui/select";
+import { SearchInput } from "@/components/ui/search-input";
+import { coverGradient } from "@/lib/covers";
+
+type EventSort = "soonest" | "latest" | "title" | "created";
+const EVENT_SORTS: { value: EventSort; label: string }[] = [
+  { value: "soonest", label: "Date: soonest" },
+  { value: "latest", label: "Date: latest" },
+  { value: "title", label: "Title: A–Z" },
+  { value: "created", label: "Recently created" },
+];
 
 const STATUS_LABEL: Record<EventStatus, string> = {
   DRAFT: "Draft",
@@ -34,11 +39,32 @@ function formatDate(iso?: string): string {
   return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
-export function EventsManager({ initialEvents }: { initialEvents: EventResponse[] }) {
+export function EventsManager({ initialEvents, isAdmin }: { initialEvents: EventResponse[]; isAdmin: boolean }) {
   const router = useRouter();
   const [view, setView] = useState<ViewMode>("grid");
-  const [modalOpen, setModalOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<EventStatus | "ALL">("ALL");
+  const [sort, setSort] = useState<EventSort>("soonest");
+
+  const events = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = initialEvents.filter((e) => {
+      if (statusFilter !== "ALL" && e.status !== statusFilter) return false;
+      if (!q) return true;
+      return `${e.title} ${e.venue ?? ""} ${e.category ?? ""}`.toLowerCase().includes(q);
+    });
+    const ts = (s?: string) => (s ? new Date(s).getTime() : null);
+    return [...filtered].sort((a, b) => {
+      switch (sort) {
+        case "title": return a.title.localeCompare(b.title);
+        case "created": return (ts(b.createdAt) ?? 0) - (ts(a.createdAt) ?? 0);
+        case "latest": return (ts(b.startsAt) ?? -Infinity) - (ts(a.startsAt) ?? -Infinity);
+        case "soonest":
+        default: return (ts(a.startsAt) ?? Infinity) - (ts(b.startsAt) ?? Infinity);
+      }
+    });
+  }, [initialEvents, query, statusFilter, sort]);
 
   // Restore the last-used view after mount (avoids SSR/client hydration mismatch).
   useEffect(() => {
@@ -65,6 +91,9 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
   }
 
   function actions(ev: EventResponse) {
+    // Publish / Archive / Delete are Admin-only (docs/00 §5, docs/03 §4.4).
+    // Sub-admins and Handlers navigate into the event workspace via the card link — no lifecycle buttons.
+    if (!isAdmin) return null;
     return (
       <>
         {ev.status === "DRAFT" && (
@@ -89,18 +118,49 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <SearchInput value={query} onChange={setQuery} placeholder="Search events…" className="min-w-[200px] flex-1" />
+        <Select
+          value={statusFilter}
+          onChange={(v) => setStatusFilter(v as EventStatus | "ALL")}
+          aria-label="Filter by status"
+          className="w-auto min-w-[8.5rem]"
+          options={[
+            { value: "ALL", label: "All statuses" },
+            { value: "DRAFT", label: "Draft" },
+            { value: "PUBLIC", label: "Public" },
+            { value: "ARCHIVED", label: "Archived" },
+          ]}
+        />
+        <Select
+          value={sort}
+          onChange={(v) => setSort(v as EventSort)}
+          aria-label="Sort events"
+          className="w-auto min-w-[10rem]"
+          options={EVENT_SORTS}
+        />
         <ViewToggle view={view} onChange={pickView} />
-        <Button onClick={() => setModalOpen(true)}>Create Event</Button>
+        {isAdmin && <Button onClick={() => router.push("/events/new")}>Create Event</Button>}
       </div>
 
       {initialEvents.length === 0 ? (
+        <div className="rounded-[var(--r)] border border-[var(--bo)] bg-[var(--ca)] px-4 py-12 text-center shadow-[var(--sh)]">
+          <p className="text-[13px] font-semibold text-[var(--t2)]">
+            {isAdmin ? "No events yet." : "No events assigned to you yet."}
+          </p>
+          {!isAdmin && (
+            <p className="mt-1 text-[12px] text-[var(--t3)]">
+              Ask an admin to assign you to an event.
+            </p>
+          )}
+        </div>
+      ) : events.length === 0 ? (
         <div className="rounded-[var(--r)] border border-[var(--bo)] bg-[var(--ca)] px-4 py-12 text-center text-[13px] text-[var(--t3)] shadow-[var(--sh)]">
-          No events yet.
+          No events match your search.
         </div>
       ) : view === "grid" ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {initialEvents.map((ev) => (
+          {events.map((ev) => (
             <EventCard key={ev.id} ev={ev} actions={actions(ev)} />
           ))}
         </div>
@@ -117,7 +177,7 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
               </tr>
             </thead>
             <tbody>
-              {initialEvents.map((ev) => (
+              {events.map((ev) => (
                 <tr key={ev.id} className="border-b border-[var(--bo)] last:border-0 transition-colors hover:bg-[var(--sidebar-hover)]">
                   <td className="px-4 py-3 text-[13px] font-medium">
                     <Link href={`/events/${ev.id}`} className="flex items-center gap-2.5">
@@ -142,128 +202,7 @@ export function EventsManager({ initialEvents }: { initialEvents: EventResponse[
           </table>
         </div>
       )}
-
-      {modalOpen && (
-        <CreateEventDialog
-          onClose={() => setModalOpen(false)}
-          onCreated={() => { setModalOpen(false); router.refresh(); }}
-        />
-      )}
     </div>
-  );
-}
-
-/**
- * Create-event modal. Holds ALL form state locally so a keystroke re-renders only this small
- * component — never the parent EventsManager (and its event list). Re-rendering the parent on every
- * keystroke is what stole focus back to the first field; isolating state here fixes it for good.
- * Mounted only while open, so it resets cleanly on each open.
- */
-function CreateEventDialog({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
-  const [title, setTitle] = useState("");
-  const [venue, setVenue] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [cover, setCover] = useState("a");
-  const [startsAt, setStartsAt] = useState("");
-  const [endsAt, setEndsAt] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [pending, setPending] = useState(false);
-
-  async function onCreate(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setPending(true);
-    try {
-      await createEvent({
-        title,
-        venue: venue || undefined,
-        description: description || undefined,
-        category: category || undefined,
-        capacity: capacity ? Number(capacity) : undefined,
-        coverGradient: cover,
-        startsAt: startsAt ? new Date(startsAt).toISOString() : undefined,
-        endsAt: endsAt ? new Date(endsAt).toISOString() : undefined,
-      });
-      onCreated();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not create event.");
-      setPending(false);
-    }
-  }
-
-  return (
-    <Dialog open onClose={onClose} titleId="create-event-title">
-      <h2 id="create-event-title" className="text-[15px] font-bold tracking-[-0.01em] text-[var(--t1)]">
-        Create Event
-      </h2>
-      <p className="mt-1 text-[13px] text-[var(--t2)]">It starts as a draft — publish it when ready.</p>
-      <form onSubmit={onCreate} className="mt-4 space-y-4">
-        <div>
-          <Label htmlFor="title">Title</Label>
-          <Input id="title" required value={title} onChange={(e) => setTitle(e.target.value)} />
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="venue">Venue</Label>
-            <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Conference" />
-          </div>
-        </div>
-        <div>
-          <Label htmlFor="capacity">Capacity</Label>
-          <Input id="capacity" type="number" min={0} value={capacity}
-                 onChange={(e) => setCapacity(e.target.value)} placeholder="Unlimited" />
-        </div>
-        <div>
-          <Label>Cover</Label>
-          <div className="flex gap-2">
-            {COVER_KEYS.map((k) => (
-              <button type="button" key={k} aria-label={`Cover ${k}`} onClick={() => setCover(k)}
-                      className="h-8 w-12 rounded-[8px] transition-transform"
-                      style={{
-                        background: coverGradient(k),
-                        outline: cover === k ? "2px solid var(--primary)" : "none",
-                        outlineOffset: 2,
-                      }} />
-            ))}
-          </div>
-        </div>
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="w-full rounded-[var(--rs)] border border-[var(--bo)] bg-[var(--ca)] px-3.5 py-2.5 text-[14px] text-[var(--t1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ac)] focus-visible:border-[var(--ac)]"
-          />
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="startsAt">Starts</Label>
-            <DateField id="startsAt" value={startsAt} onChange={setStartsAt} />
-          </div>
-          <div>
-            <Label htmlFor="endsAt">Ends</Label>
-            <DateField id="endsAt" value={endsAt} onChange={setEndsAt} />
-          </div>
-        </div>
-        {error && <p className="text-[13px] font-medium text-[var(--ac-2)]" role="alert">{error}</p>}
-        <div className="flex justify-end gap-2 pt-1">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={pending}>
-            {pending ? "Creating…" : "Create Event"}
-          </Button>
-        </div>
-      </form>
-    </Dialog>
   );
 }
 

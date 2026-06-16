@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +28,36 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     Page<Event> findByTitleContainingIgnoreCase(String title, Pageable pageable);
 
     /**
-     * Events visible to a non-admin caller (docs/03 §4.4: "assigned only — service-scoped").
-     * In M2 the only relation a member can have to an event is having created it; the full
-     * {@code event_assignment} join (MANAGER/HANDLER) is wired in M3.
+     * Events visible to a non-admin member (M3): events where the caller holds any assignment
+     * (MANAGER or HANDLER) in {@code event_assignment}. Replaces the M2 createdBy stub.
+     * The explicit countQuery lets Spring Data paginate correctly when the driving table is Event.
      */
-    Page<Event> findByCreatedBy(UUID createdBy, Pageable pageable);
+    @Query(value = """
+            select e from Event e
+            where e.id in (select a.eventId from EventAssignment a where a.userId = :userId)
+            """,
+           countQuery = """
+            select count(e) from Event e
+            where e.id in (select a.eventId from EventAssignment a where a.userId = :userId)
+            """)
+    Page<Event> findByAssignedUserId(@Param("userId") UUID userId, Pageable pageable);
+
+    /**
+     * Same as {@link #findByAssignedUserId} with an additional title filter for search.
+     */
+    @Query(value = """
+            select e from Event e
+            where e.id in (select a.eventId from EventAssignment a where a.userId = :userId)
+            and lower(e.title) like lower(concat('%', :query, '%'))
+            """,
+           countQuery = """
+            select count(e) from Event e
+            where e.id in (select a.eventId from EventAssignment a where a.userId = :userId)
+            and lower(e.title) like lower(concat('%', :query, '%'))
+            """)
+    Page<Event> findByAssignedUserIdAndTitleContaining(@Param("userId") UUID userId,
+                                                       @Param("query") String query,
+                                                       Pageable pageable);
 
     // ---- Admin Command Center dashboard (docs/03 §4.13, docs/06 §11) --------
 

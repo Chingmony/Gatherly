@@ -8,6 +8,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+# Degraded-tolerant readiness (docs/08, mirrors application-local.yml): integration tests that don't
+# stand up GreenMail must not see /actuator/health flip to 503 just because SMTP is unreachable.
+management:
+  health:
+    mail:
+      enabled: false
+
 gatherly:
   auth:
     cookie:

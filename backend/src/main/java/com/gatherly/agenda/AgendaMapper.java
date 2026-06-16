@@ -10,6 +10,6 @@ public final class AgendaMapper {
     }
 
     public static AgendaItemResponse toResponse(AgendaItem i) {
-        return new AgendaItemResponse(i.getId(), i.getTitle(), i.getStartsAt(), i.getEndsAt(), i.getPosition());
+        return new AgendaItemResponse(i.getId(), i.getTitle(), i.getSection(), i.getStartsAt(), i.getEndsAt(), i.getPosition());
     }
 }

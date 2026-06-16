@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Optional;
 
 /**
  * Authentication flows (docs/03 §2.3, docs/06 §3): login, refresh-rotation, logout, and the
@@ -131,17 +130,20 @@ public class AuthService {
     // ---- Forgot-password (OTP) ----------------------------------------------
 
     /**
-     * Email a one-time code. Always succeeds from the caller's view (no account enumeration,
-     * docs/04 §3.5). Works for an {@code ACTIVE} account (password reset) and for a
+     * Email a one-time code. Works for an {@code ACTIVE} account (password reset) and for a
      * {@code PENDING_ACTIVATION} account (resend the invite code) — the latter fixes the dead-end
      * where an invited-but-not-activated user had no way to (re)request their code.
+     *
+     * <p>Gatherly is a single-organization, invite-only tool (no public self-signup). When the email
+     * has no resettable organizer account we deliberately surface {@code ACCOUNT_NOT_FOUND} so the
+     * UI can direct the person to contact an admin organizer, rather than the generic anti-enumeration
+     * {@code 202} a public-facing product would use (docs/04 §3.5).
      */
     public void forgotPassword(String email) {
-        Optional<User> found = users.findByEmailIgnoreCase(email).filter(this::isResettable);
-        if (found.isEmpty()) {
-            return; // do not reveal whether the account exists
-        }
-        User user = found.get();
+        User user = users.findByEmailIgnoreCase(email).filter(this::isResettable)
+                .orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND,
+                        "No organizer account is registered for this email. This tool is for internal "
+                                + "organizers — please contact your admin organizer to be invited."));
         boolean pending = user.getStatus() == UserStatus.PENDING_ACTIVATION;
         try {
             if (pending) {

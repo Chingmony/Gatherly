@@ -68,7 +68,7 @@ Criticals (T4, T12) are covered by the authorization test matrix ([`09` §2.3](0
 - Access JWT short-lived (15 min); refresh long-lived (7 d), **rotated**, hashed at rest, reuse ⇒ chain revoke.
 - Cookies `httpOnly; Secure; SameSite=Strict`; access cookie path-scoped to API, refresh to the refresh endpoint.
 - Logout + password reset revoke refresh tokens.
-- OTP: 6-digit, hashed in Redis, single-use, TTL 300 s, ≤ 5 attempts, resend cooldown; forgot-password always returns `202` (no enumeration). Full lifecycle in [`04` §3](04-external-integrations.md).
+- OTP: 6-digit, hashed in Redis, single-use, TTL 300 s, ≤ 5 attempts, resend cooldown; forgot-password returns `202` for a known account or `404 ACCOUNT_NOT_FOUND` for an unknown email — Gatherly is invite-only, so the UI directs unknown emails to contact an admin rather than hiding existence; per-IP rate limiting bounds enumeration. Full lifecycle in [`04` §3.5](04-external-integrations.md).
 - CSRF: `SameSite=Strict` mitigates; add double-submit CSRF token for cookie-auth mutations if any cross-site trigger path exists.
 
 ## 6. Input, abuse & transport

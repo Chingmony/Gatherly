@@ -130,6 +130,7 @@ export type UpdateEventBody = CreateEventBody;
 export interface AgendaItemResponse {
   id: string;
   title: string;
+  section?: string | null;
   startsAt?: string;
   endsAt?: string;
   position: number;
@@ -143,6 +144,7 @@ export interface AgendaResponse {
 /** A single agenda line submitted on replace — order is the array index. */
 export interface AgendaItemInput {
   title: string;
+  section?: string;
   startsAt?: string;
   endsAt?: string;
 }
@@ -154,6 +156,7 @@ export interface UpdateAgendaBody {
 /** A built-in/custom agenda template item ([{title, durationMin, order}], docs/02 §6/§3.8). */
 export interface AgendaTemplateItem {
   title: string;
+  section?: string;
   durationMin?: number;
   order?: number;
 }
@@ -415,7 +418,7 @@ export interface CommandCenterResponse {
 
 // ---- Storage presign (docs/04 §4.4) ---------------------------------------
 
-export type StoragePurpose = "ORG_LOGO" | "ORG_BANNER" | "USER_AVATAR";
+export type StoragePurpose = "ORG_LOGO" | "ORG_BANNER" | "EVENT_COVER" | "USER_AVATAR";
 
 export interface PresignBody {
   purpose: StoragePurpose;

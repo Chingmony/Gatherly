@@ -22,7 +22,10 @@ function localToIso(local: string): string | undefined {
   return isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
-interface Row { title: string; startsAt: string; endsAt: string }
+interface Row { title: string; section: string; startsAt: string; endsAt: string }
+
+/** Suggested track labels for the Schedule view (free text — the datalist is only a shortcut). */
+const SECTION_SUGGESTIONS = ["Main Stage", "Workshop", "Break", "Networking", "Check-in", "Panel", "Social"];
 
 /** Agenda tab (docs/03 §4.4): apply a template, reorder/edit sessions, full-replace save. */
 export function AgendaEditor({
@@ -30,7 +33,9 @@ export function AgendaEditor({
 }: { event: EventResponse; agenda: AgendaResponse; templates: AgendaTemplateResponse[] }) {
   const router = useRouter();
   const [rows, setRows] = useState<Row[]>(
-    agenda.items.map((i) => ({ title: i.title, startsAt: isoToLocal(i.startsAt), endsAt: isoToLocal(i.endsAt) })),
+    agenda.items.map((i) => ({
+      title: i.title, section: i.section ?? "", startsAt: isoToLocal(i.startsAt), endsAt: isoToLocal(i.endsAt),
+    })),
   );
   const [templateId, setTemplateId] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -49,7 +54,7 @@ export function AgendaEditor({
         e = isoToLocal(end.toISOString());
         cursor = end;
       }
-      return { title: it.title, startsAt: s, endsAt: e };
+      return { title: it.title, section: it.section ?? "", startsAt: s, endsAt: e };
     }));
     setMsg({ ok: true, text: `Applied “${tpl.name}” — review and save.` });
   }
@@ -60,7 +65,8 @@ export function AgendaEditor({
     try {
       await saveAgenda(event.id, {
         items: rows.filter((r) => r.title.trim()).map((r) => ({
-          title: r.title.trim(), startsAt: localToIso(r.startsAt), endsAt: localToIso(r.endsAt),
+          title: r.title.trim(), section: r.section.trim() || undefined,
+          startsAt: localToIso(r.startsAt), endsAt: localToIso(r.endsAt),
         })),
       });
       setMsg({ ok: true, text: "Agenda saved." });
@@ -95,6 +101,13 @@ export function AgendaEditor({
             <div className="flex items-start gap-2">
               <div className="flex-1 space-y-2">
                 <Input placeholder={`Item ${idx + 1}`} value={row.title} onChange={(e) => set(idx, { title: e.target.value })} />
+                <Input
+                  list="agenda-sections"
+                  placeholder="Section (e.g. Main Stage) — optional"
+                  value={row.section}
+                  onChange={(e) => set(idx, { section: e.target.value })}
+                  aria-label="Section"
+                />
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <DateField value={row.startsAt} onChange={(v) => set(idx, { startsAt: v })} aria-label="Start" />
                   <DateField value={row.endsAt} onChange={(v) => set(idx, { endsAt: v })} aria-label="End" />
@@ -109,9 +122,12 @@ export function AgendaEditor({
           </div>
         ))}
       </div>
+      <datalist id="agenda-sections">
+        {SECTION_SUGGESTIONS.map((s) => <option key={s} value={s} />)}
+      </datalist>
       {msg && <p role={msg.ok ? "status" : "alert"} className={`text-[13px] font-semibold ${msg.ok ? "text-[var(--green-600)]" : "text-[var(--danger)]"}`}>{msg.text}</p>}
       <div className="flex justify-between">
-        <Button type="button" variant="ghost" size="sm" onClick={() => setRows((r) => [...r, { title: "", startsAt: "", endsAt: "" }])}>+ Add item</Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => setRows((r) => [...r, { title: "", section: "", startsAt: "", endsAt: "" }])}>+ Add item</Button>
         <Button type="button" disabled={saving} onClick={onSave}>{saving ? "Saving…" : "Save agenda"}</Button>
       </div>
     </div>

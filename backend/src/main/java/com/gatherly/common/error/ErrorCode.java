@@ -20,6 +20,12 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN),
 
     NOT_FOUND(HttpStatus.NOT_FOUND),
+    /**
+     * Forgot-password was asked for an email with no organizer account. Gatherly is a
+     * single-organization, invite-only tool (no public self-signup), so we intentionally tell the
+     * caller to contact an admin rather than hiding existence (docs/04 §3.5).
+     */
+    ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND),
 
     CONFLICT(HttpStatus.CONFLICT),
     ALREADY_CHECKED_IN(HttpStatus.CONFLICT),

@@ -39,8 +39,12 @@ public class EventService {
     // ---- Read (service-scoped, docs/03 §4.4) --------------------------------
 
     /**
-     * List events the caller may see: Admin sees all; a member sees only events they are related to
-     * (M2: events they created; M3 extends this to {@code event_assignment} membership).
+     * List events the caller may see.
+     * <ul>
+     *   <li>Admin — sees every event (optionally filtered by title search).</li>
+     *   <li>Member (Sub-admin / Handler) — sees only events they are assigned to via
+     *       {@code event_assignment} (M3). Search is applied within that scoped set.</li>
+     * </ul>
      */
     @Transactional(readOnly = true)
     public Page<Event> list(String query, Pageable pageable, UserPrincipal principal) {
@@ -52,7 +56,9 @@ public class EventService {
                     : events.findByTitleContainingIgnoreCase(query, pageable);
         }
         UUID me = principal == null ? null : principal.id();
-        return events.findByCreatedBy(me, pageable);
+        return (query == null || query.isBlank())
+                ? events.findByAssignedUserId(me, pageable)
+                : events.findByAssignedUserIdAndTitleContaining(me, query, pageable);
     }
 
     @PreAuthorize("@eventSecurity.canView(#eventId, authentication)")

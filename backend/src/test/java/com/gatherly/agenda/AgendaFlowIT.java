@@ -80,11 +80,13 @@ class AgendaFlowIT extends AbstractIntegrationTest {
 
         HttpResponse<String> put = admin.put("/api/v1/events/" + eventId + "/agenda", """
                 {"items":[
-                  {"title":"Welcome","startsAt":"2026-09-01T09:00:00Z","endsAt":"2026-09-01T09:30:00Z"},
-                  {"title":"Keynote","startsAt":"2026-09-01T09:30:00Z","endsAt":"2026-09-01T10:15:00Z"}
+                  {"title":"Welcome","section":"Check-in","startsAt":"2026-09-01T09:00:00Z","endsAt":"2026-09-01T09:30:00Z"},
+                  {"title":"Keynote","section":"Main Stage","startsAt":"2026-09-01T09:30:00Z","endsAt":"2026-09-01T10:15:00Z"}
                 ]}""");
         assertThat(put.statusCode()).isEqualTo(200);
         assertThat(put.body()).contains("Welcome").contains("Keynote").contains("\"position\":0").contains("\"position\":1");
+        // The organizer-set section round-trips on the response.
+        assertThat(put.body()).contains("\"section\":\"Check-in\"").contains("\"section\":\"Main Stage\"");
 
         HttpResponse<String> get = admin.get("/api/v1/events/" + eventId + "/agenda");
         assertThat(get.statusCode()).isEqualTo(200);

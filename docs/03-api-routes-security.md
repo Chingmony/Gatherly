@@ -34,7 +34,7 @@
 | Login | `POST /auth/login` | verify BCrypt password, reject INACTIVE → set access + refresh cookies |
 | Refresh (rotation) | `POST /auth/refresh` | validate refresh hash → revoke old, issue new pair; **reuse of a revoked token revokes the whole chain** |
 | Logout | `POST /auth/logout` | revoke active refresh, clear cookies |
-| Forgot password | `POST /auth/forgot-password` | issue OTP to Redis (TTL) — see [`04`](04-external-integrations.md) |
+| Forgot password | `POST /auth/forgot-password` | issue OTP to Redis (TTL); unknown email → `404 ACCOUNT_NOT_FOUND` (invite-only, see [`04` §3.5](04-external-integrations.md)) |
 | Verify OTP | `POST /auth/verify-otp` | validate Redis OTP, return short-lived reset grant |
 | Set / reset password | `POST /auth/reset-password` | consume single-use grant, set new BCrypt hash; if `PENDING_ACTIVATION` flip `→ACTIVE` (invite activation), else revoke all refresh tokens. One path for both invite-activation and password-reset. |
 

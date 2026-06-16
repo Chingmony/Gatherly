@@ -74,6 +74,24 @@ class StoragePresignIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void adminCanPresignEventCover() {
+        HttpTestClient admin = client("admin@gatherly.test", ADMIN_PW);
+        HttpResponse<String> res = admin.post("/api/v1/storage/presign",
+                "{\"purpose\":\"EVENT_COVER\",\"contentType\":\"image/jpeg\",\"sizeBytes\":4096}");
+        assertThat(res.statusCode()).isEqualTo(200);
+        assertThat(res.body()).contains("\"objectKey\":\"event/cover/");
+    }
+
+    @Test
+    void memberCannotPresignEventCover() {
+        HttpTestClient member = client("member@gatherly.test", MEMBER_PW);
+        HttpResponse<String> res = member.post("/api/v1/storage/presign",
+                "{\"purpose\":\"EVENT_COVER\",\"contentType\":\"image/png\",\"sizeBytes\":2048}");
+        assertThat(res.statusCode()).isEqualTo(403);
+        assertThat(res.body()).contains("FORBIDDEN");
+    }
+
+    @Test
     void unsupportedContentTypeIsRejected() {
         HttpTestClient admin = client("admin@gatherly.test", ADMIN_PW);
         HttpResponse<String> res = admin.post("/api/v1/storage/presign",
