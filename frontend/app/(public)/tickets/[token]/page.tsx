@@ -161,7 +161,7 @@ export default function TicketPortalPage() {
               ? "This ticket link is invalid or has expired. Double-check the link in your email."
               : "We couldn't load your ticket. Please try again in a moment."}
           </p>
-          <Link href="/explore" className="text-sm font-semibold mt-1" style={{ color: "var(--primary-hex,#6366f1)" }}>
+          <Link href="/" className="text-sm font-semibold mt-1" style={{ color: "var(--primary-hex,#6366f1)" }}>
             Browse events
           </Link>
         </div>
@@ -333,7 +333,7 @@ export default function TicketPortalPage() {
         <p className="text-center text-xs" style={{ color: "var(--text-faint)" }}>
           Powered by{" "}
           <Link
-            href="/explore"
+            href="/"
             style={{ color: "var(--primary-hex,#6366f1)", textDecoration: "none", fontWeight: 600 }}
           >
             Gatherly

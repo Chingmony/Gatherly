@@ -122,6 +122,9 @@ export default function SettingsPage() {
     try {
       await changePassword({ currentPassword: pwForm.current, newPassword: pwForm.next });
 
+
+
+
       setPwSaved(true);
       setPwForm({ current: "", next: "", confirm: "" });
       setTimeout(() => setPwSaved(false), 2200);

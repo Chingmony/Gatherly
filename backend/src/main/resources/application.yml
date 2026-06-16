@@ -52,6 +52,7 @@ server:
   port: 9091
   # No servlet context-path: the /api/v1 prefix is applied to controllers via WebMvcConfig so that
   # Swagger UI (springdoc, outside the controller package) stays at the root (/swagger-ui/...).
+  address: 0.0.0.0
 
 management:
   endpoints:
@@ -125,4 +126,4 @@ app:
     register-per-minute: ${RATE_LIMIT_REGISTER:20}
 
   cors:
-    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000,http://192.168.79.1:3000}

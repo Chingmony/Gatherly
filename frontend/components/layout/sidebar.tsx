@@ -89,17 +89,24 @@ export function Sidebar({ role }: SidebarProps) {
           const sharedCls = cn(
             "flex items-center gap-3 px-[13px] py-[11px] my-0.5 rounded-[var(--radius-md)] text-[14.5px] font-semibold transition-all duration-150 relative whitespace-nowrap group w-full text-left",
             active
-              ? "bg-[var(--primary-soft)] text-[var(--primary-hex,#6366f1)]"
+              ? "bg-[var(--pink-soft)] text-[var(--pink)]"
               : "text-[var(--text-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
           );
           const iconSpan = (
             <span
               className="flex w-5 h-5 flex-shrink-0 transition-colors duration-150"
-              style={{ color: active ? "var(--primary-hex,#6366f1)" : "var(--text-faint)" }}
+              style={{ color: active ? "var(--pink)" : "var(--text-faint)" }}
             >
               <Icon size={19} />
             </span>
           );
+          // Ventixe-style pink indicator bar on the active row's left edge
+          const indicator = active ? (
+            <span
+              className="absolute left-0 top-1/2 -translate-y-1/2 h-[22px] w-[3px] rounded-r-full"
+              style={{ background: "var(--pink)" }}
+            />
+          ) : null;
 
           if (item.id === "logout") {
             return (
@@ -112,6 +119,7 @@ export function Sidebar({ role }: SidebarProps) {
                   router.push("/login");
                 }}
               >
+                {indicator}
                 {iconSpan}
                 <span className="flex-1">{item.label}</span>
               </button>
@@ -120,6 +128,7 @@ export function Sidebar({ role }: SidebarProps) {
 
           return (
             <Link key={item.id} href={href} className={sharedCls}>
+              {indicator}
               {iconSpan}
               <span className="flex-1">{item.label}</span>
               {item.id === "events" && role === "subadmin" && (
@@ -134,15 +143,15 @@ export function Sidebar({ role }: SidebarProps) {
       <div
         className="m-3.5 p-5 rounded-[var(--radius-lg)] text-center relative overflow-hidden"
         style={{
-          background: "linear-gradient(150deg, #eef0ff 0%, #f3edff 40%, #e7f8ef 100%)",
+          background: "linear-gradient(150deg, #fdecf5 0%, #f3edff 50%, #eef0ff 100%)",
         }}
       >
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            opacity: 0.5,
+            opacity: 0.55,
             background:
-              "radial-gradient(80px 60px at 80% 20%, rgba(99,102,241,.25), transparent)",
+              "radial-gradient(80px 60px at 80% 20%, rgba(236,72,153,.28), transparent)",
           }}
         />
         <div className="relative">
@@ -158,7 +167,7 @@ export function Sidebar({ role }: SidebarProps) {
           <h4
             className="text-[15px] font-extrabold m-0 mb-1.5"
             style={{
-              background: "linear-gradient(90deg, var(--primary-hex,#6366f1), var(--green-600))",
+              background: "linear-gradient(90deg, var(--pink), var(--violet))",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -166,9 +175,20 @@ export function Sidebar({ role }: SidebarProps) {
           >
             You're signed in as {r.label}
           </h4>
-          <p className="text-xs leading-relaxed m-0" style={{ color: "var(--text-muted)" }}>
+          <p className="text-xs leading-relaxed m-0 mb-3.5" style={{ color: "var(--text-muted)" }}>
             {r.sub} · permissions adapt to your role across every screen.
           </p>
+          {/* Ventixe-style pink gradient pill button */}
+          <Link
+            href="/settings"
+            className="inline-flex items-center justify-center w-full text-[13px] font-extrabold px-4 py-2.5 rounded-full text-white transition-all duration-150 hover:brightness-105"
+            style={{
+              background: "linear-gradient(90deg, var(--pink), var(--violet))",
+              boxShadow: "0 8px 20px rgba(236,72,153,0.30)",
+            }}
+          >
+            Manage Access
+          </Link>
         </div>
       </div>
     </aside>

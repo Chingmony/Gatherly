@@ -9,6 +9,15 @@ frontend/.env.production
 frontend/.env*.local
 frontend/next-env.d.ts
 
+# next-pwa / workbox generated service-worker artifacts (do not commit — they
+# precache hashed chunks and will serve stale bundles in dev)
+frontend/public/sw.js
+frontend/public/sw.js.map
+frontend/public/workbox-*.js
+frontend/public/workbox-*.js.map
+frontend/public/swe-worker-*.js
+frontend/public/fallback-*.js
+
 # ── Local AI tooling (skills, Claude agents) ──────────────────────────────────
 frontend/.agents/
 frontend/.claude/skills/
