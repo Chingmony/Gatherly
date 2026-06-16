@@ -157,7 +157,7 @@ export default function RegisterPage() {
             </p>
           </div>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/explore"><LayoutGrid size={15} /> Browse events</Link>
+            <Link href="/"><LayoutGrid size={15} /> Browse events</Link>
           </Button>
         </div>
       </Shell>
@@ -268,7 +268,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="flex-1" />
         <ThemeToggle />
         <Button asChild variant="ghost" size="sm">
-          <Link href="/explore"><LayoutGrid size={15} /> All events</Link>
+          <Link href="/"><LayoutGrid size={15} /> All events</Link>
         </Button>
         <Button asChild variant="ghost" size="sm">
           <Link href="/dashboard"><ChevronLeft size={15} /> Back to app</Link>
@@ -717,7 +717,7 @@ function AgendaCard() {
 /* ─────────────────────────── Success screen ─────────────────────────── */
 function SuccessScreen({ event, result }: { event: PublicEvent; result: RegistrationResult }) {
   const token = useMemo(() => tokenFromTicketUrl(result.ticketUrl), [result.ticketUrl]);
-  const ticketPath = token ? `/tickets/${token}` : "/explore";
+  const ticketPath = token ? `/tickets/${token}` : "/";
 
   // Fetch the real QR the backend rendered for this ticket (the on-screen fallback to the email).
   const [ticket, setTicket] = useState<PublicTicket | null>(null);
@@ -798,7 +798,7 @@ function SuccessScreen({ event, result }: { event: PublicEvent; result: Registra
             <Link href={ticketPath}><Ticket size={16} /> View my ticket</Link>
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/explore">Explore more events</Link>
+            <Link href="/">Explore more events</Link>
           </Button>
         </div>
       </div>
