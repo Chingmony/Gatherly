@@ -97,8 +97,8 @@ services:
         RUSTFS_ADDRESS: 0.0.0.0:9000
         RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
         RUSTFS_CONSOLE_ENABLE: "true"
-        RUSTFS_ROOT_USER: admin
-        RUSTFS_ROOT_PASSWORD: admin123
+        RUSTFS_ROOT_USER: rustfsadmin
+        RUSTFS_ROOT_PASSWORD: rustfsadmin
     volumes:
       - rustfs_data:/data
     healthcheck:
