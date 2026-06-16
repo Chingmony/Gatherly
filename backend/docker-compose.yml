@@ -27,14 +27,14 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       # Rustfs (S3-compatible object storage)
-      - RUSTFS_ENDPOINT=http://96.9.81.187:9000
+      - RUSTFS_ENDPOINT=http://rustfs:9000
       - RUSTFS_REGION=us-east-1
       - RUSTFS_ACCESS_KEY=admin
       - RUSTFS_SECRET_KEY=admin123
       - RUSTFS_BUCKET=gatherly
       # App
-      - APP_PUBLIC_BASE_URL=https://gatherly-cyan.vercel.app
-      - CORS_ALLOWED_ORIGIN=https://gatherly-cyan.vercel.app
+      - APP_PUBLIC_BASE_URL=http://localhost:3000
+      - CORS_ALLOWED_ORIGIN=http://localhost:3000
       # Keep non-critical integrations quiet for local container runs
       - EMAIL_ENABLED=true
       - TELEGRAM_ENABLED=true
