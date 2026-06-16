@@ -1,11 +1,26 @@
 ---
 name: "senior-qa"
-description: Generates unit tests, integration tests, and E2E tests for React/Next.js applications. Scans components to create Jest + React Testing Library test stubs, analyzes Istanbul/LCOV coverage reports to surface gaps, scaffolds Playwright test files from Next.js routes, mocks API calls with MSW, creates test fixtures, and configures test runners. Use when the user asks to "generate tests", "write unit tests", "analyze test coverage", "scaffold E2E tests", "set up Playwright", "configure Jest", "implement testing patterns", or "improve test quality".
+description: Generates unit tests, integration tests, and E2E tests for the Gatherly Next.js frontend. Scans components to create Vitest + React Testing Library test stubs, analyzes coverage reports to surface gaps, scaffolds Playwright test files from App Router routes, mocks API calls with MSW, creates test fixtures, and configures test runners. Use when the user asks to "generate tests", "write unit tests", "analyze test coverage", "scaffold E2E tests", "set up Playwright", "implement testing patterns", or "improve test quality".
 ---
 
 # Senior QA Engineer
 
-Test automation, coverage analysis, and quality assurance patterns for React and Next.js applications.
+Test automation, coverage analysis, and quality assurance patterns for the Gatherly Next.js frontend.
+
+---
+
+## Gatherly project conventions (read first)
+
+This repo uses **Vitest 2**, not Jest. Apply these overrides to every snippet/script below:
+
+- Test runner: **Vitest** (`frontend/`). Run `npm test`, `npm run test:coverage`, `npm run test:ui` — never `jest`.
+- Use `vi.fn()` / `vi.mock()` — not `jest.fn()` / `jest.mock()`.
+- Coverage config lives in **`vitest.config.ts`** (`test.coverage`), not `jest.config.js`.
+- **MSW v2** API: import `http` + `HttpResponse` (not `rest`).
+- E2E: **Playwright** via `npm run e2e`. App Router routes live under `frontend/src/app/`.
+- Mirror backend DTOs with **Zod**; test that form validation matches the server contract.
+- The generator scripts emit Jest-style stubs — convert `jest.*`→`vi.*` and add Vitest imports after generating.
+- Broader test strategy (pyramid, Testcontainers, release-blocking auth matrix) is in `docs/09-testing-strategy.md`.
 
 ---
 
@@ -114,6 +129,7 @@ python scripts/test_suite_generator.py src/components/ --output __tests__/
 **Step 3: Review and customize generated tests**
 ```typescript
 // __tests__/Button.test.tsx (generated)
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Button } from '../src/components/Button';
 
@@ -124,7 +140,7 @@ describe('Button', () => {
   });
 
   it('calls onClick when clicked', () => {
-    const handleClick = jest.fn();
+    const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click</Button>);
     fireEvent.click(screen.getByRole('button'));
     expect(handleClick).toHaveBeenCalledTimes(1);
@@ -136,7 +152,7 @@ describe('Button', () => {
 
 **Step 4: Run tests and check coverage**
 ```bash
-npm test -- --coverage
+npm run test:coverage
 python scripts/coverage_analyzer.py coverage/coverage-final.json
 ```
 
@@ -148,7 +164,7 @@ Use when improving test coverage or preparing for release.
 
 **Step 1: Generate coverage report**
 ```bash
-npm test -- --coverage --coverageReporters=json
+npm run test:coverage   # configure JSON reporter in vitest.config.ts test.coverage.reporter
 ```
 
 **Step 2: Analyze coverage gaps**
@@ -168,7 +184,7 @@ python scripts/test_suite_generator.py src/ --uncovered-only --output __tests__/
 
 **Step 5: Verify improvement**
 ```bash
-npm test -- --coverage
+npm run test:coverage
 python scripts/coverage_analyzer.py coverage/ --compare previous-coverage.json
 ```
 
@@ -267,12 +283,13 @@ await waitFor(() => {
 ### Mocking with MSW
 
 ```typescript
-import { rest } from 'msw';
+// MSW v2 API — http + HttpResponse (not the old `rest`)
+import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 
 const server = setupServer(
-  rest.get('/api/users', (req, res, ctx) => {
-    return res(ctx.json([{ id: 1, name: "john" }]));
+  http.get('/api/users', () => {
+    return HttpResponse.json([{ id: 1, name: 'john' }]);
   })
 );
 
@@ -293,19 +310,19 @@ page.getByText('Welcome')
 page.getByRole('listitem').filter({ hasText: 'Product' })
 ```
 
-### Coverage Thresholds (jest.config.js)
+### Coverage Thresholds (vitest.config.ts)
 
-```javascript
-module.exports = {
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+```typescript
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      thresholds: { branches: 80, functions: 80, lines: 80, statements: 80 },
     },
   },
-};
+});
 ```
 
 ---
@@ -313,19 +330,19 @@ module.exports = {
 ## Common Commands
 
 ```bash
-# Jest
-npm test                           # Run all tests
-npm test -- --watch                # Watch mode
-npm test -- --coverage             # With coverage
-npm test -- Button.test.tsx        # Single file
+# Vitest
+npm test                           # Run all tests (watch by default)
+npm run test:ui                    # Vitest UI
+npm run test:coverage              # vitest run --coverage
+npx vitest run Button.test.tsx     # Single file
 
 # Playwright
-npx playwright test                # Run all E2E tests
+npm run e2e                        # Run all E2E tests
 npx playwright test --ui           # UI mode
 npx playwright test --debug        # Debug mode
 npx playwright codegen             # Generate tests
 
 # Coverage
-npm test -- --coverage --coverageReporters=lcov,json
+npm run test:coverage
 python scripts/coverage_analyzer.py coverage/coverage-final.json
 ```

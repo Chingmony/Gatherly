@@ -6,10 +6,10 @@ import { LayoutDashboard, CheckSquare, QrCode, Settings } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const HANDLER_NAV = [
-  { href: "/dashboard",           label: "Dashboard", icon: LayoutDashboard },
-  { href: "/tasks",               label: "Tasks",     icon: CheckSquare },
-  { href: "/events/ev1/scanner",  label: "Scanner",   icon: QrCode },
-  { href: "/settings",            label: "Settings",  icon: Settings },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/tasks",     label: "Tasks",     icon: CheckSquare },
+  { href: "/scanner",   label: "Scanner",   icon: QrCode },
+  { href: "/settings",  label: "Settings",  icon: Settings },
 ];
 
 function isActive(pathname: string, href: string): boolean {

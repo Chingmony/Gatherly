@@ -1,11 +1,25 @@
 ---
 name: "senior-frontend"
-description: Frontend development skill for React, Next.js, TypeScript, and Tailwind CSS applications. Use when building React components, optimizing Next.js performance, analyzing bundle sizes, scaffolding frontend projects, implementing accessibility, or reviewing frontend code quality.
+description: Frontend development skill for the Gatherly Next.js frontend (Next.js 16 App Router, React 19, TypeScript strict, Tailwind + shadcn/ui). Use when building React components, optimizing Next.js performance, analyzing bundle sizes, implementing accessibility, or reviewing frontend code quality.
 ---
 
 # Senior Frontend
 
 Frontend development patterns, performance optimization, and automation tools for React/Next.js applications.
+
+## Gatherly project conventions (read first)
+
+This is an **existing** app in `frontend/` — skip the "Project Scaffolding" section below; we build inside the current project, not new ones. Apply these to all guidance:
+
+- **Next.js 16 App Router, React 19, TypeScript 5 strict** — no `any`, no implicit returns.
+- **Before any Next.js work, read the relevant doc in `frontend/node_modules/next/dist/docs/`** (see `frontend/AGENTS.md`) — training data lags the framework.
+- **Server Components by default**; add `"use client"` only for interactivity (state, effects, event handlers, browser APIs).
+- **UI: shadcn/ui + Tailwind only** — no other component library; compose classes with `cn()`.
+- **Forms: React Hook Form + Zod resolver.** Zod schemas mirror backend DTOs; validate against the same contract the API enforces.
+- **Config is `next.config.ts`** (TypeScript, not `next.config.js`); build is `next build --webpack`; output is `standalone`; PWA enabled.
+- **Images** come from Rustfs via presigned URLs — already allowed in `next.config.ts` `remotePatterns` (`http://localhost:9000/gatherly/**`); add new hosts there.
+- **Auth/routing**: `middleware.ts` guards by global role for UX only — never treat it as the security boundary (the backend `@PreAuthorize` is authoritative).
+- Spec: `docs/05-frontend-spec.md` for routing, form builder/renderer, and QR scanner.
 
 ## Table of Contents
 

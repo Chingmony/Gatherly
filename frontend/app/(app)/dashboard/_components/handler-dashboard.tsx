@@ -187,7 +187,7 @@ export function HandlerDashboard() {
       {/* Quick action cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Link
-          href={events[0] ? `/events/${events[0].id}/scanner` : "/events"}
+          href="/scanner"
           className="rounded-2xl p-4 flex items-center gap-4 min-h-[56px] transition-shadow hover:shadow-md active:opacity-80"
           style={{ background: "#fff", boxShadow: "var(--shadow-sm,0 1px 4px rgba(0,0,0,.06))" }}
         >

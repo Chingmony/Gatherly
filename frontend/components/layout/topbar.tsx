@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Sun, Moon, Bell, ChevronDown, User, LogOut } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { Sun, Moon, Bell, ChevronDown, User, LogOut, ArrowLeft } from "lucide-react";
 import { AvatarUser } from "@/components/ui/avatar-user";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/cn";
@@ -26,8 +26,13 @@ interface TopbarProps {
 
 export function Topbar({ role, title, subtitle }: TopbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const r = ROLE_META[role];
+
+  // Sub-pages (2+ path segments, e.g. /events/[id]/workspace) get a back button.
+  // Top-level destinations (/dashboard, /tasks, /scanner, /settings) are 1 segment.
+  const showBack = pathname.split("/").filter(Boolean).length >= 2;
   const [user, setUser] = useState<UserResponse | null>(null);
   const [userOpen, setUserOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -62,6 +67,13 @@ export function Topbar({ role, title, subtitle }: TopbarProps) {
         minHeight: 68,
       }}
     >
+      {/* Back button — shown on sub-pages */}
+      {showBack && (
+        <IconBtn onClick={() => router.back()} title="Go back" className="flex-shrink-0">
+          <ArrowLeft size={19} />
+        </IconBtn>
+      )}
+
       {/* Greeting */}
       <div className="flex-shrink-0">
         <p className="text-xs font-semibold m-0" style={{ color: "var(--text-muted)" }}>

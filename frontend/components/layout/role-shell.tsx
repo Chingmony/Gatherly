@@ -4,16 +4,22 @@ import { useEffect, useState } from "react";
 import { AppShell } from "./app-shell";
 import type { Role } from "@/lib/roles";
 
-export function RoleShell({ children }: { children: React.ReactNode }) {
-  // The server can't read sessionStorage, so the server render and the first client render must
-  // start from the SAME fixed role — otherwise the sidebar nav differs and React throws a
-  // hydration mismatch. We adopt the persisted role only after mount.
-  const [role, setRole] = useState<Role>("admin");
+function readRole(): Role {
+  const s = sessionStorage.getItem("gatherly_role") as Role | null;
+  return s === "subadmin" || s === "handler" ? s : "admin";
+}
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem("gatherly_role") as Role | null;
-    if (stored === "subadmin" || stored === "handler") setRole(stored);
-  }, []);
+export function RoleShell({ children }: { children: React.ReactNode }) {
+  // Role lives in sessionStorage (client-only). Rendering it during SSR would
+  // produce different chrome (sidebar items, mobile nav, FAB) than the client's
+  // first paint → hydration mismatch. Gate on mount: SSR and the client's first
+  // render both emit the neutral placeholder, so they agree.
+  const [role, setRole] = useState<Role | null>(null);
+  useEffect(() => setRole(readRole()), []);
+
+  if (role === null) {
+    return <div suppressHydrationWarning style={{ minHeight: "100vh", background: "var(--bg)" }} />;
+  }
 
   return <AppShell role={role}>{children}</AppShell>;
 }

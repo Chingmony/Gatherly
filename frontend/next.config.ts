@@ -16,8 +16,16 @@ const withPWA = withPWAInit({
 // and auth cookies stay same-origin (SameSite=Strict keeps working).
 const BACKEND_ORIGIN = process.env.BACKEND_ORIGIN ?? 'http://96.9.81.187:8083'
 
+// Extra dev origins (your LAN IP, an ngrok host) come from DEV_ORIGINS — a
+// comma-separated list — so personal/ephemeral values never get committed.
+// e.g. DEV_ORIGINS=192.168.1.50,abc123.ngrok-free.dev
+const devOrigins = (process.env.DEV_ORIGINS ?? '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean)
+
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['192.168.42.244'],
+  allowedDevOrigins: devOrigins,
   output: 'standalone',
   turbopack: {},
   async rewrites() {
@@ -34,6 +42,12 @@ const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/gatherly/**',
+      },
       {
         protocol: 'http',
         hostname: '96.9.81.187',
