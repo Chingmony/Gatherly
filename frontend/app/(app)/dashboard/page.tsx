@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Users, Calendar, QrCode, CheckSquare,
-  TrendingUp, AlertTriangle, Clock, Zap,
-  ArrowRight,
-} from "lucide-react";
+import { Users, Calendar, Clock, TrendingUp, Zap, ArrowRight, Eye } from "lucide-react";
 import Link from "next/link";
 import { StatTile } from "@/components/ui/stat-tile";
 import { PageHeader } from "@/components/ui/page-header";
@@ -16,215 +12,288 @@ import { Button } from "@/components/ui/button";
 import { ChipIco } from "@/components/ui/chip-ico";
 import type { Role } from "@/lib/roles";
 import { HandlerDashboard } from "./_components/handler-dashboard";
+import { listEvents, type AdminEvent } from "@/lib/api/events";
+import { ApiError } from "@/lib/api/client";
 
-const EVENTS = [
-  { id: "ev1", name: "NorthStar Leadership Summit", status: "live",      date: "Jun 18, 2026", registered: 842,  capacity: 1000, fillPct: 84 },
-  { id: "ev2", name: "Lumen Design Festival",       status: "published", date: "Jul 4, 2026",  registered: 5984, capacity: 8000, fillPct: 75 },
-  { id: "ev3", name: "DevConnect Winter",           status: "draft",     date: "Aug 22, 2026", registered: 0,    capacity: 500,  fillPct: 0  },
-  { id: "ev4", name: "Founders Circle — Q3",        status: "published", date: "Sep 10, 2026", registered: 210,  capacity: 300,  fillPct: 70 },
-];
+// Everything on this dashboard is derived from a single `listEvents()` call — the only authenticated
+// aggregate the backend exposes. Metrics that would require per-event fan-out (check-ins, tasks, a
+// live activity feed) are intentionally omitted; we only show what the events list can back honestly.
 
-const STATUS_VARIANTS: Record<string, { label: string; variant: "green" | "blue" | "gray" | "orange" | "primary" }> = {
-  live:      { label: "Live",      variant: "primary" },
-  published: { label: "Published", variant: "green" },
-  draft:     { label: "Draft",     variant: "gray" },
-  ended:     { label: "Ended",     variant: "orange" },
+// ── Shared helpers ────────────────────────────────────────────────────────────
+
+const EVENT_STATUS_VARIANTS: Record<string, { label: string; variant: "green" | "blue" | "gray" | "orange" | "primary" }> = {
+  PUBLIC:   { label: "Public",   variant: "green" },
+  DRAFT:    { label: "Draft",    variant: "gray" },
+  ARCHIVED: { label: "Archived", variant: "orange" },
 };
 
-const ISSUES = [
-  { icon: AlertTriangle, title: "Wi-Fi QA sweep flagged",     body: "Liam Carter — NorthStar Summit", when: "12m ago", bg: "var(--danger-soft)",  color: "var(--danger)" },
-  { icon: Clock,         title: "3 tasks overdue",            body: "DevConnect check-in setup",     when: "1h ago",  bg: "var(--orange-soft)", color: "var(--orange)" },
-  { icon: Zap,           title: "High registration velocity", body: "Lumen Festival +320 in 2h",    when: "2h ago",  bg: "var(--blue-soft)",   color: "var(--blue)" },
-  { icon: TrendingUp,    title: "Capacity milestone hit",     body: "Founders Circle — 70% sold",   when: "3h ago",  bg: "var(--green-soft)",  color: "var(--green-600)" },
-];
+function formatEventDate(iso: string | null): string {
+  if (!iso) return "Date TBD";
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
-const MANAGER_TASKS = [
-  { id: "t1", title: "Finalize event agenda",    event: "NorthStar Summit", status: "in-progress", due: "Jun 16" },
-  { id: "t2", title: "Confirm A/V vendor",       event: "NorthStar Summit", status: "todo",        due: "Jun 17" },
-  { id: "t3", title: "Review registration form", event: "Lumen Festival",   status: "done",        due: "Jun 12" },
-  { id: "t4", title: "Assign scanner handlers",  event: "NorthStar Summit", status: "todo",        due: "Jun 17" },
-];
+/** Fill rate as a 0–100 int, or null when the event is uncapped. */
+function fillPctOf(ev: AdminEvent): number | null {
+  const cap = ev.capacity ?? 0;
+  if (cap <= 0) return null;
+  return Math.min(100, Math.round(((ev.registeredCount ?? 0) / cap) * 100));
+}
 
-const TASK_VARIANT: Record<string, "blue" | "orange" | "green"> = { "in-progress": "blue", todo: "orange", done: "green" };
-const TASK_LABEL:   Record<string, string>                       = { "in-progress": "In Progress", todo: "To Do", done: "Done" };
+/** Indicator color for a fill-rate bar — green healthy, orange filling, danger at/near capacity. */
+function fillColor(pct: number): string {
+  if (pct >= 100) return "var(--danger)";
+  if (pct >= 80) return "var(--orange)";
+  return "var(--green-600)";
+}
 
-/* ── Admin: Command Center ── */
-function AdminDashboard() {
-  const STATS = [
-    { label: "Total Registrations", value: "12,841", delta: "+8.4% this month",      trend: "up"      as const, icon: Users,       iconColor: "var(--primary-hex,#6366f1)", iconBg: "var(--primary-soft)" },
-    { label: "Active Events",       value: "7",      delta: "3 going live this week", trend: "neutral" as const, icon: Calendar,    iconColor: "var(--blue)",                 iconBg: "var(--blue-soft)" },
-    { label: "Check-ins Today",     value: "1,204",  delta: "+14% vs last event",     trend: "up"      as const, icon: QrCode,      iconColor: "var(--green-600)",            iconBg: "var(--green-soft)" },
-    { label: "Open Tasks",          value: "38",     delta: "5 overdue",              trend: "down"    as const, icon: CheckSquare, iconColor: "var(--orange)",               iconBg: "var(--orange-soft)" },
-  ];
+function isUpcoming(ev: AdminEvent): boolean {
+  return !!ev.startsAt && new Date(ev.startsAt).getTime() > Date.now();
+}
+
+// ── Reusable event table (Admin + Manager share it) ───────────────────────────
+
+function EventsTable({ events, loading, emptyMsg }: { events: AdminEvent[]; loading: boolean; emptyMsg: React.ReactNode }) {
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-2.5 px-6 py-5">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-14 rounded-[var(--radius-md)] animate-pulse" style={{ background: "var(--surface-2)" }} />
+        ))}
+      </div>
+    );
+  }
+  if (events.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+        <ChipIco size={52} radius={16} variant="gray">
+          <Calendar size={24} />
+        </ChipIco>
+        <div className="text-sm" style={{ color: "var(--text-muted)" }}>{emptyMsg}</div>
+      </div>
+    );
+  }
   return (
-    <div className="flex flex-col gap-6 view-anim">
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm border-separate" style={{ borderSpacing: 0 }}>
+        <thead>
+          <tr>
+            {["Event", "Status", "Fill rate", "Date", ""].map((h) => (
+              <th
+                key={h || "actions"}
+                className="text-left text-[11px] font-bold uppercase tracking-widest px-6 py-3"
+                style={{ color: "var(--text-faint)", background: "var(--surface-2)", borderBottom: "1px solid var(--border-hex,#ecedf4)" }}
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {events.map((ev, i) => {
+            const st = EVENT_STATUS_VARIANTS[ev.status] ?? { label: ev.status, variant: "gray" as const };
+            const pct = fillPctOf(ev);
+            const reg = ev.registeredCount ?? 0;
+            const last = i === events.length - 1;
+            return (
+              <tr key={ev.id} className="group transition-colors hover:bg-[var(--surface-2)]">
+                <td className="px-6 py-4" style={{ borderBottom: last ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
+                  <Link
+                    href={`/events/${ev.id}/workspace`}
+                    className="font-bold text-sm transition-colors group-hover:text-[var(--primary-hex,#6366f1)]"
+                    style={{ color: "var(--text-strong)" }}
+                  >
+                    {ev.title}
+                  </Link>
+                </td>
+                <td className="px-6 py-4" style={{ borderBottom: last ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
+                  <StatusBadge variant={st.variant} dot>{st.label}</StatusBadge>
+                </td>
+                <td className="px-6 py-4 min-w-[170px]" style={{ borderBottom: last ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
+                  {pct !== null ? (
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span style={{ color: "var(--text-muted)" }}>{reg.toLocaleString()} / {(ev.capacity ?? 0).toLocaleString()}</span>
+                        <span className="font-bold tabular-nums" style={{ color: fillColor(pct) }}>{pct}%</span>
+                      </div>
+                      <Progress value={pct} indicatorColor={fillColor(pct)} />
+                    </div>
+                  ) : (
+                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>{reg.toLocaleString()} · uncapped</span>
+                  )}
+                </td>
+                <td
+                  className="px-6 py-4 text-sm whitespace-nowrap"
+                  style={{ color: "var(--text-muted)", borderBottom: last ? "none" : "1px solid var(--border-hex,#ecedf4)" }}
+                >
+                  {formatEventDate(ev.startsAt)}
+                </td>
+                <td className="px-6 py-4 text-right" style={{ borderBottom: last ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
+                  <Button asChild variant="ghost" size="icon-sm" className="opacity-60 transition-opacity group-hover:opacity-100" title="Open workspace">
+                    <Link href={`/events/${ev.id}/workspace`}><Eye size={15} /></Link>
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ── Admin: Command Center ─────────────────────────────────────────────────────
+
+function AdminDashboard() {
+  const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+    listEvents({ size: 200, signal: controller.signal })
+      .then((ev) => { if (!cancelled) setEvents(ev ?? []); })
+      .catch((e) => { if (!cancelled) setError(e instanceof ApiError ? e.message : "Failed to load dashboard data."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; controller.abort(); };
+  }, []);
+
+  // Derived metrics — all from the single events list.
+  const totalRegistrations = events.reduce((sum, e) => sum + (e.registeredCount ?? 0), 0);
+  const activeEvents = events.filter((e) => e.status === "PUBLIC").length;
+  const draftEvents = events.filter((e) => e.status === "DRAFT").length;
+  const archivedEvents = events.filter((e) => e.status === "ARCHIVED").length;
+  const upcoming = events.filter(isUpcoming).length;
+  const totalCapacity = events.reduce((sum, e) => sum + (e.capacity ?? 0), 0);
+  const overallFill = totalCapacity > 0 ? Math.min(100, Math.round((totalRegistrations / totalCapacity) * 100)) : 0;
+
+  const dash = (v: string) => (loading ? "—" : v);
+  const STATS = [
+    {
+      label: "Total Registrations", value: dash(totalRegistrations.toLocaleString()),
+      delta: loading ? "" : `across ${events.length} event${events.length !== 1 ? "s" : ""}`,
+      trend: "neutral" as const, icon: Users, iconColor: "var(--primary-hex,#6366f1)", iconBg: "var(--primary-soft)",
+    },
+    {
+      label: "Active Events", value: dash(String(activeEvents)),
+      delta: loading ? "" : `${draftEvents} draft · ${archivedEvents} archived`,
+      trend: "neutral" as const, icon: Calendar, iconColor: "var(--blue)", iconBg: "var(--blue-soft)",
+    },
+    {
+      label: "Upcoming Events", value: dash(String(upcoming)),
+      delta: loading ? "" : "scheduled ahead",
+      trend: "neutral" as const, icon: Clock, iconColor: "var(--green-600)", iconBg: "var(--green-soft)",
+    },
+    {
+      label: "Overall Fill Rate", value: dash(totalCapacity > 0 ? `${overallFill}%` : "—"),
+      delta: loading ? "" : (totalCapacity > 0 ? `${totalRegistrations.toLocaleString()} / ${totalCapacity.toLocaleString()} seats` : "no capacities set"),
+      trend: overallFill >= 80 ? ("up" as const) : ("neutral" as const), icon: TrendingUp, iconColor: "var(--orange)", iconBg: "var(--orange-soft)",
+    },
+  ];
+
+  // Event table: 6 most-recently updated.
+  const tableEvents = [...events]
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 6);
+
+  return (
+    <div className="flex flex-col gap-7 view-anim">
+      {error && (
+        <div className="rounded-[var(--radius-md)] px-4 py-3 text-sm font-semibold" style={{ background: "var(--danger-soft)", color: "var(--danger)" }}>{error}</div>
+      )}
+
       <PageHeader title="Command Center" sub="Real-time overview of all events and operations">
+        <Button asChild variant="ghost" size="sm"><Link href="/events">View all</Link></Button>
         <Button asChild size="sm"><Link href="/events/new"><Zap size={15} /> New event</Link></Button>
       </PageHeader>
-      <section>
-        <h2 className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>Global Pulse</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">{STATS.map((s) => <StatTile key={s.label} {...s} />)}</div>
-      </section>
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
-        <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">{STATS.map((s) => <StatTile key={s.label} {...s} />)}</div>
+
+      <Card className="overflow-hidden mt-4">
+        <CardHeader className="px-6 pt-6 pb-4" style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
+          <div className="flex flex-col gap-0.5">
             <CardTitle>Event Control Center</CardTitle>
-            <div className="ml-auto flex gap-2">
-              <Button asChild variant="ghost" size="sm"><Link href="/events">View all</Link></Button>
-              <Button asChild size="sm"><Link href="/events/new">+ New</Link></Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
-                    {["Event", "Status", "Fill rate", "Date", ""].map((h) => (
-                      <th key={h} className="text-left text-xs font-bold uppercase tracking-wider px-5 py-3" style={{ color: "var(--text-muted)" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {EVENTS.map((ev) => {
-                    const st = STATUS_VARIANTS[ev.status] ?? { label: ev.status, variant: "gray" as const };
-                    return (
-                      <tr key={ev.id} className="transition-colors hover:bg-[var(--surface-2)]" style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
-                        <td className="px-5 py-4 font-bold text-sm" style={{ color: "var(--text-strong)" }}>{ev.name}</td>
-                        <td className="px-5 py-4"><StatusBadge variant={st.variant}>{st.label}</StatusBadge></td>
-                        <td className="px-5 py-4 min-w-[140px]">
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center justify-between text-xs">
-                              <span style={{ color: "var(--text-muted)" }}>{ev.registered.toLocaleString()} / {ev.capacity.toLocaleString()}</span>
-                              <span className="font-bold" style={{ color: "var(--text-strong)" }}>{ev.fillPct}%</span>
-                            </div>
-                            <Progress value={ev.fillPct} />
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>{ev.date}</td>
-                        <td className="px-5 py-4">
-                          <Button asChild variant="ghost" size="icon-sm">
-                            <Link href={`/events/${ev.id}/workspace`}>
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                            </Link>
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="px-6 pt-6 pb-4"><CardTitle>Critical Attention</CardTitle></CardHeader>
-          <CardContent className="px-4 pb-5 pt-0 flex flex-col gap-2">
-            {ISSUES.map((issue, i) => {
-              const Icon = issue.icon;
-              return (
-                <div key={i} className="flex items-start gap-3 px-3 py-3 rounded-xl cursor-pointer transition-colors hover:bg-[var(--surface-2)]">
-                  <ChipIco size={34} radius={9} className="flex-shrink-0" style={{ background: issue.bg, color: issue.color } as React.CSSProperties}><Icon size={16} /></ChipIco>
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{issue.title}</span>
-                    <span className="text-xs" style={{ color: "var(--text-muted)" }}>{issue.body}</span>
-                    <span className="text-[11px] mt-0.5" style={{ color: "var(--text-faint)" }}>{issue.when}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </div>
+            <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Most recently updated events</span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <EventsTable
+            events={tableEvents}
+            loading={loading}
+            emptyMsg={<>No events yet. <Link href="/events/new" className="underline font-semibold" style={{ color: "var(--primary-hex,#6366f1)" }}>Create one</Link>.</>}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-/* ── Manager: Event Overview + Tasks ── */
+// ── Manager: Event Overview ───────────────────────────────────────────────────
+
 function ManagerDashboard() {
-  const myEvents = EVENTS.filter((e) => e.status === "live" || e.status === "published");
+  const [events, setEvents] = useState<AdminEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    listEvents({ size: 100, signal: controller.signal })
+      .then((ev) => { if (!cancelled) setEvents(ev ?? []); })
+      .catch(() => { /* non-blocking — show what we have */ })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; controller.abort(); };
+  }, []);
+
+  // listEvents is role-scoped server-side: a MANAGER only receives events they're assigned to.
+  const myEvents = events.filter((e) => e.status === "PUBLIC" || e.status === "DRAFT");
+  const totalRegistered = events.reduce((sum, e) => sum + (e.registeredCount ?? 0), 0);
+  const upcoming = events.filter(isUpcoming).length;
+  const nextPublicEvent = events
+    .filter((e) => e.status === "PUBLIC" && e.startsAt)
+    .sort((a, b) => new Date(a.startsAt!).getTime() - new Date(b.startsAt!).getTime())[0];
+
+  const dash = (v: string) => (loading ? "—" : v);
+  const STATS = [
+    { label: "Assigned Events", value: dash(String(myEvents.length)), icon: Calendar, iconColor: "var(--blue)", iconBg: "var(--blue-soft)", delta: "Active", trend: "neutral" as const },
+    { label: "Total Registered", value: dash(totalRegistered.toLocaleString()), icon: Users, iconColor: "var(--primary-hex)", iconBg: "var(--primary-soft)", delta: "Across your events", trend: "neutral" as const },
+    { label: "Upcoming Events", value: dash(String(upcoming)), icon: Clock, iconColor: "var(--green-600)", iconBg: "var(--green-soft)", delta: "Scheduled ahead", trend: "neutral" as const },
+    {
+      label: "Next Event",
+      value: nextPublicEvent ? new Date(nextPublicEvent.startsAt!).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—",
+      icon: TrendingUp, iconColor: "var(--orange)", iconBg: "var(--orange-soft)",
+      delta: nextPublicEvent?.title ?? "No upcoming events", trend: "neutral" as const,
+    },
+  ];
+
   return (
-    <div className="flex flex-col gap-6 view-anim">
+    <div className="flex flex-col gap-7 view-anim">
       <PageHeader title="My Events" sub="Overview of events you manage">
-        <Button asChild size="sm"><Link href="/events/ev1/workspace">Open workspace <ArrowRight size={14} /></Link></Button>
+        <Button asChild size="sm">
+          <Link href={events[0] ? `/events/${events[0].id}/workspace` : "/events"}>Open workspace <ArrowRight size={14} /></Link>
+        </Button>
       </PageHeader>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {[
-          { label: "Assigned Events",  value: String(myEvents.length), icon: Calendar,    iconColor: "var(--blue)",           iconBg: "var(--blue-soft)",    delta: "Active",              trend: "neutral" as const },
-          { label: "Total Registered", value: "6,826",                 icon: Users,       iconColor: "var(--primary-hex)",    iconBg: "var(--primary-soft)", delta: "+4.2% this week",     trend: "up"      as const },
-          { label: "Open Tasks",       value: String(MANAGER_TASKS.filter((t) => t.status !== "done").length), icon: CheckSquare, iconColor: "var(--orange)", iconBg: "var(--orange-soft)", delta: "Across my events", trend: "neutral" as const },
-          { label: "Next Check-in",    value: "Jun 18",                icon: QrCode,      iconColor: "var(--green-600)",      iconBg: "var(--green-soft)",   delta: "NorthStar Summit",    trend: "neutral" as const },
-        ].map((s) => <StatTile key={s.label} {...s} />)}
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5">
-        <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">{STATS.map((s) => <StatTile key={s.label} {...s} />)}</div>
+
+      <Card className="overflow-hidden mt-4">
+        <CardHeader className="px-6 pt-6 pb-4" style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
+          <div className="flex flex-col gap-0.5">
             <CardTitle>My Events</CardTitle>
-            <Button asChild variant="ghost" size="sm" className="ml-auto"><Link href="/events">View all</Link></Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
-                    {["Event", "Status", "Fill rate", "Date", ""].map((h) => (
-                      <th key={h} className="text-left text-xs font-bold uppercase tracking-wider px-5 py-3" style={{ color: "var(--text-muted)" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {myEvents.map((ev, i) => {
-                    const st = STATUS_VARIANTS[ev.status] ?? { label: ev.status, variant: "gray" as const };
-                    return (
-                      <tr key={ev.id} className="transition-colors hover:bg-[var(--surface-2)]" style={{ borderBottom: i < myEvents.length - 1 ? "1px solid var(--border-hex,#ecedf4)" : "none" }}>
-                        <td className="px-5 py-4 font-bold text-sm" style={{ color: "var(--text-strong)" }}>{ev.name}</td>
-                        <td className="px-5 py-4"><StatusBadge variant={st.variant}>{st.label}</StatusBadge></td>
-                        <td className="px-5 py-4 min-w-[140px]">
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center justify-between text-xs">
-                              <span style={{ color: "var(--text-muted)" }}>{ev.registered.toLocaleString()} / {ev.capacity.toLocaleString()}</span>
-                              <span className="font-bold" style={{ color: "var(--text-strong)" }}>{ev.fillPct}%</span>
-                            </div>
-                            <Progress value={ev.fillPct} />
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>{ev.date}</td>
-                        <td className="px-5 py-4">
-                          <Button asChild variant="ghost" size="sm"><Link href={`/events/${ev.id}/workspace`}>Workspace</Link></Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="px-6 pt-6 pb-4">
-            <CardTitle>My Tasks</CardTitle>
-            <Button asChild variant="ghost" size="sm" className="ml-auto"><Link href="/tasks">View all</Link></Button>
-          </CardHeader>
-          <CardContent className="px-5 pb-5 pt-0 flex flex-col">
-            {MANAGER_TASKS.map((t) => (
-              <div key={t.id} className="flex items-start gap-3 py-3.5 border-b last:border-0" style={{ borderColor: "var(--border-hex,#ecedf4)" }}>
-                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                  <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{t.title}</span>
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>{t.event}</span>
-                </div>
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <StatusBadge variant={TASK_VARIANT[t.status]}>{TASK_LABEL[t.status]}</StatusBadge>
-                  <span className="text-[11px]" style={{ color: "var(--text-faint)" }}>Due {t.due}</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+            <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Events assigned to you</span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <EventsTable events={myEvents} loading={loading} emptyMsg="No active events assigned." />
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-/* ── Root: selects view by role ── */
+// ── Root: selects view by role ────────────────────────────────────────────────
+
 export default function DashboardPage() {
   const [role, setRole] = useState<Role>("handler");
 
