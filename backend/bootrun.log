@@ -1,7 +1,8 @@
-> Task :compileJava
+Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
+> Task :compileJava UP-TO-DATE
 > Task :processResources UP-TO-DATE
-> Task :classes
-> Task :resolveMainClassName
+> Task :classes UP-TO-DATE
+> Task :resolveMainClassName UP-TO-DATE
 
 > Task :bootRun
 
@@ -14,160 +15,140 @@
 
  :: Spring Boot ::                (v4.1.0)
 
-2026-06-15T12:05:57.329+07:00  INFO 18516 --- [gatherly] [           main] com.gatherly.GatherlyApplication         : Starting GatherlyApplication using Java 21.0.6 with PID 18516 (D:\AI_Training\Gatherly\backend\build\classes\java\main started by User in D:\AI_Training\Gatherly\backend)
-2026-06-15T12:05:57.336+07:00  INFO 18516 --- [gatherly] [           main] com.gatherly.GatherlyApplication         : The following 1 profile is active: "local"
-2026-06-15T12:05:58.971+07:00  INFO 18516 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2026-06-15T12:05:58.973+07:00  INFO 18516 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-06-15T12:05:59.189+07:00  INFO 18516 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 203 ms. Found 12 JPA repository interfaces.
-2026-06-15T12:05:59.261+07:00  INFO 18516 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2026-06-15T12:05:59.263+07:00  INFO 18516 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-06-15T12:05:59.289+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.EventAssignmentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.290+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.EventCheckinRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.291+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.EventRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.292+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.FormTemplateRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.292+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.MainSupplyItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.292+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.MaterialRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.292+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.MaterialStatusHistoryRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.293+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.OrganizationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.293+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.RefreshTokenRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.293+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.RegistrationFormRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.293+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.RegistrationSubmissionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.293+07:00  INFO 18516 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-06-15T12:05:59.294+07:00  INFO 18516 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 16 ms. Found 0 Redis repository interfaces.
-2026-06-15T12:06:00.615+07:00  INFO 18516 --- [gatherly] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 9091 (http)
-2026-06-15T12:06:00.641+07:00  INFO 18516 --- [gatherly] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-06-15T12:06:00.641+07:00  INFO 18516 --- [gatherly] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
-2026-06-15T12:06:00.816+07:00  INFO 18516 --- [gatherly] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 3381 ms
-2026-06-15T12:06:02.884+07:00  INFO 18516 --- [gatherly] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-06-15T12:06:03.344+07:00  INFO 18516 --- [gatherly] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7267006e
-2026-06-15T12:06:03.348+07:00  INFO 18516 --- [gatherly] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-06-15T12:06:03.390+07:00  INFO 18516 --- [gatherly] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:5433/postgres (PostgreSQL 18.3)
-2026-06-15T12:06:03.615+07:00  INFO 18516 --- [gatherly] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 6 migrations (execution time 00:00.158s)
-2026-06-15T12:06:03.644+07:00  INFO 18516 --- [gatherly] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 6
-2026-06-15T12:06:03.654+07:00  INFO 18516 --- [gatherly] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
-2026-06-15T12:06:03.847+07:00  INFO 18516 --- [gatherly] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-06-15T12:06:03.911+07:00  INFO 18516 --- [gatherly] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.1.Final
-2026-06-15T12:06:04.513+07:00  INFO 18516 --- [gatherly] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-06-15T12:06:04.588+07:00  WARN 18516 --- [gatherly] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-06-15T12:06:04.614+07:00  INFO 18516 --- [gatherly] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
-	Database JDBC URL [jdbc:postgresql://localhost:5433/postgres]
-	Database driver: PostgreSQL JDBC Driver
-	Database dialect: PostgreSQLDialect
-	Database version: 18.3
-	Default catalog/schema: postgres/public
-	Autocommit mode: undefined/unknown
-	Isolation level: READ_COMMITTED [default READ_COMMITTED]
-	JDBC fetch size: none
-	Pool: DataSourceConnectionProvider
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-2026-06-15T12:06:07.013+07:00  INFO 18516 --- [gatherly] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-06-15T12:06:07.210+07:00  INFO 18516 --- [gatherly] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-06-15T12:06:07.349+07:00  INFO 18516 --- [gatherly] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-06-15T12:06:11.199+07:00  WARN 18516 --- [gatherly] [           main] .s.a.UserDetailsServiceAutoConfiguration : 
+2026-06-16T16:41:58.865+07:00  INFO 24408 --- [gatherly] [           main] com.gatherly.GatherlyApplication         : Starting GatherlyApplication using Java 21.0.6 with PID 24408 (D:\AI_Training\Gatherly\backend\build\classes\java\main started by User in D:\AI_Training\Gatherly\backend)
+2026-06-16T16:41:58.865+07:00  INFO 24408 --- [gatherly] [           main] com.gatherly.GatherlyApplication         : The following 1 profile is active: "local"
+2026-06-16T16:41:59.923+07:00  INFO 24408 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-16T16:41:59.932+07:00  INFO 24408 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-16T16:42:00.281+07:00  INFO 24408 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 323 ms. Found 12 JPA repository interfaces.
+2026-06-16T16:42:00.367+07:00  INFO 24408 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-06-16T16:42:00.367+07:00  INFO 24408 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-06-16T16:42:00.388+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.EventAssignmentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.388+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.EventCheckinRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.388+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.EventRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.393+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.FormTemplateRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.393+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.MainSupplyItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.393+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.MaterialRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.393+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.MaterialStatusHistoryRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.393+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.OrganizationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.393+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.RefreshTokenRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.394+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.RegistrationFormRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.394+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.RegistrationSubmissionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.394+07:00  INFO 24408 --- [gatherly] [           main] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.gatherly.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-06-16T16:42:00.394+07:00  INFO 24408 --- [gatherly] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
+2026-06-16T16:42:01.487+07:00  INFO 24408 --- [gatherly] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 9091 (http)
+2026-06-16T16:42:01.615+07:00  INFO 24408 --- [gatherly] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-16T16:42:01.617+07:00  INFO 24408 --- [gatherly] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.22]
+2026-06-16T16:42:01.832+07:00  INFO 24408 --- [gatherly] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 2903 ms
+2026-06-16T16:42:04.896+07:00  INFO 24408 --- [gatherly] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-16T16:42:16.231+07:00  WARN 24408 --- [gatherly] [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/hibernate/autoconfigure/HibernateJpaConfiguration.class]: Failed to initialize dependency 'flywayInitializer' of LoadTimeWeaverAware bean 'entityManagerFactory': Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/flyway/autoconfigure/FlywayAutoConfiguration$FlywayConfiguration.class]: Unable to obtain connection from database: The connection attempt failed.
+-------------------------------------------------------------------------
+SQL State  : 08001
+Error Code : 0
+Message    : The connection attempt failed.
 
-Using generated security password: dc47cfad-c7de-45f0-9049-e3130db43efa
+2026-06-16T16:42:16.290+07:00  INFO 24408 --- [gatherly] [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-06-16T16:42:16.340+07:00  INFO 24408 --- [gatherly] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
 
-This generated password is for development use only. Your security configuration must be updated before running your application in production.
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-06-16T16:42:16.376+07:00 ERROR 24408 --- [gatherly] [           main] o.s.boot.SpringApplication               : Application run failed
 
-2026-06-15T12:06:11.208+07:00  INFO 18516 --- [gatherly] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
-2026-06-15T12:06:12.700+07:00  INFO 18516 --- [gatherly] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
-2026-06-15T12:06:12.852+07:00  INFO 18516 --- [gatherly] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 9091 (http) with context path '/'
-2026-06-15T12:06:12.901+07:00  INFO 18516 --- [gatherly] [           main] com.gatherly.GatherlyApplication         : Started GatherlyApplication in 16.255 seconds (process running for 16.906)
-2026-06-15T12:06:13.603+07:00  WARN 18516 --- [gatherly] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-2026-06-15T12:06:13.604+07:00  WARN 18516 --- [gatherly] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
-2026-06-15T12:06:14.502+07:00  INFO 18516 --- [gatherly] [nio-9091-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-06-15T12:06:14.503+07:00  INFO 18516 --- [gatherly] [nio-9091-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-06-15T12:06:14.507+07:00  INFO 18516 --- [gatherly] [nio-9091-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where upper(u1_0.email)=upper(?)
-Hibernate: insert into refresh_token (created_at,expires_at,replaced_by,revoked,token_hash,user_id,id) values (?,?,?,?,?,?,?)
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select ea1_0.id,ea1_0.assigned_by,ea1_0.created_at,ea1_0.event_id,ea1_0.event_role,ea1_0.user_id from event_assignment ea1_0 where ea1_0.event_id=?
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where (? is null or lower(u1_0.email) like lower(('%'||cast(? as varchar)||'%')) escape '' or lower(u1_0.full_name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by u1_0.full_name fetch first ? rows only
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select ea1_0.id,ea1_0.assigned_by,ea1_0.created_at,ea1_0.event_id,ea1_0.event_role,ea1_0.user_id from event_assignment ea1_0 where ea1_0.event_id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where (? is null or lower(u1_0.email) like lower(('%'||cast(? as varchar)||'%')) escape '' or lower(u1_0.full_name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by u1_0.full_name fetch first ? rows only
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select rt1_0.id,rt1_0.created_at,rt1_0.expires_at,rt1_0.replaced_by,rt1_0.revoked,rt1_0.token_hash,rt1_0.user_id from refresh_token rt1_0 where rt1_0.token_hash=?
-Hibernate: update refresh_token set expires_at=?,replaced_by=?,revoked=?,token_hash=?,user_id=? where id=?
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where upper(u1_0.email)=upper(?)
-Hibernate: insert into refresh_token (created_at,expires_at,replaced_by,revoked,token_hash,user_id,id) values (?,?,?,?,?,?,?)
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where u1_0.id=?
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where u1_0.id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where (? is null or lower(u1_0.email) like lower(('%'||cast(? as varchar)||'%')) escape '' or lower(u1_0.full_name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by u1_0.full_name fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select ea1_0.id,ea1_0.assigned_by,ea1_0.created_at,ea1_0.event_id,ea1_0.event_role,ea1_0.user_id from event_assignment ea1_0 where ea1_0.event_id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select ea1_0.id,ea1_0.assigned_by,ea1_0.created_at,ea1_0.event_id,ea1_0.event_role,ea1_0.user_id from event_assignment ea1_0 where ea1_0.event_id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where (? is null or lower(u1_0.email) like lower(('%'||cast(? as varchar)||'%')) escape '' or lower(u1_0.full_name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by u1_0.full_name fetch first ? rows only
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select ea1_0.id,ea1_0.assigned_by,ea1_0.created_at,ea1_0.event_id,ea1_0.event_role,ea1_0.user_id from event_assignment ea1_0 where ea1_0.event_id=?
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where (? is null or lower(u1_0.email) like lower(('%'||cast(? as varchar)||'%')) escape '' or lower(u1_0.full_name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by u1_0.full_name fetch first ? rows only
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where e1_0.id=?
-Hibernate: select count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id=?
-Hibernate: select ea1_0.id,ea1_0.assigned_by,ea1_0.created_at,ea1_0.event_id,ea1_0.event_role,ea1_0.user_id from event_assignment ea1_0 where ea1_0.event_id=?
-Hibernate: select m1_0.id,m1_0.assigned_to,m1_0.catalog_item_id,m1_0.created_at,m1_0.created_by,m1_0.description,m1_0.event_id,m1_0.name,m1_0.quantity,m1_0.status,m1_0.updated_at from material m1_0 where m1_0.event_id=? and (? is null or lower(m1_0.name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by m1_0.name fetch first ? rows only
-Hibernate: select e1_0.id,e1_0.capacity,e1_0.category,e1_0.checkin_opens_at,e1_0.cover_color,e1_0.cover_image_url,e1_0.created_at,e1_0.created_by,e1_0.description,e1_0.ends_at,e1_0.registration_qr_token,e1_0.slug,e1_0.starts_at,e1_0.status,e1_0.title,e1_0.updated_at,e1_0.venue from event e1_0 where (? is null or lower(e1_0.title) like lower(('%'||cast(? as varchar)||'%')) escape '') order by e1_0.starts_at fetch first ? rows only
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where (? is null or lower(u1_0.email) like lower(('%'||cast(? as varchar)||'%')) escape '' or lower(u1_0.full_name) like lower(('%'||cast(? as varchar)||'%')) escape '') order by u1_0.full_name fetch first ? rows only
-Hibernate: select rs1_0.event_id,count(rs1_0.id) from registration_submission rs1_0 where rs1_0.event_id in (?,?,?,?,?,?,?,?) group by rs1_0.event_id
-Hibernate: select u1_0.id,u1_0.address,u1_0.avatar_key,u1_0.created_at,u1_0.date_of_birth,u1_0.email,u1_0.full_name,u1_0.gender,u1_0.global_role,u1_0.password_hash,u1_0.phone,u1_0.status,u1_0.updated_at from "user" u1_0 where upper(u1_0.email)=upper(?)
-Hibernate: insert into refresh_token (created_at,expires_at,replaced_by,revoked,token_hash,user_id,id) values (?,?,?,?,?,?,?)
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/hibernate/autoconfigure/HibernateJpaConfiguration.class]: Failed to initialize dependency 'flywayInitializer' of LoadTimeWeaverAware bean 'entityManagerFactory': Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/flyway/autoconfigure/FlywayAutoConfiguration$FlywayConfiguration.class]: Unable to obtain connection from database: The connection attempt failed.
+-------------------------------------------------------------------------
+SQL State  : 08001
+Error Code : 0
+Message    : The connection attempt failed.
+
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:322) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:201) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:977) ~[spring-context-7.0.8.jar:7.0.8]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:621) ~[spring-context-7.0.8.jar:7.0.8]
+	at org.springframework.boot.web.server.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:143) ~[spring-boot-web-server-4.1.0.jar:4.1.0]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:756) ~[spring-boot-4.1.0.jar:4.1.0]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:445) ~[spring-boot-4.1.0.jar:4.1.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:321) ~[spring-boot-4.1.0.jar:4.1.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1365) ~[spring-boot-4.1.0.jar:4.1.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354) ~[spring-boot-4.1.0.jar:4.1.0]
+	at com.gatherly.GatherlyApplication.main(GatherlyApplication.java:15) ~[main/:na]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/flyway/autoconfigure/FlywayAutoConfiguration$FlywayConfiguration.class]: Unable to obtain connection from database: The connection attempt failed.
+-------------------------------------------------------------------------
+SQL State  : 08001
+Error Code : 0
+Message    : The connection attempt failed.
+
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1815) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:603) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:525) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:333) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:371) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:331) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:196) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:309) ~[spring-beans-7.0.8.jar:7.0.8]
+	... 10 common frames omitted
+Caused by: org.flywaydb.core.internal.exception.sqlExceptions.FlywaySqlUnableToConnectToDbException: Unable to obtain connection from database: The connection attempt failed.
+-------------------------------------------------------------------------
+SQL State  : 08001
+Error Code : 0
+Message    : The connection attempt failed.
+
+	at org.flywaydb.core.internal.jdbc.JdbcUtils.openConnection(JdbcUtils.java:78) ~[flyway-core-12.4.0.jar:na]
+	at org.flywaydb.core.internal.jdbc.JdbcConnectionFactory.<init>(JdbcConnectionFactory.java:76) ~[flyway-core-12.4.0.jar:na]
+	at org.flywaydb.core.FlywayExecutor.init(FlywayExecutor.java:275) ~[flyway-core-12.4.0.jar:na]
+	at org.flywaydb.core.FlywayExecutor.execute(FlywayExecutor.java:120) ~[flyway-core-12.4.0.jar:na]
+	at org.flywaydb.core.Flyway.migrate(Flyway.java:181) ~[flyway-core-12.4.0.jar:na]
+	at org.springframework.boot.flyway.autoconfigure.FlywayMigrationInitializer.afterPropertiesSet(FlywayMigrationInitializer.java:67) ~[spring-boot-flyway-4.1.0.jar:4.1.0]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1862) ~[spring-beans-7.0.8.jar:7.0.8]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1811) ~[spring-beans-7.0.8.jar:7.0.8]
+	... 17 common frames omitted
+Caused by: org.postgresql.util.PSQLException: The connection attempt failed.
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:437) ~[postgresql-42.7.11.jar:42.7.11]
+	at org.postgresql.core.ConnectionFactory.openConnection(ConnectionFactory.java:52) ~[postgresql-42.7.11.jar:42.7.11]
+	at org.postgresql.jdbc.PgConnection.<init>(PgConnection.java:290) ~[postgresql-42.7.11.jar:42.7.11]
+	at org.postgresql.Driver.makeConnection(Driver.java:448) ~[postgresql-42.7.11.jar:42.7.11]
+	at org.postgresql.Driver.connect(Driver.java:298) ~[postgresql-42.7.11.jar:42.7.11]
+	at com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:144) ~[HikariCP-7.0.2.jar:na]
+	at com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:373) ~[HikariCP-7.0.2.jar:na]
+	at com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:210) ~[HikariCP-7.0.2.jar:na]
+	at com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:488) ~[HikariCP-7.0.2.jar:na]
+	at com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:576) ~[HikariCP-7.0.2.jar:na]
+	at com.zaxxer.hikari.pool.HikariPool.<init>(HikariPool.java:97) ~[HikariCP-7.0.2.jar:na]
+	at com.zaxxer.hikari.HikariDataSource.getConnection(HikariDataSource.java:111) ~[HikariCP-7.0.2.jar:na]
+	at org.flywaydb.core.internal.jdbc.JdbcUtils.openConnection(JdbcUtils.java:73) ~[flyway-core-12.4.0.jar:na]
+	... 24 common frames omitted
+Caused by: java.net.SocketTimeoutException: Connect timed out
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:546) ~[na:na]
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592) ~[na:na]
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327) ~[na:na]
+	at java.base/java.net.Socket.connect(Socket.java:751) ~[na:na]
+	at org.postgresql.core.PGStream.createSocket(PGStream.java:271) ~[postgresql-42.7.11.jar:42.7.11]
+	at org.postgresql.core.PGStream.<init>(PGStream.java:132) ~[postgresql-42.7.11.jar:42.7.11]
+	at org.postgresql.core.v3.ConnectionFactoryImpl.tryConnect(ConnectionFactoryImpl.java:219) ~[postgresql-42.7.11.jar:42.7.11]
+	at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:365) ~[postgresql-42.7.11.jar:42.7.11]
+	... 36 common frames omitted
+	Suppressed: java.net.SocketTimeoutException
+		at java.base/java.net.SocksSocketImpl.remainingMillis(SocksSocketImpl.java:110) ~[na:na]
+		at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327) ~[na:na]
+		at java.base/java.net.Socket.connect(Socket.java:751) ~[na:na]
+		at org.postgresql.core.PGStream.createSocket(PGStream.java:271) ~[postgresql-42.7.11.jar:42.7.11]
+		at org.postgresql.core.PGStream.<init>(PGStream.java:132) ~[postgresql-42.7.11.jar:42.7.11]
+		at org.postgresql.core.v3.ConnectionFactoryImpl.tryConnect(ConnectionFactoryImpl.java:219) ~[postgresql-42.7.11.jar:42.7.11]
+		at org.postgresql.core.v3.ConnectionFactoryImpl.tryConnectWithoutSsl(ConnectionFactoryImpl.java:145) ~[postgresql-42.7.11.jar:42.7.11]
+		at org.postgresql.core.v3.ConnectionFactoryImpl.openConnectionImpl(ConnectionFactoryImpl.java:380) ~[postgresql-42.7.11.jar:42.7.11]
+		... 36 common frames omitted
+
+
+> Task :bootRun FAILED
+4 actionable tasks: 1 executed, 3 up-to-date
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':bootRun'.
+> Process 'command 'C:\Users\User\.jdks\corretto-21.0.6\bin\java.exe'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 31s

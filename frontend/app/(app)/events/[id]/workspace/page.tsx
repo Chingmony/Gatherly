@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
   Calendar, ChevronRight, ChevronLeft, ChevronDown, Clock, Layers,
   ListChecks, Users, Settings, Eye, Pencil, Trash2, Plus,
   LayoutGrid, List as ListIcon, Loader2, AlertTriangle,
-  CheckCircle2, Radio, Search, RotateCcw, Check, MapPin, Sparkles,
+  CheckCircle2, Radio, Search, Check, MapPin, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +23,14 @@ import {
   type AssignmentResponse, type EventRole,
 } from "@/lib/api/assignments";
 import { listUsers, type UserResponse } from "@/lib/api/users";
+import {
+  listSubmissions, getAttendance, manualCheckin,
+  TICKET_STATUS_LABEL, type SubmissionSummary, type TicketStatus,
+} from "@/lib/api/attendance";
+import {
+  listAgenda, createAgendaItem, updateAgendaItem, deleteAgendaItem,
+  AGENDA_TYPE_STYLE, type AgendaItem, type AgendaItemInput,
+} from "@/lib/api/agenda";
 import { getUser } from "@/lib/auth/session";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -31,6 +39,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 
 const CATEGORY_GRADIENT: Record<string, string> = {
@@ -127,12 +136,15 @@ const STATUS_COLUMNS: { status: MaterialStatus; label: string; dot: string }[] =
   { status: "ISSUE",        label: "Issues",       dot: "var(--danger)" },
 ];
 
-/** A single material on the board: assignee picker (any USER), status picker, delete. */
+/** Minimal shape the assignee pickers need — sourced from the event's HANDLER crew. */
+type AssigneeOption = { id: string; fullName: string; email: string };
+
+/** A single material on the board: assignee picker (event handlers only), status picker, delete. */
 function MaterialCard({
   m, assignees, nameFor, onAssign, onStatus, onDelete,
 }: {
   m: MaterialResponse;
-  assignees: UserResponse[];
+  assignees: AssigneeOption[];
   nameFor: (userId: string | null) => string | null;
   onAssign: (m: MaterialResponse, userId: string | null) => void;
   onStatus: (m: MaterialResponse, to: MaterialStatus) => void;
@@ -216,7 +228,7 @@ function CreateTaskDialog({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  assignees: UserResponse[];
+  assignees: AssigneeOption[];
   onCreate: (body: MaterialWriteBody) => Promise<boolean>;
 }) {
   const [name, setName] = useState("");
@@ -457,10 +469,18 @@ export default function WorkspacePage() {
     return () => { cancelled = true; };
   }, []);
 
-  // Open the tab requested via ?tab= (e.g. the events list "view details" eye icon).
+  // Open the tab requested via ?tab= (e.g. the events list "view details" eye icon, or a refresh).
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("tab");
     if (requested && TABS.some((t) => t.id === requested)) setTab(requested);
+  }, []);
+
+  // Switch tab and mirror it into ?tab= so a refresh / shared link reopens the same tab.
+  const selectTab = useCallback((next: string) => {
+    setTab(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", next);
+    window.history.replaceState(null, "", url.toString());
   }, []);
 
   useEffect(() => {
@@ -542,8 +562,13 @@ export default function WorkspacePage() {
   const handlers = assignments.filter((a) => a.eventRole === "HANDLER");
   const managerCount = assignments.filter((a) => a.eventRole === "MANAGER").length;
   const handlerCount = handlers.length;
-  // Board "Assign handler" options: all USER-role accounts.
-  const assignableUsers = users.filter((u) => u.globalRole === "USER");
+  // Board "Assign handler" options: only HANDLERs assigned to THIS event — a user must be event
+  // crew before tasks can be handed to them, otherwise the task never reaches their My Tasks.
+  const assignableUsers: AssigneeOption[] = handlers.map((a) => ({
+    id: a.userId,
+    fullName: a.userFullName,
+    email: a.userEmail,
+  }));
   const nameFor = (userId: string | null): string | null => {
     if (!userId) return null;
     const u = users.find((x) => x.id === userId);
@@ -693,7 +718,7 @@ export default function WorkspacePage() {
               return (
                 <button
                   key={t.id}
-                  onClick={() => setTab(t.id)}
+                  onClick={() => selectTab(t.id)}
                   className="inline-flex items-center gap-1.5 text-sm font-bold px-3.5 py-2 rounded-[var(--radius-sm)] cursor-pointer transition-all whitespace-nowrap"
                   style={{
                     background: active ? "var(--surface)" : "transparent",
@@ -829,8 +854,8 @@ export default function WorkspacePage() {
         </Card>
       )}
 
-      {tab === "guests" && <GuestsTab />}
-      {tab === "agenda" && <AgendaTab />}
+      {tab === "guests" && <GuestsTab eventId={id} />}
+      {tab === "agenda" && <AgendaTab eventId={id} eventDate={event.startsAt} />}
 
       {tab === "details" && (
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
@@ -1034,18 +1059,20 @@ function TaskGrid() {
   );
 }
 
-// ── Guests tab (mock attendance data — no guest backend wired here yet) ───────
-interface Guest { id: string; name: string; email: string; ticket: "VIP" | "General"; table: string; hue: number; checkedIn: boolean; time: string }
-const GUESTS_SEED: Guest[] = [
-  { id: "g1", name: "Eleanor Park",  email: "eleanor.park@mail.io",   ticket: "VIP",     table: "A1", hue: 140, checkedIn: true,  time: "08:42 AM" },
-  { id: "g2", name: "Marcus Bell",   email: "m.bell@northwind.io",    ticket: "General", table: "—",  hue: 210, checkedIn: true,  time: "08:51 AM" },
-  { id: "g3", name: "Sofia Marquez", email: "sofia@brightlabs.io",    ticket: "VIP",     table: "A3", hue: 300, checkedIn: true,  time: "08:55 AM" },
-  { id: "g4", name: "Daniel Cho",    email: "daniel@cho.dev",         ticket: "General", table: "B2", hue: 230, checkedIn: true,  time: "09:02 AM" },
-  { id: "g5", name: "Ava Nguyen",    email: "ava.n@summit.io",        ticket: "VIP",     table: "A2", hue: 35,  checkedIn: true,  time: "09:10 AM" },
-  { id: "g6", name: "Liam Carter",   email: "liam@carter.co",         ticket: "General", table: "—",  hue: 165, checkedIn: false, time: "" },
-  { id: "g7", name: "Mia Rossi",     email: "mia.rossi@events.io",    ticket: "General", table: "—",  hue: 330, checkedIn: false, time: "" },
-  { id: "g8", name: "Noah Pierce",   email: "noah.pierce@mail.io",    ticket: "VIP",     table: "—",  hue: 262, checkedIn: false, time: "" },
-];
+// ── Guests tab (live attendance — backed by the attendance API) ──────────────
+/** Stable avatar hue derived from the guest's name/email. */
+function hashHue(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+  return h;
+}
+
+const GUEST_STATUS_COLOR: Record<TicketStatus, string> = {
+  PENDING: "var(--text-muted)",
+  DELIVERED: "var(--blue)",
+  CHECKED_IN: "var(--green-600)",
+  REVOKED: "var(--danger)",
+};
 
 function StatCard({ icon, bg, color, value, label }: { icon: React.ReactNode; bg: string; color: string; value: string; label: string }) {
   return (
@@ -1061,25 +1088,93 @@ function StatCard({ icon, bg, color, value, label }: { icon: React.ReactNode; bg
   );
 }
 
-function GuestsTab() {
-  const [guests, setGuests] = useState<Guest[]>(GUESTS_SEED);
+function GuestsTab({ eventId }: { eventId: string }) {
+  const [submissions, setSubmissions] = useState<SubmissionSummary[]>([]);
+  const [checkinTimes, setCheckinTimes] = useState<Record<string, string>>({});
+  // Authoritative roll-up from the attendance summary — the guest list is capped at 100 rows,
+  // so the stat cards must use these server totals, not submissions.length, to stay accurate.
+  const [totals, setTotals] = useState({ registered: 0, checkedIn: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const registered = guests.length;
-  const checkedIn = guests.filter((g) => g.checkedIn).length;
-  const awaiting = registered - checkedIn;
+  // Guest list + the confirmed-check-in timestamps for the "Time" column.
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    Promise.all([listSubmissions(eventId), getAttendance(eventId)])
+      .then(([subs, att]) => {
+        if (cancelled) return;
+        setSubmissions(subs);
+        setTotals({ registered: att.totalRegistered, checkedIn: att.totalCheckedIn });
+        const times: Record<string, string> = {};
+        for (const c of att.checkins) times[c.submissionId] = c.checkedInAt;
+        setCheckinTimes(times);
+      })
+      .catch((e) => { if (!cancelled) setError(e instanceof ApiError ? e.message : "Failed to load guests."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [eventId]);
+
+  const { registered, checkedIn } = totals;
+  const awaiting = Math.max(0, registered - checkedIn);
   const onSite = registered ? Math.round((checkedIn / registered) * 100) : 0;
 
   const q = search.trim().toLowerCase();
-  const visible = guests.filter((g) => !q || g.name.toLowerCase().includes(q) || g.email.toLowerCase().includes(q));
+  const visible = submissions.filter(
+    (g) => !q || (g.guestName ?? "").toLowerCase().includes(q) || g.guestEmail.toLowerCase().includes(q),
+  );
 
-  function toggle(id: string) {
-    setGuests((prev) => prev.map((g) => {
-      if (g.id !== id) return g;
-      const now = !g.checkedIn;
-      const time = now ? new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "";
-      return { ...g, checkedIn: now, time };
-    }));
+  function fmtTime(iso?: string) {
+    if (!iso) return "—";
+    return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  /** Mark a row checked-in and bump the live count (the button only shows for awaiting guests). */
+  function markCheckedIn(g: SubmissionSummary, at?: string) {
+    setSubmissions((prev) => prev.map((x) => (x.id === g.id ? { ...x, qrStatus: "CHECKED_IN" } : x)));
+    if (at) setCheckinTimes((prev) => ({ ...prev, [g.id]: at }));
+    setTotals((t) => ({ ...t, checkedIn: t.checkedIn + 1 }));
+  }
+
+  async function checkIn(g: SubmissionSummary) {
+    setBusyId(g.id);
+    try {
+      const res = await manualCheckin(eventId, g.id);
+      markCheckedIn(g, res.checkedInAt);
+      toast.success("Guest checked in", g.guestName ?? g.guestEmail);
+    } catch (e) {
+      // A concurrent scan already checked them in — that's the idempotent success path
+      // (CLAUDE.md gotcha #4), not a failure. Reconcile and report it as such.
+      if (e instanceof ApiError && e.code === "ALREADY_CHECKED_IN") {
+        markCheckedIn(g);
+        toast.success("Already checked in", g.guestName ?? g.guestEmail);
+        return;
+      }
+      toast.error("Couldn't check in guest", e instanceof ApiError ? e.message : undefined);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20" style={{ color: "var(--text-muted)" }}>
+        <Loader2 size={22} className="animate-spin" />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-10 flex flex-col items-center gap-2 text-center">
+          <AlertTriangle size={22} style={{ color: "var(--danger)" }} />
+          <p className="text-sm font-semibold m-0" style={{ color: "var(--text-strong)" }}>{error}</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -1119,44 +1214,50 @@ function GuestsTab() {
             <table className="w-full border-collapse" style={{ minWidth: 820 }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
-                  {["Guest", "Ticket", "Table", "Status", "Time", "Check-in"].map((h, i) => (
-                    <th key={h} className={`text-[13px] font-semibold px-3 py-3 first:pl-0 ${i === 5 ? "text-right" : "text-left"}`} style={{ color: "var(--text-muted)" }}>{h}</th>
+                  {["Guest", "Phone", "Status", "Time", "Check-in"].map((h, i) => (
+                    <th key={h} className={`text-[13px] font-semibold px-3 py-3 first:pl-0 ${i === 4 ? "text-right" : "text-left"}`} style={{ color: "var(--text-muted)" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {visible.map((g, i) => (
+                {visible.map((g, i) => {
+                  const name = g.guestName ?? g.guestEmail;
+                  const isCheckedIn = g.qrStatus === "CHECKED_IN";
+                  const isRevoked = g.qrStatus === "REVOKED";
+                  return (
                   <tr key={g.id} className="transition-colors hover:bg-[var(--surface-2)]" style={{ borderBottom: i === visible.length - 1 ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
                     <td className="px-3 py-3.5 first:pl-0">
                       <div className="flex items-center gap-3">
-                        <AvatarUser name={g.name} hue={g.hue} size={36} />
+                        <AvatarUser name={name} hue={hashHue(g.guestEmail)} size={36} />
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{g.name}</span>
-                          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{g.email}</span>
+                          <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{name}</span>
+                          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{g.guestEmail}</span>
                         </div>
                       </div>
                     </td>
+                    <td className="px-3 py-3.5 text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>{g.guestPhone || "—"}</td>
                     <td className="px-3 py-3.5">
-                      <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={g.ticket === "VIP" ? { background: "var(--violet-soft)", color: "var(--violet)" } : { background: "var(--surface-3)", color: "var(--text-muted)" }}>{g.ticket}</span>
-                    </td>
-                    <td className="px-3 py-3.5 text-sm" style={{ color: "var(--text-muted)" }}>{g.table}</td>
-                    <td className="px-3 py-3.5">
-                      <span className="inline-flex items-center gap-1.5 text-[13px] font-bold" style={{ color: g.checkedIn ? "var(--green-600)" : "var(--orange)" }}>
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: g.checkedIn ? "var(--green-600)" : "var(--orange)" }} /> {g.checkedIn ? "Checked in" : "Awaiting"}
+                      <span className="inline-flex items-center gap-1.5 text-[13px] font-bold" style={{ color: GUEST_STATUS_COLOR[g.qrStatus] }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: GUEST_STATUS_COLOR[g.qrStatus] }} /> {TICKET_STATUS_LABEL[g.qrStatus]}
                       </span>
                     </td>
-                    <td className="px-3 py-3.5 text-[13px] whitespace-nowrap" style={{ color: "var(--text-faint)" }}>{g.time || "—"}</td>
+                    <td className="px-3 py-3.5 text-[13px] whitespace-nowrap" style={{ color: "var(--text-faint)" }}>{fmtTime(checkinTimes[g.id])}</td>
                     <td className="px-3 py-3.5 text-right">
-                      {g.checkedIn ? (
-                        <Button variant="ghost" size="sm" onClick={() => toggle(g.id)}><RotateCcw size={13} /> Undo</Button>
+                      {isCheckedIn ? (
+                        <span className="inline-flex items-center gap-1.5 text-[13px] font-bold" style={{ color: "var(--green-600)" }}><Check size={14} /> Checked in</span>
+                      ) : isRevoked ? (
+                        <span className="text-[13px]" style={{ color: "var(--text-faint)" }}>—</span>
                       ) : (
-                        <Button variant="soft" size="sm" onClick={() => toggle(g.id)}><Check size={14} /> Check in</Button>
+                        <Button variant="soft" size="sm" disabled={busyId === g.id} onClick={() => checkIn(g)}>
+                          {busyId === g.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Check in
+                        </Button>
                       )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {visible.length === 0 && (
-                  <tr><td colSpan={6} className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>No guests match your search.</td></tr>
+                  <tr><td colSpan={5} className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>{submissions.length === 0 ? "No guests have registered yet." : "No guests match your search."}</td></tr>
                 )}
               </tbody>
             </table>
@@ -1167,43 +1268,194 @@ function GuestsTab() {
   );
 }
 
-// ── Agenda tab (mock run-of-show) ────────────────────────────────────────────
-type SessionType = "ops" | "mainstage" | "workshop" | "break";
-const SESSION_STYLE: Record<SessionType, { label: string; chipBg: string; chipColor: string; accent: string }> = {
-  ops:       { label: "Ops",        chipBg: "var(--surface-3)",   chipColor: "var(--text-muted)",       accent: "#9aa0b5" },
-  mainstage: { label: "Main Stage", chipBg: "var(--primary-soft)", chipColor: "var(--primary-hex,#6366f1)", accent: "var(--primary-hex,#6366f1)" },
-  workshop:  { label: "Workshop",   chipBg: "var(--violet-soft)", chipColor: "var(--violet)",           accent: "var(--violet)" },
-  break:     { label: "Break",      chipBg: "var(--green-soft)",  chipColor: "var(--green-600)",        accent: "var(--green-600)" },
-};
+// ── Agenda tab (run-of-show — backed by the agenda API) ──────────────────────
+/** Add or edit a single run-of-show session. */
+function AgendaSessionDialog({
+  open, onOpenChange, initial, onSave,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  initial: AgendaItem | null;
+  onSave: (input: AgendaItemInput) => Promise<boolean>;
+}) {
+  const [title, setTitle] = useState("");
+  const [time, setTime] = useState("09:00");
+  const [mins, setMins] = useState("60");
+  const [submitting, setSubmitting] = useState(false);
+  const editing = initial != null;
 
-interface Session { id: string; time: string; mins: number; title: string; location: string; type: SessionType; people: { name: string; hue: number }[] }
-const SESSIONS: Session[] = [
-  { id: "s1", time: "08:00", mins: 60, title: "Doors & Registration", location: "Main Lobby",     type: "ops",       people: [{ name: "Ava Nguyen", hue: 140 }, { name: "Noah Pierce", hue: 220 }] },
-  { id: "s2", time: "09:00", mins: 75, title: "Opening Keynote",      location: "Hall A",         type: "mainstage", people: [{ name: "Patrick Bateman", hue: 140 }] },
-  { id: "s3", time: "10:30", mins: 90, title: "Workshop Block A",     location: "Studios B–D",    type: "workshop",  people: [{ name: "Sofia Marquez", hue: 210 }, { name: "Mia Rossi", hue: 195 }] },
-  { id: "s4", time: "12:00", mins: 60, title: "Lunch & Networking",   location: "Garden Terrace", type: "break",     people: [] },
-  { id: "s5", time: "13:00", mins: 90, title: "Workshop Block B",     location: "Studios B–D",    type: "workshop",  people: [{ name: "Liam Carter", hue: 230 }] },
-  { id: "s6", time: "14:30", mins: 60, title: "Panel: Future of Tech", location: "Hall A",        type: "mainstage", people: [{ name: "Daniel Cho", hue: 262 }] },
-  { id: "s7", time: "15:30", mins: 30, title: "Coffee Break",         location: "Garden Terrace", type: "break",     people: [] },
-  { id: "s8", time: "16:00", mins: 90, title: "Closing Keynote",      location: "Hall A",         type: "mainstage", people: [{ name: "Patrick Bateman", hue: 140 }] },
-];
+  useEffect(() => {
+    if (open) {
+      setTitle(initial?.title ?? "");
+      setTime(initial?.time || "09:00");
+      setMins(initial != null ? String(initial.mins) : "60");
+      setSubmitting(false);
+    }
+  }, [open, initial]);
 
-function AgendaTab() {
+  const canSubmit = title.trim().length > 0 && /^\d{2}:\d{2}$/.test(time) && !submitting;
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setSubmitting(true);
+    const ok = await onSave({ title: title.trim(), time, mins: Number(mins) || 0 });
+    setSubmitting(false);
+    if (ok) onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center justify-center w-11 h-11 rounded-[var(--radius-md)]" style={{ background: "var(--primary-soft)", color: "var(--primary-hex,#6366f1)" }}>
+              <Clock size={20} />
+            </span>
+            <div className="flex flex-col gap-0.5">
+              <DialogTitle>{editing ? "Edit session" : "Add session"}</DialogTitle>
+              <DialogDescription>A slot in the event&apos;s run of show</DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+        <form onSubmit={submit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="agenda-title">Title <span style={{ color: "var(--danger)" }}>*</span></Label>
+            <Input id="agenda-title" value={title} maxLength={200} autoFocus
+              placeholder="e.g. Opening Keynote"
+              onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="agenda-time">Start time</Label>
+              <Input id="agenda-time" type="time" value={time}
+                onChange={(e) => setTime(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="agenda-mins">Duration (min)</Label>
+              <Input id="agenda-mins" type="number" min={0} step={5} value={mins}
+                placeholder="60"
+                onChange={(e) => setMins(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="ghost" size="default">Cancel</Button>
+            </DialogClose>
+            <Button type="submit" size="default" disabled={!canSubmit}>
+              {submitting ? <Loader2 size={14} className="animate-spin" /> : editing ? <Check size={14} /> : <Plus size={14} />}
+              {editing ? "Save changes" : "Add session"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AgendaTab({ eventId, eventDate }: { eventId: string; eventDate: string | null }) {
+  const [sessions, setSessions] = useState<AgendaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<AgendaItem | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<AgendaItem | null>(null);
+
+  const reload = useCallback(
+    (signal?: AbortSignal) =>
+      listAgenda(eventId, signal)
+        .then((items) => setSessions(items))
+        .catch((e) => { if (!signal?.aborted) setError(e instanceof ApiError ? e.message : "Failed to load agenda."); }),
+    [eventId]
+  );
+
+  useEffect(() => {
+    const ctrl = new AbortController();
+    setLoading(true);
+    setError(null);
+    reload(ctrl.signal).finally(() => { if (!ctrl.signal.aborted) setLoading(false); });
+    return () => ctrl.abort();
+  }, [reload]);
+
+  function openAdd() { setEditing(null); setDialogOpen(true); }
+  function openEdit(item: AgendaItem) { setEditing(item); setDialogOpen(true); }
+
+  async function handleSave(input: AgendaItemInput): Promise<boolean> {
+    try {
+      if (editing) {
+        await updateAgendaItem(eventId, editing.id, input, eventDate ?? undefined);
+        toast.success("Session updated");
+      } else {
+        await createAgendaItem(eventId, input, eventDate ?? undefined);
+        toast.success("Session added");
+      }
+      await reload();
+      return true;
+    } catch (e) {
+      toast.error(editing ? "Couldn't update session" : "Couldn't add session", e instanceof ApiError ? e.message : undefined);
+      return false;
+    }
+  }
+
+  async function confirmDelete() {
+    const item = confirmTarget;
+    if (!item) return;
+    try {
+      await deleteAgendaItem(eventId, item.id);
+      setSessions((prev) => prev.filter((s) => s.id !== item.id));
+      toast.success("Session deleted");
+    } catch (e) {
+      toast.error("Couldn't delete session", e instanceof ApiError ? e.message : undefined);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20" style={{ color: "var(--text-muted)" }}>
+        <Loader2 size={22} className="animate-spin" />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="p-10 flex flex-col items-center gap-2 text-center">
+          <AlertTriangle size={22} style={{ color: "var(--danger)" }} />
+          <p className="text-sm font-semibold m-0" style={{ color: "var(--text-strong)" }}>{error}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardContent className="p-6 flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-bold m-0" style={{ color: "var(--text-strong)" }}>Run of Show</h2>
           <div className="flex items-center gap-4">
-            <span className="text-[13px] font-semibold" style={{ color: "var(--text-faint)" }}>Sat, Jun 24 · {SESSIONS.length} sessions</span>
-            <Button variant="soft" size="sm"><Plus size={14} /> Add session</Button>
+            <span className="text-[13px] font-semibold" style={{ color: "var(--text-faint)" }}>{sessions.length} sessions</span>
+            <Button variant="soft" size="sm" onClick={openAdd}><Plus size={14} /> Add session</Button>
           </div>
         </div>
 
+        <AgendaSessionDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editing} onSave={handleSave} />
+        <ConfirmDialog
+          open={confirmTarget != null}
+          onOpenChange={(v) => { if (!v) setConfirmTarget(null); }}
+          title="Delete session?"
+          description={confirmTarget ? `"${confirmTarget.title}" will be removed from the run of show.` : undefined}
+          confirmLabel="Delete"
+          destructive
+          onConfirm={confirmDelete}
+        />
+
+        {sessions.length === 0 ? (
+          <p className="py-10 text-center text-sm m-0" style={{ color: "var(--text-muted)" }}>No sessions scheduled yet.</p>
+        ) : (
         <div className="flex flex-col">
-          {SESSIONS.map((s, i) => {
-            const st = SESSION_STYLE[s.type];
-            const last = i === SESSIONS.length - 1;
+          {sessions.map((s, i) => {
+            const st = AGENDA_TYPE_STYLE[s.type];
+            const last = i === sessions.length - 1;
             return (
               <div key={s.id} className="flex gap-3" style={{ paddingBottom: last ? 0 : 18 }}>
                 {/* Time */}
@@ -1225,19 +1477,21 @@ function AgendaTab() {
                     <div className="inline-flex items-center gap-1 text-xs mt-0.5" style={{ color: "var(--text-muted)" }}><MapPin size={12} /> {s.location}</div>
                   </div>
                   <span className="text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap" style={{ background: st.chipBg, color: st.chipColor }}>{st.label}</span>
-                  {s.people.length > 0 && (
+                  {s.staff.length > 0 && (
                     <div className="flex -space-x-1.5">
-                      {s.people.map((p, j) => (
+                      {s.staff.map((p, j) => (
                         <span key={j} className="rounded-full" style={{ boxShadow: "0 0 0 2px var(--surface)" }}><AvatarUser name={p.name} hue={p.hue} size={24} /></span>
                       ))}
                     </div>
                   )}
-                  <Button variant="ghost" size="icon-sm" title="Remove session" className="hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"><Trash2 size={14} /></Button>
+                  <Button variant="ghost" size="icon-sm" title="Edit session" onClick={() => openEdit(s)}><Pencil size={14} /></Button>
+                  <Button variant="ghost" size="icon-sm" title="Remove session" onClick={() => setConfirmTarget(s)} className="hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"><Trash2 size={14} /></Button>
                 </div>
               </div>
             );
           })}
         </div>
+        )}
       </CardContent>
     </Card>
   );

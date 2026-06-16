@@ -1,0 +1,16 @@
+
+> gatherly-frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.200.179:3000
+- Environments: .env.local
+✓ Ready in 510ms
+- Experiments (use with caution):
+  · optimizePackageImports
+
+○ Compiling /events/[id]/workspace ...
+ GET /events/e4b3ea97-41e4-4c85-8cb7-8f2b74478a62/workspace 200 in 5.0s (next.js: 4.4s, proxy.ts: 211ms, application-code: 361ms)
+ GET /api/pwa-icon/192 200 in 1180ms (next.js: 1006ms, application-code: 174ms)
+ GET /api/pwa-icon/192 200 in 31ms (next.js: 17ms, application-code: 14ms)
