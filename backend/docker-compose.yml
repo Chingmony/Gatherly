@@ -8,8 +8,6 @@ services:
       dockerfile: Dockerfile
     image: gartherly-api:latest
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       rustfs:
@@ -18,10 +16,6 @@ services:
       - "8083:8083"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      # Datasource — point at the postgres service on the compose network
-      - DB_URL=jdbc:postgresql://postgres:5432/gatherly
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=123
       # Redis (OTP, rate limiting, ShedLock)
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -45,23 +39,6 @@ services:
       retries: 5
       start_period: 40s
     restart: unless-stopped
-
-  postgres:
-    image: postgres:16-alpine
-    ports:
-      - "5434:5432"   # host 5434 -> container 5432
-    environment:
-      - POSTGRES_DB=gatherly
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=123
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d gatherly"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   redis:
         image: redis:7-alpine
         container_name: gartherly-redis
@@ -108,6 +85,5 @@ services:
       retries: 3
 
 volumes:
-  postgres_data:
   rustfs_data:
   redis_data:
