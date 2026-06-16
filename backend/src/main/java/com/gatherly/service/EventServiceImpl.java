@@ -5,7 +5,9 @@ import com.gatherly.common.error.ErrorCode;
 import com.gatherly.domain.Event;
 import com.gatherly.domain.EventAssignment;
 import com.gatherly.domain.EventStatus;
+import com.gatherly.domain.FormStatus;
 import com.gatherly.domain.GlobalRole;
+import com.gatherly.domain.RegistrationForm;
 import com.gatherly.dto.event.EventCreateRequest;
 import com.gatherly.dto.event.EventResponse;
 import com.gatherly.dto.event.EventUpdateRequest;
@@ -13,12 +15,18 @@ import com.gatherly.dto.event.PublicEventResponse;
 import com.gatherly.mapper.EventMapper;
 import com.gatherly.repository.EventAssignmentRepository;
 import com.gatherly.repository.EventRepository;
+import com.gatherly.repository.FormTemplateRepository;
+import com.gatherly.repository.RegistrationFormRepository;
+import com.gatherly.repository.RegistrationSubmissionRepository;
+import com.gatherly.repository.RegistrationSubmissionRepository.EventRegistrationCount;
 import com.gatherly.security.UserPrincipal;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,15 +43,24 @@ public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepository;
   private final EventAssignmentRepository assignmentRepository;
+  private final RegistrationSubmissionRepository submissionRepository;
+  private final FormTemplateRepository formTemplateRepository;
+  private final RegistrationFormRepository formRepository;
   private final EventMapper eventMapper;
   private final SecureRandom random = new SecureRandom();
 
   public EventServiceImpl(
       EventRepository eventRepository,
       EventAssignmentRepository assignmentRepository,
+      RegistrationSubmissionRepository submissionRepository,
+      FormTemplateRepository formTemplateRepository,
+      RegistrationFormRepository formRepository,
       EventMapper eventMapper) {
     this.eventRepository = eventRepository;
     this.assignmentRepository = assignmentRepository;
+    this.submissionRepository = submissionRepository;
+    this.formTemplateRepository = formTemplateRepository;
+    this.formRepository = formRepository;
     this.eventMapper = eventMapper;
   }
 
@@ -53,7 +70,7 @@ public class EventServiceImpl implements EventService {
   public Page<EventResponse> list(String query, Pageable pageable, UserPrincipal principal) {
     String q = (query == null || query.isBlank()) ? null : query.trim();
     if (principal.role() == GlobalRole.ADMIN) {
-      return eventRepository.search(q, pageable).map(eventMapper::toResponse);
+      return withCounts(eventRepository.search(q, pageable));
     }
     // Non-admins see only events they are assigned to (MANAGER or HANDLER).
     List<UUID> eventIds =
@@ -64,7 +81,25 @@ public class EventServiceImpl implements EventService {
     if (eventIds.isEmpty()) {
       return Page.empty(pageable);
     }
-    return eventRepository.searchScoped(eventIds, q, pageable).map(eventMapper::toResponse);
+    return withCounts(eventRepository.searchScoped(eventIds, q, pageable));
+  }
+
+  /** Maps a page of events to responses, resolving registration counts in a single grouped query. */
+  private Page<EventResponse> withCounts(Page<Event> events) {
+    List<UUID> ids = events.map(Event::getId).getContent();
+    Map<UUID, Long> counts =
+        ids.isEmpty()
+            ? Map.of()
+            : submissionRepository.countByEventIdIn(ids).stream()
+                .collect(
+                    Collectors.toMap(
+                        EventRegistrationCount::getEventId, EventRegistrationCount::getCount));
+    return events.map(e -> eventMapper.toResponse(e, counts.getOrDefault(e.getId(), 0L)));
+  }
+
+  /** Maps a single event, resolving its live registration count. */
+  private EventResponse toResponse(Event event) {
+    return eventMapper.toResponse(event, submissionRepository.countByEventId(event.getId()));
   }
 
   @Override
@@ -84,21 +119,53 @@ public class EventServiceImpl implements EventService {
     Event event = new Event();
     event.setTitle(request.title());
     event.setSlug(uniqueSlug(request.title()));
+    event.setCategory(request.category());
+    event.setCapacity(request.capacity());
     event.setDescription(request.description());
     event.setVenue(request.venue());
+    event.setCoverColor(request.coverColor());
+    event.setCoverImageUrl(request.coverImageUrl());
     event.setStartsAt(request.startsAt());
     event.setEndsAt(request.endsAt());
     event.setCheckinOpensAt(request.checkinOpensAt());
     event.setStatus(EventStatus.DRAFT);
     event.setCreatedBy(principal.id());
-    return eventMapper.toResponse(eventRepository.save(event));
+    Event saved = eventRepository.save(event);
+    seedRegistrationForm(saved, principal.id());
+    return toResponse(saved);
+  }
+
+  /**
+   * Give a new event a ready-to-use registration form by copying the most recent form template
+   * whose event type matches the chosen category. This is what lets guests register for an event
+   * with the form designed for its category. Seeded ACTIVE (templates always carry the required
+   * email + phone fields); if no template matches the category the event starts with no form and an
+   * organizer can build one. Public registration stays gated on the event being PUBLISHED.
+   */
+  private void seedRegistrationForm(Event event, UUID createdBy) {
+    String category = event.getCategory();
+    if (category == null || category.isBlank()) {
+      return;
+    }
+    formTemplateRepository
+        .findFirstByEventTypeIgnoreCaseOrderByUpdatedAtDesc(category.trim())
+        .ifPresent(
+            template -> {
+              RegistrationForm form = new RegistrationForm();
+              form.setEventId(event.getId());
+              form.setTitle(template.getTitle());
+              form.setSchema(template.getSchema());
+              form.setStatus(FormStatus.ACTIVE);
+              form.setCreatedBy(createdBy);
+              formRepository.save(form);
+            });
   }
 
   @Override
   @PreAuthorize("@eventSecurity.canView(#eventId, authentication)")
   @Transactional(readOnly = true)
   public EventResponse get(UUID eventId) {
-    return eventMapper.toResponse(load(eventId));
+    return toResponse(load(eventId));
   }
 
   @Override
@@ -109,11 +176,23 @@ public class EventServiceImpl implements EventService {
     if (request.title() != null) {
       event.setTitle(request.title());
     }
+    if (request.category() != null) {
+      event.setCategory(request.category());
+    }
+    if (request.capacity() != null) {
+      event.setCapacity(request.capacity());
+    }
     if (request.description() != null) {
       event.setDescription(request.description());
     }
     if (request.venue() != null) {
       event.setVenue(request.venue());
+    }
+    if (request.coverColor() != null) {
+      event.setCoverColor(request.coverColor());
+    }
+    if (request.coverImageUrl() != null) {
+      event.setCoverImageUrl(request.coverImageUrl());
     }
     if (request.startsAt() != null) {
       event.setStartsAt(request.startsAt());
@@ -124,7 +203,7 @@ public class EventServiceImpl implements EventService {
     if (request.checkinOpensAt() != null) {
       event.setCheckinOpensAt(request.checkinOpensAt());
     }
-    return eventMapper.toResponse(event);
+    return toResponse(event);
   }
 
   @Override
@@ -154,7 +233,7 @@ public class EventServiceImpl implements EventService {
   public EventResponse rotateRegistrationQr(UUID eventId) {
     Event event = load(eventId);
     event.setRegistrationQrToken(randomToken());
-    return eventMapper.toResponse(event);
+    return toResponse(event);
   }
 
   private EventResponse transition(UUID eventId, EventStatus target, String illegalMessage) {
@@ -163,7 +242,7 @@ public class EventServiceImpl implements EventService {
       throw new ApiException(ErrorCode.CONFLICT, illegalMessage);
     }
     event.setStatus(target);
-    return eventMapper.toResponse(event);
+    return toResponse(event);
   }
 
   private Event load(UUID eventId) {

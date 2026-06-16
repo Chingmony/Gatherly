@@ -7,7 +7,8 @@ package com.gatherly.domain;
 public enum AssetPurpose {
   ORG_LOGO("org/logo/"),
   ORG_BANNER("org/banner/"),
-  USER_AVATAR("user/");
+  USER_AVATAR("user/"),
+  EVENT_COVER("event/cover/");
 
   private final String keyPrefix;
 

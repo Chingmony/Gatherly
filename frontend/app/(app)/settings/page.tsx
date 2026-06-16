@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AvatarUser } from "@/components/ui/avatar-user";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { apiFetch, uploadAvatar } from "@/lib/api";
-import type { ApiResponse, UserResponse, Gender } from "@/lib/types";
+import { getMe, updateMe, changePassword, uploadAvatar } from "@/lib/api/me";
+import type { UserResponse } from "@/lib/api/auth";
+import type { Gender } from "@/lib/types";
 import { uiRoleFromGlobal, ROLE_META } from "@/lib/roles";
 
 function formatDate(iso: string) {
@@ -38,8 +39,8 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    apiFetch<ApiResponse<UserResponse>>("/me")
-      .then((res) => seedFromUser(res.data))
+    getMe()
+      .then((u) => seedFromUser(u))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -85,18 +86,15 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaveError("");
     try {
-      const res = await apiFetch<ApiResponse<UserResponse>>("/me", {
-        method: "PUT",
-        // Coerce empties to null so enum/date fields never send "" (which would 400).
-        body: JSON.stringify({
-          fullName: name || null,
-          phone: phone || null,
-          gender: gender || null,
-          dateOfBirth: dob || null,
-          address: address || null,
-        }),
+      // Coerce empties to null so enum/date fields never send "" (which would 400).
+      const updated = await updateMe({
+        fullName: name || null,
+        phone: phone || null,
+        gender: gender || null,
+        dateOfBirth: dob || null,
+        address: address || null,
       });
-      seedFromUser(res.data);
+      seedFromUser(updated);
       setSaved(true);
       setTimeout(() => setSaved(false), 2200);
     } catch (err) {
@@ -110,10 +108,8 @@ export default function SettingsPage() {
     if (pwForm.next.length < 8) { setPwError("Password must be at least 8 characters."); return; }
     if (pwForm.next !== pwForm.confirm) { setPwError("Passwords do not match."); return; }
     try {
-      await apiFetch("/me/password", {
-        method: "PUT",
-        body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.next }),
-      });
+      await changePassword({ currentPassword: pwForm.current, newPassword: pwForm.next });
+
       setPwSaved(true);
       setPwForm({ current: "", next: "", confirm: "" });
       setTimeout(() => setPwSaved(false), 2200);

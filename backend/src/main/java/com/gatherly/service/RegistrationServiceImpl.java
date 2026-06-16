@@ -10,6 +10,7 @@ import com.gatherly.domain.RegistrationForm;
 import com.gatherly.domain.RegistrationSubmission;
 import com.gatherly.domain.TicketStatus;
 import com.gatherly.dto.form.FormField;
+import com.gatherly.dto.registration.PublicEventResponse;
 import com.gatherly.dto.registration.PublicFormResponse;
 import com.gatherly.dto.registration.RegistrationRequest;
 import com.gatherly.dto.registration.RegistrationResponse;
@@ -17,11 +18,15 @@ import com.gatherly.dto.registration.TicketResponse;
 import com.gatherly.repository.EventRepository;
 import com.gatherly.repository.RegistrationFormRepository;
 import com.gatherly.repository.RegistrationSubmissionRepository;
+import com.gatherly.repository.RegistrationSubmissionRepository.EventRegistrationCount;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -67,6 +72,35 @@ public class RegistrationServiceImpl implements RegistrationService {
     this.qrService = qrService;
     this.opsNotificationService = opsNotificationService;
     this.objectMapper = objectMapper;
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<PublicEventResponse> listPublicEvents(
+      String search, String category, String location, Pageable pageable) {
+    String q = blankToNull(search);
+    String cat = blankToNull(category);
+    String loc = blankToNull(location);
+    Page<Event> events = eventRepository.searchPublic(q, cat, loc, pageable);
+    List<UUID> ids = events.map(Event::getId).getContent();
+    Map<UUID, Long> counts =
+        ids.isEmpty()
+            ? Map.of()
+            : submissionRepository.countByEventIdIn(ids).stream()
+                .collect(
+                    Collectors.toMap(
+                        EventRegistrationCount::getEventId, EventRegistrationCount::getCount));
+    return events.map(e -> toPublicEvent(e, counts.getOrDefault(e.getId(), 0L)));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public PublicEventResponse getPublicEvent(String slug) {
+    Event event = eventRepository.findBySlug(slug).orElseThrow(RegistrationServiceImpl::notFound);
+    if (event.getStatus() != EventStatus.PUBLIC) {
+      throw notFound(); // do not leak non-public events
+    }
+    return toPublicEvent(event, submissionRepository.countByEventId(event.getId()));
   }
 
   @Override
@@ -177,6 +211,26 @@ public class RegistrationServiceImpl implements RegistrationService {
   }
 
   // ── helpers ───────────────────────────────────────────────────────────────
+
+  private static PublicEventResponse toPublicEvent(Event event, long registeredCount) {
+    return new PublicEventResponse(
+        event.getId(),
+        event.getSlug(),
+        event.getTitle(),
+        event.getCategory(),
+        event.getDescription(),
+        event.getVenue(),
+        event.getCoverColor(),
+        event.getCoverImageUrl(),
+        event.getStartsAt(),
+        event.getEndsAt(),
+        event.getCapacity(),
+        registeredCount);
+  }
+
+  private static String blankToNull(String s) {
+    return (s == null || s.isBlank()) ? null : s.trim();
+  }
 
   private PublicFormResponse publicForm(Event event) {
     if (event.getStatus() != EventStatus.PUBLIC) {

@@ -1,28 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useParams } from "next/navigation";
 import {
   Calendar,
+  CalendarDays,
   MapPin,
-  Check,
-  ChevronRight,
-  ChevronLeft,
-  Moon,
-  Sun,
-  LayoutGrid,
   Ticket,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
   User,
   Mail,
   Phone,
   Building2,
-  CalendarDays,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
-import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Segmented } from "@/components/ui/segmented";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   Select,
   SelectContent,
@@ -30,520 +33,819 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTheme } from "@/components/theme-provider";
+import { ApiError } from "@/lib/api/client";
+import {
+  getPublicEvent,
+  getPublicEventForm,
+  registerForEvent,
+  getTicket,
+  tokenFromTicketUrl,
+  type PublicEvent,
+  type PublicForm,
+  type PublicFormField,
+  type PublicTicket,
+  type RegistrationResult,
+} from "@/lib/api/events";
 
-const EVENT = {
-  id: "ev1",
-  name: "NorthStar Tech Summit",
-  category: "Conference",
-  date: "Jun 24, 2026",
-  time: "8:00 AM",
-  location: "Pier 48, San Francisco",
-  attendees: 1842,
-  price: 25,
-  description:
-    "Join 1,842+ attendees for a day of keynotes, hands-on workshops and unmatched networking. Whether you're shipping your first product or scaling your tenth, NorthStar Tech Summit is where the community gathers.",
-  tags: ["Keynotes", "Workshops", "Networking", "After-party"],
+/* ─────────────────────────── helpers ─────────────────────────── */
+const COVER_THEMES: Record<string, { from: string; to: string }> = {
+  violet: { from: "#6366f1", to: "#8b5cf6" },
+  blue: { from: "#3b82f6", to: "#6366f1" },
+  teal: { from: "#14b8a6", to: "#06b6d4" },
+  green: { from: "#22c55e", to: "#16a34a" },
+  orange: { from: "#f59e0b", to: "#f97316" },
+  amber: { from: "#f97316", to: "#ec4899" },
+  pink: { from: "#f43f5e", to: "#f59e0b" },
 };
 
-const TSHIRT_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-const DIETARY = ["No preference", "Vegetarian", "Vegan", "Halal", "Gluten-free"];
+function heroGradientFor(coverColor: string | null): string {
+  let from = "#6366f1";
+  let to = "#8b5cf6";
+  if (coverColor) {
+    if (coverColor.startsWith("#")) {
+      from = coverColor;
+      to = coverColor;
+    } else if (COVER_THEMES[coverColor]) {
+      ({ from, to } = COVER_THEMES[coverColor]);
+    }
+  }
+  return `linear-gradient(120deg, ${from} 0%, #7c5cf0 55%, ${to} 100%)`;
+}
 
-const AGENDA = [
-  { start: "08:00", end: "09:00", track: "Check-in", title: "Doors & Registration", color: "var(--primary-hex,#6366f1)" },
-  { start: "09:00", end: "10:15", track: "Main Stage", title: "Opening Keynote", color: "var(--violet)" },
-  { start: "10:30", end: "12:00", track: "Workshop", title: "Workshop Block A", color: "var(--blue)" },
-  { start: "12:00", end: "13:00", track: "Break", title: "Lunch & Networking", color: "var(--green)" },
-  { start: "13:30", end: "14:30", track: "Main Stage", title: "Panel — Scaling Teams", color: "var(--violet)" },
-  { start: "15:00", end: "16:30", track: "Workshop", title: "Workshop Block B", color: "var(--blue)" },
-  { start: "16:45", end: "17:30", track: "Main Stage", title: "Closing + Awards", color: "var(--violet)" },
-  { start: "18:00", end: "20:00", track: "Social", title: "After-party", color: "var(--orange)" },
-];
+function fmtDate(iso: string | null) {
+  if (!iso) return "Date TBA";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "Date TBA";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
 
-type FormState = {
-  fullName: string;
-  email: string;
-  phone: string;
-  tshirt: string;
-  dietary: string;
-  company: string;
-};
+function fmtTime(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
 
-const HERO_GRADIENT =
-  "linear-gradient(135deg, #8b7bf8 0%, #6f5cf3 55%, #6a5cf0 100%)";
+type View = "register" | "schedule";
+type FormMode = "loading" | "ready" | "no_form" | "error";
 
 export default function RegisterPage() {
-  const { theme, toggleTheme } = useTheme();
-  const [tab, setTab] = useState("register");
-  const [values, setValues] = useState<FormState>({
-    fullName: "",
-    email: "",
-    phone: "",
-    tshirt: "",
-    dietary: "",
-    company: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
+  const params = useParams<{ id: string }>();
+  const slug = params?.id ?? "";
 
-  function set<K extends keyof FormState>(k: K, v: string) {
-    setValues((p) => ({ ...p, [k]: v }));
+  const [event, setEvent] = useState<PublicEvent | null>(null);
+  const [load, setLoad] = useState<"loading" | "ready" | "notfound" | "error">("loading");
+  const [form, setForm] = useState<PublicForm | null>(null);
+  const [formMode, setFormMode] = useState<FormMode>("loading");
+
+  const [view, setView] = useState<View>("register");
+  const [result, setResult] = useState<RegistrationResult | null>(null);
+
+  useEffect(() => {
+    if (!slug) return;
+    const controller = new AbortController();
+    setLoad("loading");
+    setFormMode("loading");
+
+    getPublicEvent(slug, controller.signal)
+      .then((ev) => {
+        setEvent(ev);
+        setLoad("ready");
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        setLoad(err instanceof ApiError && err.status === 404 ? "notfound" : "error");
+      });
+
+    getPublicEventForm(slug, controller.signal)
+      .then((f) => {
+        setForm(f);
+        setFormMode("ready");
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        setFormMode(err instanceof ApiError && err.code === "NO_ACTIVE_FORM" ? "no_form" : "error");
+      });
+
+    return () => controller.abort();
+  }, [slug]);
+
+  if (load === "loading") {
+    return (
+      <Shell>
+        <div className="flex flex-col items-center justify-center gap-3 py-32" style={{ color: "var(--text-muted)" }}>
+          <Loader2 size={28} className="animate-spin" />
+          <span className="text-sm font-semibold">Loading event…</span>
+        </div>
+      </Shell>
+    );
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitted(true);
+  if (load === "notfound" || load === "error" || !event) {
+    return (
+      <Shell>
+        <div className="flex flex-col items-center justify-center gap-3 py-28 text-center">
+          <AlertCircle size={32} style={{ color: load === "notfound" ? "var(--text-faint)" : "var(--danger)" }} />
+          <div className="flex flex-col gap-1">
+            <p className="text-base font-extrabold m-0" style={{ color: "var(--text-strong)" }}>
+              {load === "notfound" ? "Event not found" : "Couldn't load this event"}
+            </p>
+            <p className="text-sm m-0" style={{ color: "var(--text-muted)" }}>
+              {load === "notfound"
+                ? "This event may be unpublished or no longer available."
+                : "Please check your connection and try again."}
+            </p>
+          </div>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/explore"><LayoutGrid size={15} /> Browse events</Link>
+          </Button>
+        </div>
+      </Shell>
+    );
   }
 
+  if (result) return <SuccessScreen event={event} result={result} />;
+
+  const heroGradient = heroGradientFor(event.coverColor);
+  const dateLine = [fmtDate(event.startsAt), fmtTime(event.startsAt)].filter(Boolean).join(" · ");
+
+  return (
+    <Shell>
+      <div className="flex flex-col gap-6">
+        {/* Hero */}
+        <div
+          className="relative overflow-hidden rounded-[var(--radius-xl)] px-7 py-7 md:px-10 md:py-9"
+          style={{ background: heroGradient, boxShadow: "var(--shadow-glow)" }}
+        >
+          <Calendar size={150} className="absolute -right-4 top-4 pointer-events-none" style={{ color: "rgba(255,255,255,0.14)" }} aria-hidden="true" />
+          <div className="relative flex flex-col gap-3 max-w-2xl">
+            <span
+              className="inline-flex items-center gap-1.5 self-start text-xs font-bold px-3 py-1 rounded-full backdrop-blur-sm"
+              style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#fff" }} />
+              {event.category ? `${event.category} · ` : ""}Registration open
+            </span>
+            <h1 className="text-[30px] md:text-[36px] font-extrabold leading-[1.05] m-0" style={{ color: "#fff" }}>
+              {event.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm font-semibold" style={{ color: "rgba(255,255,255,0.92)" }}>
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar size={14} /> {dateLine}
+              </span>
+              {event.venue && (
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin size={14} /> {event.venue}
+                </span>
+              )}
+            </div>
+            {event.description && (
+              <p className="text-[14px] leading-relaxed m-0 max-w-xl" style={{ color: "rgba(255,255,255,0.82)" }}>
+                {event.description}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Tab switcher */}
+        <div className="flex justify-center">
+          <div
+            className="inline-flex items-center gap-1 p-1 rounded-[var(--radius-md)] border"
+            style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
+          >
+            <TabButton active={view === "register"} onClick={() => setView("register")} icon={<Ticket size={15} />}>
+              Register
+            </TabButton>
+            <TabButton active={view === "schedule"} onClick={() => setView("schedule")} icon={<CalendarDays size={15} />}>
+              Schedule
+            </TabButton>
+          </div>
+        </div>
+
+        {/* Content */}
+        {view === "register" ? (
+          <div className="grid grid-cols-1 md:grid-cols-[330px_1fr] gap-6 items-start">
+            <TicketCard event={event} heroGradient={heroGradient} dateLine={dateLine} />
+            {formMode === "loading" ? (
+              <Panel><CenterNote icon={<Loader2 size={24} className="animate-spin" />} title="Loading registration form…" /></Panel>
+            ) : formMode === "ready" && form ? (
+              <RegistrationForm event={event} form={form} onSuccess={setResult} />
+            ) : formMode === "no_form" ? (
+              <Panel>
+                <CenterNote
+                  icon={<CalendarDays size={24} />}
+                  title="Registration isn't open yet"
+                  sub="This event doesn't have an active registration form. Please check back soon."
+                />
+              </Panel>
+            ) : (
+              <Panel>
+                <CenterNote
+                  icon={<AlertCircle size={24} style={{ color: "var(--danger)" }} />}
+                  title="Couldn't load the form"
+                  sub="Something went wrong fetching the registration form."
+                />
+              </Panel>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-[330px_1fr] gap-6 items-start">
+            <CalendarCard startsAt={event.startsAt} />
+            <AgendaCard />
+          </div>
+        )}
+      </div>
+    </Shell>
+  );
+}
+
+/* ─────────────────────────── Shell / small bits ─────────────────────────── */
+function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
-      {/* ── Public header ── */}
-      <header className="h-[60px] sm:h-[64px] flex items-center px-3 sm:px-8 gap-2 sm:gap-3">
+      <header className="flex items-center px-6 md:px-10 h-[68px] gap-3">
         <Logo size={28} />
         <div className="flex-1" />
-        <button
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors"
-          style={{ background: "var(--surface)", border: "1px solid var(--border-hex,#ecedf4)", color: "var(--text-muted)" }}
-        >
-          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-        </button>
-        <Link
-          href="/explore"
-          aria-label="All events"
-          className="h-9 w-9 sm:w-auto px-0 sm:px-3.5 rounded-full flex items-center justify-center gap-2 text-sm font-bold flex-shrink-0 transition-colors"
-          style={{ background: "var(--surface)", border: "1px solid var(--border-hex,#ecedf4)", color: "var(--text)" }}
-        >
-          <LayoutGrid size={14} /> <span className="hidden sm:inline">All events</span>
-        </Link>
-        <Link
-          href="/explore"
-          aria-label="Back to app"
-          className="h-9 w-9 sm:w-auto px-0 sm:px-3.5 rounded-full flex items-center justify-center gap-2 text-sm font-bold flex-shrink-0 transition-colors"
-          style={{ background: "var(--surface)", border: "1px solid var(--border-hex,#ecedf4)", color: "var(--text)" }}
-        >
-          <ChevronLeft size={14} /> <span className="hidden sm:inline">Back to app</span>
-        </Link>
+        <ThemeToggle />
+        <Button asChild variant="ghost" size="sm">
+          <Link href="/explore"><LayoutGrid size={15} /> All events</Link>
+        </Button>
+        <Button asChild variant="ghost" size="sm">
+          <Link href="/dashboard"><ChevronLeft size={15} /> Back to app</Link>
+        </Button>
       </header>
+      <div className="max-w-[940px] mx-auto px-4 sm:px-6 pb-16">{children}</div>
+    </div>
+  );
+}
 
-      <div className="max-w-[940px] mx-auto px-3 sm:px-6 pb-12 sm:pb-16">
-        {/* ── Hero banner ── */}
-        <section
-          className="relative overflow-hidden rounded-[20px] sm:rounded-[26px] px-5 sm:px-9 py-6 sm:py-8"
-          style={{ background: HERO_GRADIENT, boxShadow: "var(--shadow-glow)" }}
-        >
-          {/* watermark calendar */}
-          <CalendarDays
-            size={150}
-            className="absolute -right-4 top-3 pointer-events-none hidden sm:block"
-            style={{ color: "rgba(255,255,255,0.13)" }}
-            strokeWidth={1.4}
-          />
+function Panel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="rounded-[var(--radius-xl)] border p-6"
+      style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
+    >
+      {children}
+    </div>
+  );
+}
 
-          <div className="relative flex flex-wrap items-center gap-2 mb-4">
-            <span className="inline-flex items-center gap-2 text-[12.5px] font-bold rounded-full pl-2.5 pr-3 py-1 bg-white/95 text-[var(--primary-700,#4338ca)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary-hex,#6366f1)]" />
-              {EVENT.category}
-              <span className="opacity-50">·</span>
-              <span className="text-[var(--green-600,#16a34a)]">Registration open</span>
+function CenterNote({ icon, title, sub }: { icon: React.ReactNode; title: string; sub?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2.5 py-16 text-center" style={{ color: "var(--text-muted)" }}>
+      <span style={{ color: "var(--text-faint)" }}>{icon}</span>
+      <p className="text-sm font-bold m-0" style={{ color: "var(--text-strong)" }}>{title}</p>
+      {sub && <p className="text-xs m-0 max-w-xs" style={{ color: "var(--text-muted)" }}>{sub}</p>}
+    </div>
+  );
+}
+
+function TabButton({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-2 px-4 h-[34px] rounded-[var(--radius-sm)] text-sm font-bold transition-all cursor-pointer"
+      style={{ background: active ? "var(--primary-soft)" : "transparent", color: active ? "var(--primary-hex,#6366f1)" : "var(--text-muted)" }}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+/* ─────────────────────────── Ticket card ─────────────────────────── */
+function TicketCard({ event, heroGradient, dateLine }: { event: PublicEvent; heroGradient: string; dateLine: string }) {
+  const qr = useMemo(() => makeQrMatrix(event.id + event.title, 25), [event.id, event.title]);
+  return (
+    <div
+      className="rounded-[var(--radius-xl)] border overflow-hidden md:sticky md:top-6"
+      style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
+    >
+      <div className="relative h-24 flex items-end p-4" style={{ background: heroGradient }}>
+        <Ticket size={64} className="absolute right-3 top-3" style={{ color: "rgba(255,255,255,0.22)" }} aria-hidden="true" />
+        <span className="text-white font-extrabold text-base">Your ticket</span>
+      </div>
+
+      <div className="p-5 flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[15px] font-extrabold" style={{ color: "var(--text-strong)" }}>{event.title}</span>
+          <span className="inline-flex items-center gap-1.5 text-[13px]" style={{ color: "var(--text-muted)" }}>
+            <Calendar size={12} /> {dateLine}
+          </span>
+          {event.venue && (
+            <span className="inline-flex items-center gap-1.5 text-[13px]" style={{ color: "var(--text-muted)" }}>
+              <MapPin size={12} /> {event.venue}
             </span>
-          </div>
-
-          <h1 className="relative text-white font-extrabold leading-tight text-[27px] sm:text-[40px] m-0">
-            {EVENT.name}
-          </h1>
-
-          <div className="relative flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3 text-white/95 text-sm font-semibold">
-            <span className="flex items-center gap-2">
-              <Calendar size={15} /> {EVENT.date} · {EVENT.time}
-            </span>
-            <span className="flex items-center gap-2">
-              <MapPin size={15} /> {EVENT.location}
-            </span>
-          </div>
-
-          <p className="relative text-white/80 text-sm leading-relaxed mt-4 max-w-[560px]">
-            {EVENT.description}
-          </p>
-
-          <div className="relative flex flex-wrap gap-2 mt-5">
-            {EVENT.tags.map((t) => (
-              <span
-                key={t}
-                className="text-[12.5px] font-bold text-white rounded-full px-3.5 py-1.5 bg-white/18"
-                style={{ backdropFilter: "blur(4px)" }}
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Tabs ── */}
-        <div className="flex justify-center my-6">
-          <Segmented
-            className="w-[280px]"
-            value={tab}
-            onChange={setTab}
-            options={[
-              { id: "register", label: "Register" },
-              { id: "schedule", label: "Schedule" },
-            ]}
-          />
+          )}
         </div>
 
-        {/* ── Tab content ── */}
-        {tab === "register" ? (
-          <RegisterView
-            values={values}
-            set={set}
-            submitted={submitted}
-            onSubmit={handleSubmit}
-          />
-        ) : (
-          <ScheduleView />
-        )}
+        <div className="border-t" style={{ borderColor: "var(--border-hex,#ecedf4)" }} />
+
+        <div className="flex flex-col items-center gap-3">
+          <div className="p-3 rounded-[var(--radius-md)]" style={{ background: "#fff", boxShadow: "var(--shadow-sm)" }}>
+            <QrCode matrix={qr} size={150} />
+          </div>
+          <span className="text-xs text-center" style={{ color: "var(--text-faint)" }}>
+            Your personal QR ticket is emailed once you register.
+          </span>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────── Register view ── */
+/* ─────────────────────────── Registration form (dynamic) ─────────────────────────── */
+const FULL_WIDTH_TYPES = new Set<PublicFormField["type"]>(["textarea", "multiselect", "checkbox"]);
 
-function RegisterView({
-  values,
-  set,
-  submitted,
-  onSubmit,
+function fieldIcon(f: PublicFormField): React.ReactNode {
+  if (f.type === "email") return <Mail size={15} />;
+  if (f.type === "phone") return <Phone size={15} />;
+  const k = f.key.toLowerCase();
+  if (k.includes("name")) return <User size={15} />;
+  if (k.includes("company") || k.includes("org")) return <Building2 size={15} />;
+  return null;
+}
+
+function inputType(f: PublicFormField): string {
+  switch (f.type) {
+    case "email": return "email";
+    case "phone": return "tel";
+    case "number": return "number";
+    case "date": return "date";
+    default: return "text";
+  }
+}
+
+function RegistrationForm({
+  event,
+  form,
+  onSuccess,
 }: {
-  values: FormState;
-  set: <K extends keyof FormState>(k: K, v: string) => void;
-  submitted: boolean;
-  onSubmit: (e: React.FormEvent) => void;
+  event: PublicEvent;
+  form: PublicForm;
+  onSuccess: (r: RegistrationResult) => void;
+}) {
+  const fields = useMemo(() => [...form.fields].sort((a, b) => a.order - b.order), [form.fields]);
+
+  const [text, setText] = useState<Record<string, string>>({});
+  const [multi, setMulti] = useState<Record<string, string[]>>({});
+  const [checks, setChecks] = useState<Record<string, boolean>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<string[]>([]);
+
+  const toggleMulti = (key: string, opt: string) =>
+    setMulti((p) => {
+      const cur = p[key] ?? [];
+      return { ...p, [key]: cur.includes(opt) ? cur.filter((o) => o !== opt) : [...cur, opt] };
+    });
+
+  function buildAnswers(): Record<string, unknown> {
+    const answers: Record<string, unknown> = {};
+    for (const f of fields) {
+      if (f.type === "multiselect") {
+        const arr = multi[f.key] ?? [];
+        if (arr.length) answers[f.key] = arr;
+      } else if (f.type === "checkbox") {
+        answers[f.key] = !!checks[f.key];
+      } else if (f.type === "number") {
+        const v = (text[f.key] ?? "").trim();
+        if (v !== "") answers[f.key] = Number(v);
+      } else {
+        const v = (text[f.key] ?? "").trim();
+        if (v !== "") answers[f.key] = v;
+      }
+    }
+    return answers;
+  }
+
+  function missingRequired(): boolean {
+    return fields.some((f) => {
+      if (!f.required) return false;
+      if (f.type === "multiselect") return (multi[f.key] ?? []).length === 0;
+      if (f.type === "checkbox") return !checks[f.key];
+      return (text[f.key] ?? "").trim() === "";
+    });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setFieldErrors([]);
+    if (missingRequired()) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await registerForEvent(event.id, buildAnswers());
+      onSuccess(res);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message || "Registration failed. Please review your details.");
+        setFieldErrors(err.fieldErrors.map((fe) => fe.message).filter(Boolean));
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-[var(--radius-xl)] border p-6 flex flex-col gap-5"
+      style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
+    >
+      <div className="flex flex-col gap-0.5">
+        <h2 className="text-[19px] font-extrabold m-0" style={{ color: "var(--text-strong)" }}>Get your ticket</h2>
+        <p className="text-[13px] m-0" style={{ color: "var(--text-muted)" }}>Fill in your details — it takes under a minute.</p>
+      </div>
+
+      {error && (
+        <div
+          className="flex flex-col gap-1 rounded-[var(--radius-md)] border px-3.5 py-3"
+          style={{ background: "var(--danger-soft)", borderColor: "var(--danger)" }}
+          role="alert"
+        >
+          <span className="inline-flex items-center gap-2 text-sm font-bold" style={{ color: "var(--danger)" }}>
+            <AlertCircle size={15} /> {error}
+          </span>
+          {fieldErrors.length > 0 && (
+            <ul className="list-disc pl-8 m-0 text-xs" style={{ color: "var(--text)" }}>
+              {fieldErrors.map((m, i) => <li key={i}>{m}</li>)}
+            </ul>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {fields.map((f) => {
+          const full = FULL_WIDTH_TYPES.has(f.type);
+          return (
+            <div key={f.key} className={`flex flex-col gap-1.5 ${full ? "sm:col-span-2" : ""}`}>
+              {f.type !== "checkbox" && (
+                <Label htmlFor={`f-${f.key}`}>
+                  {f.label}
+                  {f.required && <span style={{ color: "var(--danger)" }}> *</span>}
+                </Label>
+              )}
+
+              {f.type === "textarea" ? (
+                <Textarea
+                  id={`f-${f.key}`}
+                  value={text[f.key] ?? ""}
+                  onChange={(e) => setText((p) => ({ ...p, [f.key]: e.target.value }))}
+                  required={f.required}
+                />
+              ) : f.type === "select" ? (
+                <Select value={text[f.key] ?? ""} onValueChange={(v) => setText((p) => ({ ...p, [f.key]: v }))}>
+                  <SelectTrigger id={`f-${f.key}`}><SelectValue placeholder="Select…" /></SelectTrigger>
+                  <SelectContent>
+                    {(f.options ?? []).map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              ) : f.type === "multiselect" ? (
+                <div className="flex flex-wrap gap-2">
+                  {(f.options ?? []).map((o) => {
+                    const on = (multi[f.key] ?? []).includes(o);
+                    return (
+                      <button
+                        key={o}
+                        type="button"
+                        onClick={() => toggleMulti(f.key, o)}
+                        className="px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer"
+                        style={{
+                          background: on ? "var(--primary-soft)" : "var(--surface-2)",
+                          borderColor: on ? "var(--primary-hex,#6366f1)" : "var(--border-hex,#ecedf4)",
+                          color: on ? "var(--primary-hex,#6366f1)" : "var(--text-muted)",
+                        }}
+                      >
+                        {o}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : f.type === "checkbox" ? (
+                <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    id={`f-${f.key}`}
+                    type="checkbox"
+                    checked={!!checks[f.key]}
+                    onChange={(e) => setChecks((p) => ({ ...p, [f.key]: e.target.checked }))}
+                    className="w-4 h-4 accent-[var(--primary-hex,#6366f1)]"
+                  />
+                  <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                    {f.label}
+                    {f.required && <span style={{ color: "var(--danger)" }}> *</span>}
+                  </span>
+                </label>
+              ) : (
+                <IconInput
+                  id={`f-${f.key}`}
+                  icon={fieldIcon(f)}
+                  type={inputType(f)}
+                  required={f.required}
+                  value={text[f.key] ?? ""}
+                  onChange={(v) => setText((p) => ({ ...p, [f.key]: v }))}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <Button type="submit" size="block" className="h-[50px]" disabled={submitting}>
+        {submitting ? <Loader2 size={16} className="animate-spin" /> : <Ticket size={16} />}
+        {submitting ? "Submitting…" : "Complete Registration"}
+      </Button>
+
+      <p className="text-xs text-center m-0" style={{ color: "var(--text-faint)" }}>
+        By registering you agree to the event terms. Your ticket QR is emailed instantly.
+      </p>
+    </form>
+  );
+}
+
+function IconInput({
+  id,
+  icon,
+  type,
+  value,
+  onChange,
+  required,
+}: {
+  id: string;
+  icon: React.ReactNode;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  required: boolean;
 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-5 items-start">
-      {/* ── Ticket card ── */}
-      <div
-        className="rounded-[22px] border overflow-hidden"
-        style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
-      >
-        <div
-          className="relative h-[88px] flex items-end px-5 pb-3.5"
-          style={{ background: HERO_GRADIENT }}
-        >
-          <Ticket
-            size={62}
-            className="absolute right-3 top-3 pointer-events-none"
-            style={{ color: "rgba(255,255,255,0.22)" }}
-            strokeWidth={1.5}
-          />
-          <span className="text-white font-extrabold text-[15px]">Your ticket</span>
-        </div>
-
-        <div className="px-5 py-5 flex flex-col gap-3">
-          <span className="text-[15px] font-extrabold" style={{ color: "var(--text-strong)" }}>
-            {EVENT.name}
-          </span>
-          <div className="flex flex-col gap-1.5">
-            <span className="flex items-center gap-2 text-[13px]" style={{ color: "var(--text-muted)" }}>
-              <Calendar size={13} style={{ flexShrink: 0 }} /> {EVENT.date} · {EVENT.time}
-            </span>
-            <span className="flex items-center gap-2 text-[13px]" style={{ color: "var(--text-muted)" }}>
-              <MapPin size={13} style={{ flexShrink: 0 }} /> {EVENT.location}
-            </span>
-          </div>
-
-          <div className="border-t my-1" style={{ borderColor: "var(--border-hex,#ecedf4)" }} />
-
-          {/* Pay pill */}
-          <div className="flex justify-center">
-            <span
-              className="inline-flex items-center gap-1.5 text-[12.5px] font-bold rounded-full px-3 py-1.5"
-              style={{ background: "var(--orange-soft)", color: "var(--orange)" }}
-            >
-              <Ticket size={13} /> Pay&nbsp;<b>${EVENT.price}</b>&nbsp;to attend
-            </span>
-          </div>
-
-          {/* QR */}
-          <div className="flex justify-center py-2">
-            <QrMock />
-          </div>
-
-          <p className="text-[11.5px] text-center m-0" style={{ color: "var(--text-faint)" }}>
-            Scan to pay, then complete the form.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Form card ── */}
-      <div
-        className="rounded-[22px] border px-6 sm:px-7 py-6"
-        style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
-      >
-        {submitted ? (
-          <SuccessPanel />
-        ) : (
-          <form onSubmit={onSubmit} className="flex flex-col gap-5">
-            <div>
-              <h2 className="text-[19px] font-extrabold m-0" style={{ color: "var(--text-strong)" }}>
-                Get your ticket
-              </h2>
-              <p className="text-[13px] mt-1 m-0" style={{ color: "var(--text-muted)" }}>
-                Fill in your details — it takes under a minute.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Full Name" required>
-                <IconInput icon={<User size={15} />} placeholder="Jane Doe" value={values.fullName} onChange={(v) => set("fullName", v)} required />
-              </Field>
-              <Field label="Email Address" required>
-                <IconInput icon={<Mail size={15} />} type="email" placeholder="jane@email.com" value={values.email} onChange={(v) => set("email", v)} required />
-              </Field>
-              <Field label="Phone Number" required>
-                <IconInput icon={<Phone size={15} />} type="tel" placeholder="+1 (555) 000-0000" value={values.phone} onChange={(v) => set("phone", v)} required />
-              </Field>
-              <Field label="T-Shirt Size">
-                <Select value={values.tshirt} onValueChange={(v) => set("tshirt", v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TSHIRT_SIZES.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Dietary Preference" required>
-                <Select value={values.dietary} onValueChange={(v) => set("dietary", v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select…" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DIETARY.map((d) => (
-                      <SelectItem key={d} value={d}>{d}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Company / Org">
-                <IconInput icon={<Building2 size={15} />} placeholder="Where do you work?" value={values.company} onChange={(v) => set("company", v)} />
-              </Field>
-            </div>
-
-            <Button type="submit" size="block" className="h-[50px]">
-              <Ticket size={15} /> I&apos;ve paid — Complete Registration
-            </Button>
-
-            <p className="text-[12px] text-center m-0" style={{ color: "var(--text-faint)" }}>
-              By registering you agree to the event terms. Your ticket QR is emailed instantly.
-            </p>
-          </form>
-        )}
-      </div>
+    <div className="relative">
+      {icon && (
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--text-faint)" }}>
+          {icon}
+        </span>
+      )}
+      <Input
+        id={id}
+        type={type}
+        required={required}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={icon ? "pl-10" : ""}
+      />
     </div>
   );
 }
 
-function SuccessPanel() {
-  return (
-    <div className="flex flex-col items-center text-center gap-4 py-8">
-      <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "var(--green-soft)" }}>
-        <Check size={28} style={{ color: "var(--green-600)" }} />
-      </div>
-      <div>
-        <h2 className="text-[22px] font-extrabold m-0" style={{ color: "var(--text-strong)" }}>
-          You&apos;re registered!
-        </h2>
-        <p className="text-sm mt-1.5 m-0 max-w-[340px]" style={{ color: "var(--text-muted)" }}>
-          Your ticket and QR code are on the way to your inbox. See you at {EVENT.name}.
-        </p>
-      </div>
-      <Link href="/explore">
-        <Button variant="ghost" size="sm">Explore more events</Button>
-      </Link>
-    </div>
-  );
-}
+/* ─────────────────────────── Calendar card (real event month) ─────────────────────────── */
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/* ─────────────────────────────────────────── Schedule view ── */
+function CalendarCard({ startsAt }: { startsAt: string | null }) {
+  const eventDate = startsAt ? new Date(startsAt) : null;
+  const valid = eventDate && !Number.isNaN(eventDate.getTime());
+  const initialYear = valid ? eventDate!.getFullYear() : new Date().getFullYear();
+  const initialMonth = valid ? eventDate!.getMonth() : new Date().getMonth();
 
-function ScheduleView() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-5 items-start">
-      <CalendarCard />
-      <div
-        className="rounded-[22px] border px-6 py-6"
-        style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
-      >
-        <h2 className="text-[19px] font-extrabold m-0" style={{ color: "var(--primary-hex,#6366f1)" }}>
-          Agenda
-        </h2>
-        <div className="inline-flex items-center gap-1.5 text-[13px] font-semibold mt-1.5 mb-4" style={{ color: "var(--text-muted)" }}>
-          24 June <ChevronRight size={13} className="rotate-90" />
-        </div>
+  const [view, setView] = useState({ year: initialYear, month: initialMonth });
 
-        <div className="flex flex-col">
-          {AGENDA.map((item, i) => (
-            <div key={i} className="flex gap-4 group">
-              {/* time column */}
-              <div className="w-[52px] flex-shrink-0 pt-0.5 text-right">
-                <div className="text-[14px] font-extrabold" style={{ color: "var(--primary-hex,#6366f1)" }}>
-                  {item.start}
-                </div>
-                <div className="text-[11px]" style={{ color: "var(--text-faint)" }}>
-                  {item.end}
-                </div>
-              </div>
-              {/* bar */}
-              <div className="flex-shrink-0 w-[3px] rounded-full my-1" style={{ background: item.color }} />
-              {/* content */}
-              <div className={`flex-1 pb-4 ${i < AGENDA.length - 1 ? "border-b" : ""}`} style={{ borderColor: "var(--border-hex,#ecedf4)" }}>
-                <div className="text-[11.5px] font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                  {item.track}
-                </div>
-                <div className="text-[15px] font-bold mt-0.5" style={{ color: "var(--text-strong)" }}>
-                  {item.title}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+  const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
+  // Monday-based leading offset.
+  const firstWeekday = (new Date(view.year, view.month, 1).getDay() + 6) % 7;
+  const cells = [
+    ...Array.from({ length: firstWeekday }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
 
-function CalendarCard() {
-  // June 2026 — June 1 is a Monday; highlight the 24th (event day).
-  const EVENT_DAY = 24;
-  const days = Array.from({ length: 30 }, (_, i) => i + 1);
-  const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const isEventMonth = valid && eventDate!.getFullYear() === view.year && eventDate!.getMonth() === view.month;
+  const eventDay = valid ? eventDate!.getDate() : -1;
+
+  const shift = (delta: number) =>
+    setView((v) => {
+      const m = v.month + delta;
+      return { year: v.year + Math.floor(m / 12), month: ((m % 12) + 12) % 12 };
+    });
 
   return (
     <div
-      className="rounded-[22px] border px-5 py-5"
+      className="rounded-[var(--radius-xl)] border p-5 flex flex-col gap-4 md:sticky md:top-6"
       style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div
-          className="w-10 h-10 rounded-[var(--radius-md)] flex flex-col items-center justify-center leading-none"
-          style={{ background: "var(--primary-soft)", color: "var(--primary-hex,#6366f1)" }}
-        >
-          <span className="text-[9px] font-bold uppercase">Jun</span>
-          <span className="text-[15px] font-extrabold">{EVENT_DAY}</span>
-        </div>
-        <span className="text-[16px] font-extrabold flex-1" style={{ color: "var(--text-strong)" }}>
-          June 2026
+      <div className="flex items-center gap-3">
+        {valid && (
+          <div
+            className="flex flex-col items-center justify-center w-11 h-11 rounded-[var(--radius-sm)] leading-none"
+            style={{ background: "var(--primary-soft)", color: "var(--primary-hex,#6366f1)" }}
+          >
+            <span className="text-[9px] font-bold">{MONTHS[eventDate!.getMonth()].toUpperCase()}</span>
+            <span className="text-base font-extrabold">{eventDay}</span>
+          </div>
+        )}
+        <span className="text-[17px] font-extrabold flex-1" style={{ color: "var(--text-strong)" }}>
+          {MONTHS[view.month]} {view.year}
         </span>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}>
-          <ChevronLeft size={14} />
-        </button>
-        <button className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}>
-          <ChevronRight size={14} />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <CalNavBtn onClick={() => shift(-1)}><ChevronLeft size={16} /></CalNavBtn>
+          <CalNavBtn onClick={() => shift(1)}><ChevronRight size={16} /></CalNavBtn>
+        </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-y-2 text-center">
-        {weekdays.map((d) => (
-          <span key={d} className="text-[11px] font-bold" style={{ color: "var(--text-faint)" }}>
-            {d}
-          </span>
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {WEEKDAYS.map((w) => (
+          <span key={w} className="text-[11px] font-bold py-1" style={{ color: "var(--text-muted)" }}>{w}</span>
         ))}
-        {days.map((day) => {
-          const isEvent = day === EVENT_DAY;
+        {cells.map((d, i) => {
+          if (d === null) return <span key={`b${i}`} />;
+          const isEvent = isEventMonth && d === eventDay;
           return (
-            <div key={day} className="flex items-center justify-center">
+            <div key={d} className="flex items-center justify-center py-1">
               <span
-                className="w-8 h-8 flex items-center justify-center rounded-full text-[13px] font-semibold transition-colors"
+                className="flex items-center justify-center w-8 h-8 rounded-full text-[13px] font-bold"
                 style={
                   isEvent
-                    ? { background: "var(--orange)", color: "#fff", fontWeight: 800, boxShadow: "0 4px 12px rgba(245,158,11,0.4)" }
+                    ? { background: "var(--orange)", color: "#fff", boxShadow: "0 4px 10px rgba(245,158,11,0.4)" }
                     : { color: "var(--text)" }
                 }
               >
-                {day}
+                {d}
               </span>
             </div>
           );
         })}
       </div>
 
-      <div className="flex items-center justify-center gap-2 mt-5 pt-4 border-t" style={{ borderColor: "var(--border-hex,#ecedf4)" }}>
+      <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: "var(--border-hex,#ecedf4)" }}>
         <span className="w-2 h-2 rounded-full" style={{ background: "var(--orange)" }} />
-        <span className="text-[12.5px] font-semibold" style={{ color: "var(--text-muted)" }}>
-          Event day
-        </span>
+        <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Event day</span>
       </div>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────── Shared bits ── */
-
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+function CalNavBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label>
-        {label}
-        {required && <span style={{ color: "var(--danger)" }}> *</span>}
-      </Label>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex items-center justify-center w-8 h-8 rounded-[var(--radius-sm)] border transition-colors cursor-pointer hover:bg-[var(--surface-2)]"
+      style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", color: "var(--text-muted)" }}
+      aria-label="Change month"
+    >
       {children}
-    </div>
+    </button>
   );
 }
 
-function IconInput({
-  icon,
-  value,
-  onChange,
-  ...rest
-}: {
-  icon: React.ReactNode;
-  value: string;
-  onChange: (v: string) => void;
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
-  return (
-    <div className="relative">
-      <span
-        className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-        style={{ color: "var(--text-faint)" }}
-      >
-        {icon}
-      </span>
-      <Input className="pl-9" value={value} onChange={(e) => onChange(e.target.value)} {...rest} />
-    </div>
-  );
-}
-
-function QrMock() {
+/* ─────────────────────────── Agenda card (placeholder — no agenda API yet) ─────────────────────────── */
+function AgendaCard() {
   return (
     <div
-      className="w-[148px] h-[148px] rounded-xl flex items-center justify-center"
-      style={{ background: "#fff", boxShadow: "var(--shadow-sm)", border: "1px solid var(--border-hex,#ecedf4)" }}
+      className="rounded-[var(--radius-xl)] border p-6 flex flex-col gap-4"
+      style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-card)" }}
     >
-      <svg width="120" height="120" viewBox="0 0 164 164" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="0" y="0" width="50" height="50" rx="6" fill="#11142a" />
-        <rect x="8" y="8" width="34" height="34" rx="3" fill="white" />
-        <rect x="14" y="14" width="22" height="22" rx="2" fill="#11142a" />
-        <rect x="114" y="0" width="50" height="50" rx="6" fill="#11142a" />
-        <rect x="122" y="8" width="34" height="34" rx="3" fill="white" />
-        <rect x="128" y="14" width="22" height="22" rx="2" fill="#11142a" />
-        <rect x="0" y="114" width="50" height="50" rx="6" fill="#11142a" />
-        <rect x="8" y="122" width="34" height="34" rx="3" fill="white" />
-        <rect x="14" y="128" width="22" height="22" rx="2" fill="#11142a" />
-        {[60, 74, 88, 102, 116].map((x, xi) =>
-          [60, 74, 88, 102, 116].map((y, yi) =>
-            (xi + yi) % 2 === 0 ? <rect key={`${x}-${y}`} x={x} y={y} width="10" height="10" fill="#11142a" /> : null
-          )
-        )}
-        {[60, 74, 88].map((x) => (
-          <rect key={`b-${x}`} x={x} y={120} width="8" height="8" fill="#11142a" />
-        ))}
-      </svg>
+      <h2 className="text-[19px] font-extrabold m-0" style={{ color: "var(--primary-hex,#6366f1)" }}>Agenda</h2>
+      <CenterNote icon={<CalendarDays size={24} />} title="Agenda coming soon" sub="The detailed session schedule for this event hasn't been published yet." />
     </div>
   );
+}
+
+/* ─────────────────────────── Success screen ─────────────────────────── */
+function SuccessScreen({ event, result }: { event: PublicEvent; result: RegistrationResult }) {
+  const token = useMemo(() => tokenFromTicketUrl(result.ticketUrl), [result.ticketUrl]);
+  const ticketPath = token ? `/tickets/${token}` : "/explore";
+
+  // Fetch the real QR the backend rendered for this ticket (the on-screen fallback to the email).
+  const [ticket, setTicket] = useState<PublicTicket | null>(null);
+  const [qrState, setQrState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    if (!token) {
+      setQrState("error");
+      return;
+    }
+    const controller = new AbortController();
+    getTicket(token, controller.signal)
+      .then((t) => {
+        setTicket(t);
+        setQrState("ready");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setQrState("error");
+      });
+    return () => controller.abort();
+  }, [token]);
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ background: "var(--bg)" }}>
+      <div
+        className="w-full max-w-sm rounded-[var(--radius-xl)] border p-8 flex flex-col items-center gap-5 text-center"
+        style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", boxShadow: "var(--shadow-pop)" }}
+      >
+        <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: "var(--green-soft)" }}>
+          <Check size={28} style={{ color: "var(--green-600)" }} />
+        </div>
+        <div>
+          <h2 className="text-[22px] font-extrabold m-0" style={{ color: "var(--text-strong)" }}>You&apos;re registered!</h2>
+          <p className="text-sm mt-1.5 m-0" style={{ color: "var(--text-muted)" }}>
+            {result.message || "Check your email for your ticket and QR code."}
+          </p>
+        </div>
+
+        {/* Real check-in QR rendered by the backend */}
+        <div className="p-3 rounded-[var(--radius-md)]" style={{ background: "#fff", boxShadow: "var(--shadow-sm)" }}>
+          {qrState === "ready" && ticket ? (
+            <Image
+              src={ticket.qrImageDataUrl}
+              alt="Your check-in QR code"
+              width={180}
+              height={180}
+              unoptimized
+              style={{ display: "block", width: 180, height: 180 }}
+            />
+          ) : (
+            <div className="w-[180px] h-[180px] flex items-center justify-center text-center px-3" style={{ color: "var(--text-faint)" }}>
+              {qrState === "loading" ? (
+                <Loader2 size={22} className="animate-spin" />
+              ) : (
+                <span className="text-xs">Your QR is on your ticket page and in your email.</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div
+          className="w-full rounded-[var(--radius-lg)] p-4 flex flex-col gap-1.5 text-left"
+          style={{ background: "var(--surface-2)", border: "1px solid var(--border-hex,#ecedf4)" }}
+        >
+          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>Event</span>
+          <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{event.title}</span>
+          <span className="text-xs flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+            <Calendar size={11} /> {[fmtDate(event.startsAt), fmtTime(event.startsAt)].filter(Boolean).join(" · ")}
+          </span>
+          {event.venue && (
+            <span className="text-xs flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+              <MapPin size={11} /> {event.venue}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-2 w-full">
+          <Button asChild size="block">
+            <Link href={ticketPath}><Ticket size={16} /> View my ticket</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/explore">Explore more events</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── QR helpers (decorative until ticket is issued) ─────────────────────────── */
+function QrCode({ matrix, size }: { matrix: boolean[][]; size: number }) {
+  const n = matrix.length;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${n} ${n}`} shapeRendering="crispEdges" role="img" aria-label="Sample ticket QR">
+      <rect width={n} height={n} fill="#fff" />
+      {matrix.flatMap((row, r) =>
+        row.map((on, c) => (on ? <rect key={`${r}-${c}`} x={c} y={r} width={1} height={1} fill="#11142a" /> : null))
+      )}
+    </svg>
+  );
+}
+
+function makeQrMatrix(seed: string, n: number): boolean[][] {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  const rand = () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return ((h >>> 0) % 1000) / 1000;
+  };
+  const g: boolean[][] = Array.from({ length: n }, () => Array.from({ length: n }, () => rand() > 0.52));
+  const drawFinder = (top: number, left: number) => {
+    for (let i = -1; i <= 7; i++) {
+      for (let j = -1; j <= 7; j++) {
+        const r = top + i;
+        const c = left + j;
+        if (r < 0 || c < 0 || r >= n || c >= n) continue;
+        const onBorder = i === 0 || i === 6 || j === 0 || j === 6;
+        const core = i >= 2 && i <= 4 && j >= 2 && j <= 4;
+        const inRange = i >= 0 && i <= 6 && j >= 0 && j <= 6;
+        g[r][c] = inRange ? onBorder || core : false;
+      }
+    }
+  };
+  drawFinder(0, 0);
+  drawFinder(0, n - 7);
+  drawFinder(n - 7, 0);
+  return g;
 }

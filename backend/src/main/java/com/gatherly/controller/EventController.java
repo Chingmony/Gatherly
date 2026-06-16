@@ -74,8 +74,10 @@ public class EventController {
   @Operation(
       summary = "Create an event (Admin)",
       description =
-          "Creates a new event in DRAFT status with an auto-generated unique slug. ADMIN only."
-              + " Errors: 400 VALIDATION_ERROR for invalid fields.")
+          "Creates a new event in DRAFT status with an auto-generated unique slug. Accepts the UI"
+              + " event fields: title, category, capacity (optional, null = unlimited), description,"
+              + " venue, coverColor, coverImageUrl, and start/end times. ADMIN only. Errors: 400"
+              + " VALIDATION_ERROR for invalid fields.")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ApiResponse<EventResponse> create(
