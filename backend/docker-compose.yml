@@ -1,0 +1,107 @@
+# Self-contained stack for the Gatherly backend.
+# Run from backend/:  docker compose up --build
+# The app listens on 9091 (see src/main/resources/application.yml: server.port).
+services:
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gatherly-backend:local
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    ports:
+      - "9091:9091"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      # Datasource — point at the postgres service on the compose network
+      - DB_URL=jdbc:postgresql://postgres:5432/gatherly
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      # Redis (OTP, rate limiting, ShedLock)
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      # Rustfs (S3-compatible object storage)
+      - RUSTFS_ENDPOINT=http://rustfs:9000
+      - RUSTFS_REGION=us-east-1
+      - RUSTFS_ACCESS_KEY=admin
+      - RUSTFS_SECRET_KEY=admin123
+      - RUSTFS_BUCKET=gatherly
+      # App
+      - APP_PUBLIC_BASE_URL=http://localhost:3000
+      - CORS_ALLOWED_ORIGIN=http://localhost:3000
+      # Keep non-critical integrations quiet for local container runs
+      - EMAIL_ENABLED=false
+      - TELEGRAM_ENABLED=false
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9091/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5434:5432"   # host 5434 -> container 5432
+    environment:
+      - POSTGRES_DB=gatherly
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gatherly"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"   # SMTP sink
+      - "8025:8025"   # Web UI — view emails at http://localhost:8025
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: gatherly-rustfs
+    security_opt:
+      - "no-new-privileges:true"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - RUSTFS_VOLUMES=/data
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_ROOT_USER=admin
+      - RUSTFS_ROOT_PASSWORD=admin123
+    volumes:
+      - rustfs_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 9000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+  rustfs_data:

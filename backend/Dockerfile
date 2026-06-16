@@ -1,17 +1,18 @@
-FROM eclipse-temurin:21-jdk-alpine AS build
-WORKDIR /workspace
-COPY gradle gradle
-COPY gradlew settings.gradle.kts build.gradle.kts ./
-RUN chmod +x gradlew && ./gradlew dependencies --no-daemon -q
-COPY src src
-RUN ./gradlew bootJar --no-daemon -x test
-
-FROM eclipse-temurin:21-jre-alpine AS runner
-RUN addgroup -S gatherly && adduser -S gatherly -G gatherly
+# build jar file
+FROM gradle:8.8-jdk21-jammy AS build
 WORKDIR /app
-COPY --from=build /workspace/build/libs/*.jar app.jar
-USER gatherly
-EXPOSE 8080
-HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
-  CMD wget -q --spider http://localhost:8080/actuator/health || exit 1
-ENTRYPOINT ["java", "-DJAVA_TOOL_OPTIONS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+COPY src src
+
+# make gradlew runnable and skip tests for speed
+RUN chmod +x gradlew && ./gradlew bootJar -x test --no-daemon
+
+# run the jar
+FROM eclipse-temurin:21.0.7_6-jre-ubi9-minimal AS run
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar /app/app.jar
+
+CMD ["java", "-jar", "/app/app.jar"]
