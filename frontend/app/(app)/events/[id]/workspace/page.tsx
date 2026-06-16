@@ -64,62 +64,6 @@ function formatDate(iso: string | null) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
 }
 
-// ── Mock data for the List/Grid views (still placeholder — Board is live) ─────
-type Priority = "high" | "med" | "low";
-interface Task { id: string; col: string; priority: Priority; category: string; title: string; assignee: string; due: string; time?: string; issue?: boolean }
-
-const TASKS: Task[] = [
-  { id: "t1", col: "pending",    priority: "med",  category: "Catering",   title: "Speaker green-room catering",   assignee: "Noah Pierce",  due: "Jun 24", time: "9:00" },
-  { id: "t2", col: "pending",    priority: "med",  category: "Ops",        title: "Volunteer briefing packets",    assignee: "Mia Rossi",    due: "Jun 23" },
-  { id: "t3", col: "pending",    priority: "low",  category: "Logistics",  title: "Parking & shuttle plan",        assignee: "Noah Pierce",  due: "Jun 25" },
-  { id: "t4", col: "inprogress", priority: "high", category: "Production", title: "Stage truss + lighting rig setup", assignee: "Liam Carter", due: "Jun 24", time: "8:00" },
-  { id: "t5", col: "inprogress", priority: "low",  category: "Logistics",  title: "Sponsor booth kit distribution", assignee: "Mia Rossi",    due: "Jun 23" },
-  { id: "t6", col: "review",     priority: "high", category: "Production", title: "AV soundcheck — main hall",     assignee: "Liam Carter",  due: "Jun 24", time: "14:00" },
-  { id: "t7", col: "review",     priority: "high", category: "Production", title: "Backstage power distribution",  assignee: "Liam Carter",  due: "Jun 24" },
-  { id: "t8", col: "done",       priority: "med",  category: "Print",      title: "Registration desk signage print", assignee: "Ava Nguyen", due: "Jun 22" },
-  { id: "t9", col: "done",       priority: "low",  category: "Logistics",  title: "Lanyards + badge stock count",  assignee: "Ava Nguyen",   due: "Jun 21" },
-  { id: "t10", col: "issues",    priority: "high", category: "IT",         title: "Wi-Fi QA sweep failing",        assignee: "Noah Pierce",  due: "Jun 24", issue: true },
-];
-
-const COL_LABEL: Record<string, string> = {
-  pending: "Pending", inprogress: "In Progress", review: "Needs Review", done: "Done", issues: "Issue",
-};
-const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  pending:    { bg: "var(--surface-3)",  color: "var(--text-muted)" },
-  inprogress: { bg: "var(--blue-soft)",  color: "var(--blue)" },
-  review:     { bg: "var(--orange-soft)", color: "var(--orange)" },
-  done:       { bg: "var(--green-soft)", color: "var(--green-600)" },
-  issues:     { bg: "var(--danger-soft)", color: "var(--danger)" },
-};
-const PRIO_LABEL: Record<Priority, string> = { high: "High", med: "Medium", low: "Low" };
-const CATEGORY_STYLE: Record<string, { bg: string; color: string }> = {
-  Production: { bg: "var(--green-soft)",  color: "var(--green-600)" },
-  IT:         { bg: "var(--violet-soft)", color: "var(--violet)" },
-  Ops:        { bg: "var(--blue-soft)",   color: "var(--blue)" },
-  Media:      { bg: "var(--blue-soft)",   color: "var(--blue)" },
-};
-function catStyle(c: string) {
-  return CATEGORY_STYLE[c] ?? { bg: "var(--orange-soft)", color: "var(--orange)" };
-}
-const ASSIGNEE_HUE: Record<string, number> = {
-  "Ava Nguyen": 35, "Noah Pierce": 220, "Liam Carter": 165, "Mia Rossi": 330,
-  "Sofia Marquez": 300, "Daniel Cho": 262, "Patrick Bateman": 140,
-};
-function hueForName(name: string) {
-  if (ASSIGNEE_HUE[name] != null) return ASSIGNEE_HUE[name];
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
-  return h;
-}
-const PRIORITIES: Priority[] = ["high", "med", "low"];
-const STATUS_KEYS = ["pending", "inprogress", "review", "done", "issues"];
-
-const PRIORITY: Record<Priority, { bg: string; color: string }> = {
-  high: { bg: "var(--danger-soft)", color: "var(--danger)" },
-  med:  { bg: "var(--orange-soft)", color: "var(--orange)" },
-  low:  { bg: "var(--surface-3)",   color: "var(--text-muted)" },
-};
-
 const TABS = [
   { id: "materials", label: "Materials", icon: ListChecks },
   { id: "guests",    label: "Guests",    icon: Users },
@@ -138,6 +82,92 @@ const STATUS_COLUMNS: { status: MaterialStatus; label: string; dot: string }[] =
 
 /** Minimal shape the assignee pickers need — sourced from the event's HANDLER crew. */
 type AssigneeOption = { id: string; fullName: string; email: string };
+
+/** Assignee dropdown — shared by the board card, list, and grid views. */
+function AssigneePicker({ m, assignees, nameFor, onAssign }: {
+  m: MaterialResponse;
+  assignees: AssigneeOption[];
+  nameFor: (userId: string | null) => string | null;
+  onAssign: (m: MaterialResponse, userId: string | null) => void;
+}) {
+  const assigneeName = nameFor(m.assignedTo);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="inline-flex items-center gap-1.5 text-[12px] font-semibold px-1.5 py-1 rounded-full cursor-pointer min-w-0" style={{ background: "var(--surface-2)", color: "var(--text-muted)", border: "none" }}>
+          {assigneeName ? <AvatarUser name={assigneeName} size={18} /> : null}
+          <span className="truncate">{assigneeName ?? "Unassigned"}</span> <ChevronDown size={12} className="shrink-0" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[230px] max-h-[300px] overflow-y-auto">
+        <div className="px-2 py-1.5 text-[11px] font-bold" style={{ color: "var(--text-muted)" }}>Assign handler</div>
+        {assignees.length === 0 && (
+          <div className="px-2 py-1.5 text-[11px]" style={{ color: "var(--text-faint)" }}>No users available</div>
+        )}
+        {assignees.map((u) => (
+          <DropdownMenuItem key={u.id} onSelect={() => onAssign(m, u.id)} className="gap-2">
+            <AvatarUser name={u.fullName || u.email} size={20} />
+            <div className="flex flex-col gap-0 flex-1 min-w-0">
+              <span className="text-sm truncate" style={{ color: "var(--text-strong)" }}>{u.fullName || u.email}</span>
+              <span className="text-[11px] truncate" style={{ color: "var(--text-muted)" }}>{u.email}</span>
+            </div>
+            {u.id === m.assignedTo && <Check size={14} className="shrink-0" style={{ color: "var(--primary-hex,#6366f1)" }} />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/** Status dropdown — shared by the board card, list, and grid views. */
+function StatusPicker({ m, onStatus, align = "end" }: {
+  m: MaterialResponse;
+  onStatus: (m: MaterialResponse, to: MaterialStatus) => void;
+  align?: "start" | "end";
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full cursor-pointer shrink-0" style={{ background: STATUS_STYLE_BY[m.status].bg, color: STATUS_STYLE_BY[m.status].color, border: "none" }}>
+          {MATERIAL_STATUS_LABEL[m.status]} <ChevronDown size={11} />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align} className="w-[170px]">
+        <div className="px-2 py-1.5 text-[11px] font-bold" style={{ color: "var(--text-muted)" }}>Move to</div>
+        {STATUS_COLUMNS.filter((c) => c.status !== m.status).map((c) => (
+          <DropdownMenuItem key={c.status} onSelect={() => onStatus(m, c.status)} className="gap-2">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.dot }} /> {c.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/** A spreadsheet-style cell that commits on blur / Enter (grid view). */
+function EditableCell({ value, onSave, type = "text", className, style, placeholder }: {
+  value: string;
+  onSave: (v: string) => void;
+  type?: "text" | "number";
+  className?: string;
+  style?: React.CSSProperties;
+  placeholder?: string;
+}) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => { setDraft(value); }, [value]);
+  return (
+    <input
+      value={draft}
+      type={type}
+      placeholder={placeholder}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => { if (draft !== value) onSave(draft); }}
+      onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+      className={`bg-transparent border-none outline-none focus:bg-[var(--surface-2)] rounded-[var(--radius-sm)] px-1.5 -mx-1 py-1 transition-colors ${className ?? ""}`}
+      style={style}
+    />
+  );
+}
 
 /** A single material on the board: assignee picker (event handlers only), status picker, delete. */
 function MaterialCard({
@@ -604,6 +634,22 @@ export default function WorkspacePage() {
     }
   }
 
+  /** Inline grid edit of a material's name/quantity (persists via PUT). */
+  async function handlePatchMaterial(m: MaterialResponse, patch: { name?: string; quantity?: number | null }) {
+    const name = patch.name !== undefined ? patch.name.trim() : m.name;
+    const quantity = patch.quantity !== undefined ? patch.quantity : m.quantity;
+    if (name === m.name && quantity === m.quantity) return;
+    if (!name) { toast.error("Task name can't be empty"); return; }
+    try {
+      const updated = await updateMaterial(id, m.id, {
+        name, description: m.description, quantity, catalogItemId: m.catalogItemId, assignedTo: m.assignedTo,
+      });
+      setMaterials((prev) => prev.map((x) => (x.id === m.id ? updated : x)));
+    } catch (e) {
+      toast.error("Couldn't update task", e instanceof ApiError ? e.message : undefined);
+    }
+  }
+
   async function handleDeleteMaterial(m: MaterialResponse) {
     if (!window.confirm(`Delete task "${m.name}"?`)) return;
     try {
@@ -805,51 +851,102 @@ export default function WorkspacePage() {
             )}
 
             {view === "list" && (
+              materialsLoading ? (
+                <div className="py-16 flex items-center justify-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+                  <Loader2 size={18} className="animate-spin" /> Loading tasks…
+                </div>
+              ) : materialsError ? (
+                <div className="py-16 text-center text-sm" style={{ color: "var(--danger)" }}>{materialsError}</div>
+              ) : materials.length === 0 ? (
+                <div className="py-16 text-center text-sm" style={{ color: "var(--text-muted)" }}>No tasks yet — add one above.</div>
+              ) : (
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse" style={{ minWidth: 820 }}>
+                <table className="w-full border-collapse" style={{ minWidth: 720 }}>
                   <thead>
                     <tr style={{ borderBottom: "1px solid var(--border-hex,#ecedf4)" }}>
-                      {["Task", "Priority", "Category", "Handler", "Due", "Status"].map((h) => (
+                      {["Task", "Qty", "Handler", "Status", ""].map((h) => (
                         <th key={h} className="text-left text-[13px] font-semibold px-3 py-3 first:pl-0" style={{ color: "var(--text-muted)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {TASKS.map((t, i) => (
-                      <tr key={t.id} className="transition-colors hover:bg-[var(--surface-2)]" style={{ borderBottom: i === TASKS.length - 1 ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
+                    {materials.map((m, i) => (
+                      <tr key={m.id} className="transition-colors hover:bg-[var(--surface-2)]" style={{ borderBottom: i === materials.length - 1 ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
                         <td className="px-3 py-4 first:pl-0">
-                          <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{t.title}</span>
+                          <div className="flex flex-col gap-0.5 min-w-0">
+                            <span className="text-sm font-bold" style={{ color: "var(--text-strong)" }}>{m.name}</span>
+                            {m.description && <span className="text-xs truncate max-w-[360px]" style={{ color: "var(--text-muted)" }}>{m.description}</span>}
+                          </div>
                         </td>
-                        <td className="px-3 py-4">
-                          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full capitalize" style={{ background: PRIORITY[t.priority].bg, color: PRIORITY[t.priority].color }}>{t.priority}</span>
-                        </td>
-                        <td className="px-3 py-4">
-                          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "var(--surface-3)", color: "var(--text-muted)" }}>{t.category}</span>
-                        </td>
-                        <td className="px-3 py-4">
-                          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold px-2.5 py-1.5 rounded-[var(--radius-sm)] border" style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", color: "var(--text)" }}>
-                            <AvatarUser name={t.assignee} size={18} /> {t.assignee} <ChevronDown size={13} style={{ color: "var(--text-faint)" }} />
-                          </span>
-                        </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-[13px]">
-                          <span style={{ color: "var(--text-muted)" }}>{t.due}</span>
-                          {t.time && <span style={{ color: "var(--text-faint)" }}>, {t.time}</span>}
-                        </td>
-                        <td className="px-3 py-4">
-                          <span className="inline-flex items-center justify-between gap-2 text-[13px] font-semibold px-3 py-1.5 rounded-[var(--radius-sm)] border" style={{ background: "var(--surface)", borderColor: "var(--border-hex,#ecedf4)", color: "var(--text)", minWidth: 132 }}>
-                            {COL_LABEL[t.col] ?? t.col} <ChevronDown size={13} style={{ color: "var(--text-faint)" }} />
-                          </span>
+                        <td className="px-3 py-4 text-sm font-bold" style={{ color: "var(--text-muted)" }}>{m.quantity ?? "—"}</td>
+                        <td className="px-3 py-4"><AssigneePicker m={m} assignees={assignableUsers} nameFor={nameFor} onAssign={handleAssign} /></td>
+                        <td className="px-3 py-4"><StatusPicker m={m} onStatus={handleStatus} align="start" /></td>
+                        <td className="px-3 py-4 text-right">
+                          <Button variant="ghost" size="icon-sm" title="Delete task" className="hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]" onClick={() => handleDeleteMaterial(m)}><Trash2 size={14} /></Button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+              )
             )}
 
-            {view === "grid" && <TaskGrid />}
-
-            <p className="text-xs m-0" style={{ color: "var(--text-faint)" }}>The Board is live (assign, move, add &amp; delete persist to the backend). List and Grid views are still placeholder.</p>
+            {view === "grid" && (
+              materialsLoading ? (
+                <div className="py-16 flex items-center justify-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}>
+                  <Loader2 size={18} className="animate-spin" /> Loading tasks…
+                </div>
+              ) : materialsError ? (
+                <div className="py-16 text-center text-sm" style={{ color: "var(--danger)" }}>{materialsError}</div>
+              ) : (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 text-[13px]" style={{ color: "var(--text-faint)" }}>
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full" style={{ background: "var(--primary-soft)", color: "var(--primary-hex,#6366f1)" }}><Sparkles size={13} /></span>
+                    Click a name or quantity to edit — changes save automatically.
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full" style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}><Layers size={13} /> {materials.length} tasks</span>
+                </div>
+                <div className="overflow-x-auto rounded-[var(--radius-md)] border" style={{ borderColor: "var(--border-hex,#ecedf4)" }}>
+                  <table className="w-full border-collapse" style={{ minWidth: 820 }}>
+                    <thead>
+                      <tr style={{ background: "var(--primary-soft)" }}>
+                        {["#", "Task / Material", "Qty", "Handler", "Status", ""].map((h) => (
+                          <th key={h} className="text-left text-[11px] font-bold uppercase tracking-wider px-4 py-3" style={{ color: "var(--primary-hex,#6366f1)" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {materials.map((m, i) => (
+                        <tr key={m.id} className="group" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
+                          <td className="px-4 py-2.5 text-[13px] font-bold align-middle" style={{ color: "var(--text-faint)", borderLeft: `4px solid ${STATUS_STYLE_BY[m.status].color}` }}>{String(i + 1).padStart(2, "0")}</td>
+                          <td className="px-3 py-2.5 align-middle">
+                            <EditableCell value={m.name} onSave={(v) => handlePatchMaterial(m, { name: v })} placeholder="Task name…" className="w-full text-sm font-bold" style={{ color: "var(--text-strong)" }} />
+                          </td>
+                          <td className="px-3 py-2.5 align-middle">
+                            <EditableCell value={m.quantity != null ? String(m.quantity) : ""} type="number" onSave={(v) => handlePatchMaterial(m, { quantity: v.trim() === "" ? null : Number(v) })} placeholder="—" className="text-sm font-bold w-[80px]" style={{ color: "var(--text-muted)" }} />
+                          </td>
+                          <td className="px-3 py-2.5 align-middle"><AssigneePicker m={m} assignees={assignableUsers} nameFor={nameFor} onAssign={handleAssign} /></td>
+                          <td className="px-3 py-2.5 align-middle"><StatusPicker m={m} onStatus={handleStatus} align="start" /></td>
+                          <td className="px-3 py-2.5 text-right align-middle">
+                            <Button variant="ghost" size="icon-sm" className="opacity-50 group-hover:opacity-100 hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]" title="Delete task" onClick={() => handleDeleteMaterial(m)}><Trash2 size={14} /></Button>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr style={{ borderTop: "1px solid var(--border-hex,#ecedf4)" }}>
+                        <td colSpan={6} className="px-4 py-3 text-center" style={{ background: "var(--surface-2)" }}>
+                          <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 text-sm font-bold cursor-pointer" style={{ color: "var(--primary-hex,#6366f1)", background: "none", border: "none" }}>
+                            <Plus size={15} /> Add task
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              )
+            )}
           </CardContent>
         </Card>
       )}
@@ -921,140 +1018,6 @@ export default function WorkspacePage() {
           </Card>
         </div>
       )}
-    </div>
-  );
-}
-
-// ── Materials Grid (editable, spreadsheet-style) ──────────────────────────────
-interface GridRow { id: string; title: string; category: string; assignee: string; due: string; priority: Priority; status: string }
-const GRID_SEED: GridRow[] = [
-  { id: "1",  title: "Stage truss + lighting rig setup", category: "Production", assignee: "Ava Nguyen",  due: "Jun 24, 8:00", priority: "high", status: "done" },
-  { id: "2",  title: "Registration desk signage print",  category: "Print",      assignee: "Ava Nguyen",  due: "Jun 22",       priority: "med",  status: "done" },
-  { id: "3",  title: "Speaker green-room catering",       category: "Catering",   assignee: "Noah Pierce", due: "Jun 24, 9:00", priority: "med",  status: "pending" },
-  { id: "4",  title: "AV soundcheck — main hall",         category: "Production", assignee: "Liam Carter", due: "Jun 24, 7:00", priority: "high", status: "review" },
-  { id: "5",  title: "Sponsor booth kit distribution",    category: "Logistics",  assignee: "Mia Rossi",   due: "Jun 23",       priority: "low",  status: "inprogress" },
-  { id: "6",  title: "Wi-Fi access points QA sweep",      category: "IT",         assignee: "Noah Pierce", due: "Jun 23",       priority: "high", status: "issues" },
-  { id: "7",  title: "Lanyards + badge stock count",      category: "Logistics",  assignee: "Ava Nguyen",  due: "Jun 21",       priority: "low",  status: "done" },
-  { id: "8",  title: "Volunteer briefing packets",        category: "Ops",        assignee: "Mia Rossi",   due: "Jun 23",       priority: "med",  status: "pending" },
-  { id: "9",  title: "Photographer call-sheet",           category: "Media",      assignee: "Liam Carter", due: "Jun 24",       priority: "low",  status: "pending" },
-  { id: "10", title: "Backstage power distribution",      category: "Production", assignee: "Liam Carter", due: "Jun 24, 6:00", priority: "high", status: "review" },
-];
-
-function CellInput({ value, onChange, className, style, placeholder }: { value: string; onChange: (v: string) => void; className?: string; style?: React.CSSProperties; placeholder?: string }) {
-  return (
-    <input
-      value={value}
-      placeholder={placeholder}
-      onChange={(e) => onChange(e.target.value)}
-      className={`bg-transparent border-none outline-none focus:bg-[var(--surface-2)] rounded-[var(--radius-sm)] px-1.5 -mx-1 py-1 transition-colors ${className ?? ""}`}
-      style={style}
-    />
-  );
-}
-
-function TaskGrid() {
-  const [rows, setRows] = useState<GridRow[]>(GRID_SEED);
-
-  function patch(id: string, key: keyof GridRow, val: string) {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [key]: val } : r)));
-  }
-  function addRow() {
-    setRows((prev) => [...prev, { id: String(Date.now()), title: "", category: "Ops", assignee: "Unassigned", due: "", priority: "med", status: "pending" }]);
-  }
-  function remove(id: string) {
-    setRows((prev) => prev.filter((r) => r.id !== id));
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 text-[13px]" style={{ color: "var(--text-faint)" }}>
-          <span className="flex items-center justify-center w-6 h-6 rounded-full" style={{ background: "var(--primary-soft)", color: "var(--primary-hex,#6366f1)" }}><Sparkles size={13} /></span>
-          Click any cell to edit. Add rows like a spreadsheet.
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full" style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}><Layers size={13} /> {rows.length} rows</span>
-      </div>
-
-      <div className="overflow-x-auto rounded-[var(--radius-md)] border" style={{ borderColor: "var(--border-hex,#ecedf4)" }}>
-        <table className="w-full border-collapse" style={{ minWidth: 1000 }}>
-          <thead>
-            <tr style={{ background: "var(--primary-soft)" }}>
-              {["#", "Task / Material", "Category", "Handler", "Due", "Priority", "Status", ""].map((h) => (
-                <th key={h} className="text-left text-[11px] font-bold uppercase tracking-wider px-4 py-3" style={{ color: "var(--primary-hex,#6366f1)" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => {
-              const ss = STATUS_STYLE[r.status] ?? STATUS_STYLE.pending;
-              const ps = PRIORITY[r.priority];
-              const cs = catStyle(r.category);
-              return (
-                <tr key={r.id} className="group" style={{ borderTop: i === 0 ? "none" : "1px solid var(--border-hex,#ecedf4)" }}>
-                  <td className="px-4 py-2.5 text-[13px] font-bold align-middle" style={{ color: "var(--text-faint)", borderLeft: `4px solid ${ss.color}` }}>{String(i + 1).padStart(2, "0")}</td>
-                  <td className="px-3 py-2.5 align-middle">
-                    <CellInput value={r.title} onChange={(v) => patch(r.id, "title", v)} placeholder="Task name…" className="w-full text-sm font-bold" style={{ color: "var(--text-strong)" }} />
-                  </td>
-                  <td className="px-3 py-2.5 align-middle">
-                    <CellInput value={r.category} onChange={(v) => patch(r.id, "category", v)} className="text-xs font-bold text-center w-[112px]" style={{ background: cs.bg, color: cs.color, borderRadius: "var(--radius-sm)", paddingTop: 4, paddingBottom: 4 }} />
-                  </td>
-                  <td className="px-3 py-2.5 align-middle">
-                    <span className="inline-flex items-center gap-2">
-                      <AvatarUser name={r.assignee || "?"} hue={hueForName(r.assignee)} size={24} />
-                      <CellInput value={r.assignee} onChange={(v) => patch(r.id, "assignee", v)} className="text-[13px] font-semibold w-[100px]" style={{ color: "var(--text)" }} />
-                    </span>
-                  </td>
-                  <td className="px-3 py-2.5 align-middle">
-                    <CellInput value={r.due} onChange={(v) => patch(r.id, "due", v)} placeholder="Date" className="text-[13px] w-[96px]" style={{ color: "var(--text-muted)" }} />
-                  </td>
-                  <td className="px-3 py-2.5 align-middle">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="inline-flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1.5 rounded-[var(--radius-sm)] cursor-pointer" style={{ background: ps.bg, color: ps.color, border: "none" }}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: ps.color }} /> {PRIO_LABEL[r.priority]} <ChevronDown size={12} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                        {PRIORITIES.map((p) => (
-                          <DropdownMenuItem key={p} onSelect={() => patch(r.id, "priority", p)}>
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: PRIORITY[p].color }} /> {PRIO_LABEL[p]}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                  <td className="px-3 py-2.5 align-middle">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="inline-flex items-center gap-1.5 text-[12px] font-bold px-2.5 py-1.5 rounded-[var(--radius-sm)] cursor-pointer" style={{ background: ss.bg, color: ss.color, border: "none", minWidth: 116 }}>
-                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ss.color }} /> <span className="flex-1 text-left">{COL_LABEL[r.status] ?? r.status}</span> <ChevronDown size={12} />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                        {STATUS_KEYS.map((s) => (
-                          <DropdownMenuItem key={s} onSelect={() => patch(r.id, "status", s)}>
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: STATUS_STYLE[s].color }} /> {COL_LABEL[s]}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                  <td className="px-3 py-2.5 text-right align-middle">
-                    <Button variant="ghost" size="icon-sm" className="opacity-50 group-hover:opacity-100 hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]" title="Delete row" onClick={() => remove(r.id)}><Trash2 size={14} /></Button>
-                  </td>
-                </tr>
-              );
-            })}
-            <tr style={{ borderTop: "1px solid var(--border-hex,#ecedf4)" }}>
-              <td colSpan={8} className="px-4 py-3 text-center" style={{ background: "var(--surface-2)" }}>
-                <button onClick={addRow} className="inline-flex items-center gap-1.5 text-sm font-bold cursor-pointer" style={{ color: "var(--primary-hex,#6366f1)", background: "none", border: "none" }}>
-                  <Plus size={15} /> Add row
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 }
@@ -1431,7 +1394,7 @@ function AgendaTab({ eventId, eventDate }: { eventId: string; eventDate: string 
     <Card>
       <CardContent className="p-6 flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-bold m-0" style={{ color: "var(--text-strong)" }}>Run of Show</h2>
+          <h2 className="text-xl font-bold m-0" style={{ color: "var(--text-strong)" }}>Agenda</h2>
           <div className="flex items-center gap-4">
             <span className="text-[13px] font-semibold" style={{ color: "var(--text-faint)" }}>{sessions.length} sessions</span>
             <Button variant="soft" size="sm" onClick={openAdd}><Plus size={14} /> Add session</Button>
