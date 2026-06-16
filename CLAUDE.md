@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -8,14 +10,14 @@ Gatherly is a single-organization event management platform with three-tier RBAC
 
 ## Repository layout
 
-The monorepo is in the specification phase. Code will be added as:
+The monorepo has frontend and backend code merged and actively developed (through ~M9). Layout:
 
 ```
 gatherly/
 ├── docs/               # Architecture specs (source of truth)
-├── frontend/           # Next.js 16 (not yet merged)
-├── backend/            # Spring Boot 4.1.0 (not yet merged)
-└── docker-compose.yml  # Postgres, Redis, MailHog, MinIO
+├── frontend/           # Next.js 16 App Router
+├── backend/            # Spring Boot 4.1.0
+└── docker-compose.yml  # Postgres, Redis, MailHog, Rustfs
 ```
 
 ## Commands
@@ -33,7 +35,7 @@ gatherly/
 ```bash
 npm install
 npm run dev                 # http://localhost:3000
-npm run build               # Next.js standalone output
+npm run build               # = next build --webpack, standalone output
 npm run lint                # ESLint (CI gate)
 npm run format:write        # Prettier
 npm run format:check        # Prettier check (CI gate)
@@ -44,7 +46,7 @@ npm run e2e                 # Playwright E2E
 
 ### Full stack
 ```bash
-docker-compose up           # Postgres 16, Redis 7, MailHog, MinIO, backend, frontend
+docker-compose up           # Postgres 16, Redis 7, MailHog, Rustfs (infra only; backend/frontend run locally)
 ```
 
 Flyway migrations run automatically on backend startup. Files go in `backend/src/main/resources/db/migration/` named `V<n>__<desc>.sql`. Migrations are **expand/contract only** — no destructive changes in the same release.
@@ -63,19 +65,14 @@ Flyway migrations run automatically on backend startup. Files go in `backend/src
 | Email | JavaMailSender + Thymeleaf HTML templates |
 | Ops notifications | Telegram Bot API — outbound only, no webhook |
 
-## Code style
+## Code style & conventions
 
-**Frontend:**
-- Default to Server Components; add `"use client"` only when interactivity is required
-- TypeScript strict mode — no `any`, no implicit returns
-- Zod for all validation, mirroring backend DTOs
-- React Hook Form + Zod resolver for forms
+Domain rules live in `.claude/rules/` (auto-loaded alongside this file):
+- **`.claude/rules/git.md`** — branches, PRs, commit style, test-before-commit, merge-conflict policy (repo-wide)
+- **`.claude/rules/frontend.md`** — Next.js/React/TS conventions (scoped to `frontend/`)
+- **`.claude/rules/backend.md`** — Spring layering, authorization, jobs, migrations (scoped to `backend/`)
 
-**Backend:**
-- Strict layer contract: `Controller → Service → Repository` — no repository calls from controllers
-- All authorization enforced via `@PreAuthorize` on **service methods** (not controllers)
-- Use MapStruct for DTO ↔ entity mapping
-- Scheduled jobs must be idempotent — use `SELECT … FOR UPDATE SKIP LOCKED` or ShedLock
+The cross-cutting RBAC model and critical gotchas below remain canonical here.
 
 ## Three-tier RBAC
 
@@ -104,6 +101,7 @@ Sub-admins (`MANAGER`) **cannot** delete users, events, or supply lists — this
 8. **Third-party integrations (email, Telegram, Rustfs) are after-commit** — via `TransactionSynchronization`; failures do not roll back the DB transaction
 9. **Flyway fails closed** — a failed migration halts backend startup
 10. **Scheduled jobs need ShedLock from day one** — prevents double-send when running multiple backend instances
+11. **Postgres** — Now hosted on `96.9.81.187:5434` (DB name is `gartherly`)
 
 ## Spec doc index
 
@@ -119,9 +117,7 @@ Sub-admins (`MANAGER`) **cannot** delete users, events, or supply lists — this
 
 ## Git conventions
 
-- Branch names: `feature/<short-desc>` or `fix/<short-desc>`
-- PRs target `develop`
-- Commit style: `feat:`, `fix:`, `docs:`, `test:`, `chore:` prefixes
+See `.claude/rules/git.md` (branches, PRs, commit style, test-before-commit, merge-conflict policy).
 
 ## Environment variables
 

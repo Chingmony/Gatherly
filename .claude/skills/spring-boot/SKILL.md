@@ -1,8 +1,8 @@
 ---
 name: spring-boot
-description: Spring Boot 3.x development - REST APIs, JPA, Security, Testing, and Cloud-native patterns. Use for building enterprise Java applications with Spring Boot.
+description: Spring Boot 4.1 development - REST APIs, JPA, Security, Testing, and Cloud-native patterns. Use for building enterprise Java applications with Spring Boot.
 metadata:
-  version: "2.0.0"
+  version: "3.0.0"
   domain: backend
   triggers: Spring Boot, Spring Framework, Spring Security, Spring Data JPA, Spring WebFlux, Java REST API, Microservices Java
   role: specialist
@@ -12,7 +12,7 @@ metadata:
 
 # Spring Boot Skill
 
-Enterprise Spring Boot 3.x development with focus on clean architecture and production-ready code.
+Enterprise Spring Boot 4.1 development (Spring Framework 7, Spring Security 7, Java 21) with focus on clean architecture and production-ready code. This repo (Gatherly) builds with **Gradle 8.14 (Groovy DSL)** and uses **Lombok + MapStruct**.
 
 ## Core Workflow
 
@@ -20,7 +20,7 @@ Enterprise Spring Boot 3.x development with focus on clean architecture and prod
 2. **Design** - Plan architecture, confirm design before coding
 3. **Implement** - Build with constructor injection and layered architecture
 4. **Secure** - Add Spring Security, OAuth2, method security; verify tests pass
-5. **Test** - Write unit, integration tests; run `./mvnw test` and confirm all pass
+5. **Test** - Write unit, integration tests; run `./gradlew test` and confirm all pass
 6. **Deploy** - Configure health checks via Actuator; validate `/actuator/health` returns UP
 
 ## Quick Start Templates
@@ -29,6 +29,9 @@ Enterprise Spring Boot 3.x development with focus on clean architecture and prod
 ```java
 @Entity
 @Table(name = "products")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,8 +42,6 @@ public class Product {
 
     @DecimalMin("0.0")
     private BigDecimal price;
-
-    // Getters/Setters (no Lombok)
 }
 ```
 
@@ -134,7 +135,7 @@ public class GlobalExceptionHandler {
 @WebMvcTest(ProductController.class)
 class ProductControllerTest {
     @Autowired MockMvc mockMvc;
-    @MockBean ProductService service;
+    @MockitoBean ProductService service;
 
     @Test
     void createProduct_validRequest_returns201() throws Exception {
@@ -159,7 +160,7 @@ Load detailed patterns based on context:
 |-------|-----------|-------------|
 | Web/REST | `references/web.md` | Controllers, validation, exception handling |
 | Data Access | `references/data.md` | JPA, repositories, transactions, queries |
-| Security | `references/security.md` | Spring Security 6, OAuth2, JWT, auth |
+| Security | `references/security.md` | Spring Security 7, OAuth2, JWT, auth |
 | Cloud/Config | `references/cloud.md` | Config server, discovery, resilience |
 | Testing | `references/testing.md` | Unit, integration, slice tests |
 
@@ -179,21 +180,21 @@ Load detailed patterns based on context:
 - Skip input validation on endpoints
 - Mix blocking and reactive code
 - Store secrets in application.properties
-- Use deprecated Spring Boot 2.x patterns
+- Use deprecated Spring Boot 2.x/3.x patterns (e.g. `WebSecurityConfigurerAdapter`, `@MockBean`)
 - Hardcode URLs, credentials, environment values
 
 ## Architecture Patterns
 
-**Project Structure:**
+**Project Structure (this repo):**
 ```
-src/main/java/pl/piomin/services/
+backend/src/main/java/com/gatherly/
 ├── controller/     # REST endpoints
 ├── service/        # Business logic
 ├── repository/     # Data access
-├── model/          # Entities
+├── domain/         # Entities
 ├── dto/            # Request/Response DTOs
 ├── config/         # Configuration
-└── exception/      # Custom exceptions + handler
+└── common/         # Shared utils, exceptions + handler
 ```
 
 **Layering:**
@@ -269,4 +270,4 @@ public class SecurityConfig {
 
 ## Knowledge Base
 
-Spring Boot 3.x, Java 21, Spring WebFlux, Project Reactor, Spring Data JPA, Spring Security 6, OAuth2/JWT, Hibernate, R2DBC, Spring Cloud, Resilience4j, Micrometer, JUnit 5, TestContainers, Mockito, Maven/Gradle
+Spring Boot 4.1, Java 21, Spring Framework 7, Spring Data JPA, Spring Security 7, JWT (JJWT HS256), Hibernate, MapStruct, Lombok, ShedLock, Flyway, Micrometer/Actuator, JUnit 5, TestContainers, Mockito, Gradle 8.14 (Groovy DSL)
