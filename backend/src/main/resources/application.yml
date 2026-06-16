@@ -30,7 +30,7 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:redis}
+      host: ${REDIS_HOST:96.9.81.187}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
 
