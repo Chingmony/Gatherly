@@ -47,7 +47,7 @@ spring:
             enable: true
 
 server:
-  port: 8082
+  port: 8083
   address: 0.0.0.0
   # No servlet context-path: the /api/v1 prefix is applied to controllers via WebMvcConfig so that
   # Swagger UI (springdoc, outside the controller package) stays at the root (/swagger-ui/...).
