@@ -27,7 +27,7 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       # Rustfs (S3-compatible object storage)
-      - RUSTFS_ENDPOINT=http://rustfs:9000
+      - RUSTFS_ENDPOINT=http://96.9.81.187:9000
       - RUSTFS_REGION=us-east-1
       - RUSTFS_ACCESS_KEY=admin
       - RUSTFS_SECRET_KEY=admin123
