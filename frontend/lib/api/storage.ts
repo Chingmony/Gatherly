@@ -32,7 +32,7 @@ export function presign(
  */
 export async function uploadImage(file: File, purpose: AssetPurpose): Promise<string> {
   const { uploadUrl, objectKey } = await presign(purpose, file.type, file.size);
-  const res = await fetch(uploadUrl, {
+  const res = await fetch(toUploadTarget(uploadUrl), {
     method: "PUT",
     headers: { "Content-Type": file.type },
     body: file,
@@ -41,6 +41,20 @@ export async function uploadImage(file: File, purpose: AssetPurpose): Promise<st
     throw new Error(`Image upload failed (${res.status}).`);
   }
   return objectKey;
+}
+
+/**
+ * The presigned PUT URL targets the object store over plain HTTP, which the browser blocks
+ * as mixed content on the HTTPS site. Route it through the same-origin `/rustfs-proxy/*`
+ * Route Handler (see `app/rustfs-proxy/[...path]/route.ts`), which re-issues the PUT to the
+ * store server-side — so Node sets `Host` to the store host and the SigV4 signature (over
+ * `content-type;host`) still validates. The path + query (where the signature lives) are
+ * preserved verbatim. A non-`http://` URL (e.g. an HTTPS store, or local dev) is unchanged.
+ */
+function toUploadTarget(uploadUrl: string): string {
+  if (!uploadUrl.startsWith("http://")) return uploadUrl;
+  const u = new URL(uploadUrl);
+  return `/rustfs-proxy${u.pathname}${u.search}`;
 }
 
 /** Upload a user profile image; returns its object key. */
