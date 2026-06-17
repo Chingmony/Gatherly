@@ -9,6 +9,7 @@ import { listEvents, deleteEvent, type AdminEvent } from "@/lib/api/events";
 import { ApiError } from "@/lib/api/client";
 import { toast } from "@/components/ui/toast";
 import { mediaUrl } from "@/lib/media";
+import { getRole } from "@/lib/auth/session";
 
 // Banner gradient per category (matched case-insensitively against the free-form category string).
 const CATEGORY_GRADIENT: Record<string, string> = {
@@ -43,6 +44,13 @@ export function EventsView() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterId>("all");
+  // Create/publish and delete are Admin-only (spec §5); Sub-admins manage assigned
+  // events but can't create or delete. Resolved client-side to avoid a hydration flash.
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsAdmin(getRole() === "admin");
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,9 +138,11 @@ export function EventsView() {
               );
             })}
           </div>
-          <Button asChild size="default">
-            <Link href="/events/new"><Plus size={16} /> Create Event</Link>
-          </Button>
+          {isAdmin && (
+            <Button asChild size="default">
+              <Link href="/events/new"><Plus size={16} /> Create Event</Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -212,16 +222,18 @@ export function EventsView() {
                     <Button asChild variant="ghost" size="icon-sm" title="Edit event">
                       <Link href={`/events/${ev.id}/edit`}><Eye size={15} /></Link>
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      title="Delete event"
-                      className="hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
-                      style={{ background: "var(--danger-soft)", color: "var(--danger)" }}
-                      onClick={() => handleDelete(ev)}
-                    >
-                      <Trash2 size={15} />
-                    </Button>
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        title="Delete event"
+                        className="hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
+                        style={{ background: "var(--danger-soft)", color: "var(--danger)" }}
+                        onClick={() => handleDelete(ev)}
+                      >
+                        <Trash2 size={15} />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

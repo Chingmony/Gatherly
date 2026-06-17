@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ImagePlus, Calendar, MapPin, Users, X, Loader2 } from "lucide-react";
+import { ImagePlus, MapPin, Users, X, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getEvent, updateEvent } from "@/lib/api/events";
@@ -178,10 +179,7 @@ export default function EditEventPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="date">Date</Label>
-                <div className="relative">
-                  <Calendar size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "var(--text-faint)" }} />
-                  <Input id="date" type="date" className="pl-10" value={form.date} onChange={(e) => set("date", e.target.value)} />
-                </div>
+                <DatePicker id="date" value={form.date} onChange={(v) => set("date", v)} placeholder="Select a date" />
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="time">Start time</Label>

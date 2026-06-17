@@ -148,54 +148,6 @@
         "documentation": {}
     },
     {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
-        "label": "Path",
-        "importPath": "pathlib",
-        "description": "pathlib",
-        "isExtraImport": true,
-        "detail": "pathlib",
-        "documentation": {}
-    },
-    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -428,118 +380,6 @@
         "documentation": {}
     },
     {
-        "label": "Tuple",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Set",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Tuple",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
         "label": "Any",
         "importPath": "typing",
         "description": "typing",
@@ -565,86 +405,6 @@
     },
     {
         "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Tuple",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -894,38 +654,6 @@
         "documentation": {}
     },
     {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
         "label": "defaultdict",
         "importPath": "collections",
         "description": "collections",
@@ -955,355 +683,6 @@
         "description": "collections",
         "isExtraImport": true,
         "detail": "collections",
-        "documentation": {}
-    },
-    {
-        "label": "defaultdict",
-        "importPath": "collections",
-        "description": "collections",
-        "isExtraImport": true,
-        "detail": "collections",
-        "documentation": {}
-    },
-    {
-        "label": "time",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "time",
-        "description": "time",
-        "detail": "time",
-        "documentation": {}
-    },
-    {
-        "label": "statistics",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "statistics",
-        "description": "statistics",
-        "detail": "statistics",
-        "documentation": {}
-    },
-    {
-        "label": "threading",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "threading",
-        "description": "threading",
-        "detail": "threading",
-        "documentation": {}
-    },
-    {
-        "label": "queue",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "queue",
-        "description": "queue",
-        "detail": "queue",
-        "documentation": {}
-    },
-    {
-        "label": "ThreadPoolExecutor",
-        "importPath": "concurrent.futures",
-        "description": "concurrent.futures",
-        "isExtraImport": true,
-        "detail": "concurrent.futures",
-        "documentation": {}
-    },
-    {
-        "label": "as_completed",
-        "importPath": "concurrent.futures",
-        "description": "concurrent.futures",
-        "isExtraImport": true,
-        "detail": "concurrent.futures",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "field",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "dataclass",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "asdict",
-        "importPath": "dataclasses",
-        "description": "dataclasses",
-        "isExtraImport": true,
-        "detail": "dataclasses",
-        "documentation": {}
-    },
-    {
-        "label": "Request",
-        "importPath": "urllib.request",
-        "description": "urllib.request",
-        "isExtraImport": true,
-        "detail": "urllib.request",
-        "documentation": {}
-    },
-    {
-        "label": "urlopen",
-        "importPath": "urllib.request",
-        "description": "urllib.request",
-        "isExtraImport": true,
-        "detail": "urllib.request",
-        "documentation": {}
-    },
-    {
-        "label": "URLError",
-        "importPath": "urllib.error",
-        "description": "urllib.error",
-        "isExtraImport": true,
-        "detail": "urllib.error",
-        "documentation": {}
-    },
-    {
-        "label": "HTTPError",
-        "importPath": "urllib.error",
-        "description": "urllib.error",
-        "isExtraImport": true,
-        "detail": "urllib.error",
-        "documentation": {}
-    },
-    {
-        "label": "urlparse",
-        "importPath": "urllib.parse",
-        "description": "urllib.parse",
-        "isExtraImport": true,
-        "detail": "urllib.parse",
-        "documentation": {}
-    },
-    {
-        "label": "ssl",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "ssl",
-        "description": "ssl",
-        "detail": "ssl",
-        "documentation": {}
-    },
-    {
-        "label": "annotations",
-        "importPath": "__future__",
-        "description": "__future__",
-        "isExtraImport": true,
-        "detail": "__future__",
-        "documentation": {}
-    },
-    {
-        "label": "annotations",
-        "importPath": "__future__",
-        "description": "__future__",
-        "isExtraImport": true,
-        "detail": "__future__",
-        "documentation": {}
-    },
-    {
-        "label": "annotations",
-        "importPath": "__future__",
-        "description": "__future__",
-        "isExtraImport": true,
-        "detail": "__future__",
         "documentation": {}
     },
     {
@@ -1322,6 +701,134 @@
         "importPath": "userEvent",
         "description": "userEvent",
         "detail": "userEvent",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "asdict",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "asdict",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "asdict",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "field",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "asdict",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "asdict",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
         "documentation": {}
     },
     {
@@ -1385,204 +892,6 @@
         "importPath": "path",
         "description": "path",
         "detail": "path",
-        "documentation": {}
-    },
-    {
-        "label": "\"./globals.css\";",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "\"..globals.css\";",
-        "description": "\"..globals.css\";",
-        "detail": "\"..globals.css\";",
-        "documentation": {}
-    },
-    {
-        "label": "CORSMiddleware",
-        "importPath": "fastapi.middleware.cors",
-        "description": "fastapi.middleware.cors",
-        "isExtraImport": true,
-        "detail": "fastapi.middleware.cors",
-        "documentation": {}
-    },
-    {
-        "label": "router",
-        "importPath": "app.api.routes",
-        "description": "app.api.routes",
-        "isExtraImport": true,
-        "detail": "app.api.routes",
-        "documentation": {}
-    },
-    {
-        "label": "settings",
-        "importPath": "app.config",
-        "description": "app.config",
-        "isExtraImport": true,
-        "detail": "app.config",
-        "documentation": {}
-    },
-    {
-        "label": "settings",
-        "importPath": "app.config",
-        "description": "app.config",
-        "isExtraImport": true,
-        "detail": "app.config",
-        "documentation": {}
-    },
-    {
-        "label": "declarative_base",
-        "importPath": "sqlalchemy.ext.declarative",
-        "description": "sqlalchemy.ext.declarative",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.ext.declarative",
-        "documentation": {}
-    },
-    {
-        "label": "sessionmaker",
-        "importPath": "sqlalchemy.orm",
-        "description": "sqlalchemy.orm",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.orm",
-        "documentation": {}
-    },
-    {
-        "label": "Session",
-        "importPath": "sqlalchemy.orm",
-        "description": "sqlalchemy.orm",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.orm",
-        "documentation": {}
-    },
-    {
-        "label": "Session",
-        "importPath": "sqlalchemy.orm",
-        "description": "sqlalchemy.orm",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.orm",
-        "documentation": {}
-    },
-    {
-        "label": "get_db",
-        "importPath": "app.database",
-        "description": "app.database",
-        "isExtraImport": true,
-        "detail": "app.database",
-        "documentation": {}
-    },
-    {
-        "label": "get_db",
-        "importPath": "app.database",
-        "description": "app.database",
-        "isExtraImport": true,
-        "detail": "app.database",
-        "documentation": {}
-    },
-    {
-        "label": "Base",
-        "importPath": "app.database",
-        "description": "app.database",
-        "isExtraImport": true,
-        "detail": "app.database",
-        "documentation": {}
-    },
-    {
-        "label": "Depends",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "func",
-        "importPath": "sqlalchemy.sql",
-        "description": "sqlalchemy.sql",
-        "isExtraImport": true,
-        "detail": "sqlalchemy.sql",
-        "documentation": {}
-    },
-    {
-        "label": "cors",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "cors",
-        "description": "cors",
-        "detail": "cors",
-        "documentation": {}
-    },
-    {
-        "label": "helmet",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "helmet",
-        "description": "helmet",
-        "detail": "helmet",
-        "documentation": {}
-    },
-    {
-        "label": "routes",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "routes",
-        "description": "routes",
-        "detail": "routes",
-        "documentation": {}
-    },
-    {
-        "label": "\"./index.css\";",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "\"..index.css\";",
-        "description": "\"..index.css\";",
-        "detail": "\"..index.css\";",
-        "documentation": {}
-    },
-    {
-        "label": "path",
-        "importPath": "django.urls",
-        "description": "django.urls",
-        "isExtraImport": true,
-        "detail": "django.urls",
-        "documentation": {}
-    },
-    {
-        "label": "include",
-        "importPath": "django.urls",
-        "description": "django.urls",
-        "isExtraImport": true,
-        "detail": "django.urls",
-        "documentation": {}
-    },
-    {
-        "label": "get_wsgi_application",
-        "importPath": "django.core.wsgi",
-        "description": "django.core.wsgi",
-        "isExtraImport": true,
-        "detail": "django.core.wsgi",
-        "documentation": {}
-    },
-    {
-        "label": "models",
-        "importPath": "django.db",
-        "description": "django.db",
-        "isExtraImport": true,
-        "detail": "django.db",
-        "documentation": {}
-    },
-    {
-        "label": "usersRouter",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "usersRouter",
-        "description": "usersRouter",
-        "detail": "usersRouter",
-        "documentation": {}
-    },
-    {
-        "label": "DefaultRouter",
-        "importPath": "rest_framework.routers",
-        "description": "rest_framework.routers",
-        "isExtraImport": true,
-        "detail": "rest_framework.routers",
         "documentation": {}
     },
     {
@@ -2169,366 +1478,6 @@
         "documentation": {}
     },
     {
-        "label": "RequestResult",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "class RequestResult:\n    \"\"\"Result of a single HTTP request.\"\"\"\n    success: bool\n    status_code: int\n    latency_ms: float\n    error: Optional[str] = None\n    response_size: int = 0\n@dataclass\nclass LoadTestResults:\n    \"\"\"Aggregated load test results.\"\"\"",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "LoadTestResults",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "class LoadTestResults:\n    \"\"\"Aggregated load test results.\"\"\"\n    target_url: str\n    method: str\n    duration_seconds: float\n    concurrency: int\n    total_requests: int\n    successful_requests: int\n    failed_requests: int\n    requests_per_second: float",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "HTTPClient",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "class HTTPClient:\n    \"\"\"HTTP client with configurable settings.\"\"\"\n    def __init__(self, timeout: float = 30.0, headers: Optional[Dict[str, str]] = None,\n                 verify_ssl: bool = True):\n        self.timeout = timeout\n        self.headers = headers or {}\n        self.verify_ssl = verify_ssl\n        # Create SSL context\n        if not verify_ssl:\n            self.ssl_context = ssl.create_default_context()",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "LoadTester",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "class LoadTester:\n    \"\"\"HTTP load testing engine.\"\"\"\n    def __init__(self, url: str, method: str = 'GET', body: Optional[str] = None,\n                 headers: Optional[Dict[str, str]] = None, concurrency: int = 10,\n                 duration: float = 10.0, timeout: float = 30.0, verify_ssl: bool = True):\n        self.url = url\n        self.method = method.upper()\n        self.body = body.encode() if body else None\n        self.headers = headers or {}\n        self.concurrency = concurrency",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "APILoadTester",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "class APILoadTester:\n    \"\"\"Main load tester class with CLI integration.\"\"\"\n    def __init__(self, urls: List[str], method: str = 'GET', body: Optional[str] = None,\n                 headers: Optional[Dict[str, str]] = None, concurrency: int = 10,\n                 duration: float = 10.0, timeout: float = 30.0, compare: bool = False,\n                 verbose: bool = False, verify_ssl: bool = True):\n        self.urls = urls\n        self.method = method\n        self.body = body\n        self.headers = headers or {}",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "calculate_percentile",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "def calculate_percentile(data: List[float], percentile: float) -> float:\n    \"\"\"Calculate percentile from sorted data.\"\"\"\n    if not data:\n        return 0.0\n    k = (len(data) - 1) * (percentile / 100)\n    f = int(k)\n    c = f + 1 if f + 1 < len(data) else f\n    return data[f] + (data[c] - data[f]) * (k - f)\nclass HTTPClient:\n    \"\"\"HTTP client with configurable settings.\"\"\"",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "print_results",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "def print_results(results: LoadTestResults, verbose: bool = False):\n    \"\"\"Print formatted load test results.\"\"\"\n    print(\"\\n\" + \"=\" * 60)\n    print(\"LOAD TEST RESULTS\")\n    print(\"=\" * 60)\n    print(f\"\\nTarget: {results.target_url}\")\n    print(f\"Method: {results.method}\")\n    print(f\"Duration: {results.duration_seconds:.1f}s\")\n    print(f\"Concurrency: {results.concurrency}\")\n    print(f\"\\nTHROUGHPUT:\")",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "compare_results",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "def compare_results(results1: LoadTestResults, results2: LoadTestResults):\n    \"\"\"Compare two load test results.\"\"\"\n    print(\"\\n\" + \"=\" * 60)\n    print(\"COMPARISON RESULTS\")\n    print(\"=\" * 60)\n    print(f\"\\n{'Metric':<25} {'Endpoint 1':<15} {'Endpoint 2':<15} {'Diff':<15}\")\n    print(\"-\" * 70)\n    # Helper to format diff\n    def diff_str(v1: float, v2: float, lower_better: bool = True) -> str:\n        if v1 == 0:",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "parse_headers",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "def parse_headers(header_args: Optional[List[str]]) -> Dict[str, str]:\n    \"\"\"Parse header arguments into dictionary.\"\"\"\n    headers = {}\n    if header_args:\n        for h in header_args:\n            if ':' in h:\n                key, value = h.split(':', 1)\n                headers[key.strip()] = value.strip()\n    return headers\ndef main():",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "description": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "peekOfCode": "def main():\n    \"\"\"CLI entry point.\"\"\"\n    parser = argparse.ArgumentParser(\n        description='HTTP load testing tool',\n        formatter_class=argparse.RawDescriptionHelpFormatter,\n        epilog='''\nExamples:\n  %(prog)s https://api.example.com/users --concurrency 50 --duration 30\n  %(prog)s https://api.example.com/orders --method POST --body '{\"item\": 1}'\n  %(prog)s https://api.example.com/v1 https://api.example.com/v2 --compare",
-        "detail": ".claude.skills.senior-backend.scripts.api_load_tester",
-        "documentation": {}
-    },
-    {
-        "label": "APIScaffolder",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "class APIScaffolder:\n    \"\"\"Generate Express.js routes from OpenAPI specification.\"\"\"\n    SUPPORTED_FRAMEWORKS = ['express', 'fastify', 'koa']\n    def __init__(self, spec_path: str, output_dir: str, framework: str = 'express',\n                 types_only: bool = False, verbose: bool = False):\n        self.spec_path = Path(spec_path)\n        self.output_dir = Path(output_dir)\n        self.framework = framework\n        self.types_only = types_only\n        self.verbose = verbose",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "load_yaml_as_json",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def load_yaml_as_json(content: str) -> Dict:\n    \"\"\"Parse YAML content without PyYAML dependency (basic subset).\"\"\"\n    lines = content.split('\\n')\n    result = {}\n    stack = [(result, -1)]\n    current_key = None\n    in_array = False\n    array_indent = -1\n    for line in lines:\n        stripped = line.lstrip()",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "load_spec",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def load_spec(spec_path: Path) -> Dict:\n    \"\"\"Load OpenAPI spec from YAML or JSON file.\"\"\"\n    content = spec_path.read_text()\n    if spec_path.suffix in ['.yaml', '.yml']:\n        try:\n            import yaml\n            return yaml.safe_load(content)\n        except ImportError:\n            # Fallback to basic YAML parser\n            return load_yaml_as_json(content)",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "openapi_type_to_ts",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def openapi_type_to_ts(schema: Dict) -> str:\n    \"\"\"Convert OpenAPI schema type to TypeScript type.\"\"\"\n    if not schema:\n        return 'unknown'\n    if '$ref' in schema:\n        ref = schema['$ref']\n        return ref.split('/')[-1]\n    type_map = {\n        'string': 'string',\n        'integer': 'number',",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "generate_zod_schema",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def generate_zod_schema(schema: Dict, name: str) -> str:\n    \"\"\"Generate Zod validation schema from OpenAPI schema.\"\"\"\n    if not schema:\n        return f'export const {name}Schema = z.unknown();'\n    def schema_to_zod(s: Dict) -> str:\n        if '$ref' in s:\n            ref_name = s['$ref'].split('/')[-1]\n            return f'{ref_name}Schema'\n        s_type = s.get('type', 'unknown')\n        if s_type == 'string':",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "to_camel_case",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def to_camel_case(s: str) -> str:\n    \"\"\"Convert string to camelCase.\"\"\"\n    s = re.sub(r'[^a-zA-Z0-9]', ' ', s)\n    words = s.split()\n    if not words:\n        return s\n    return words[0].lower() + ''.join(w.capitalize() for w in words[1:])\ndef to_pascal_case(s: str) -> str:\n    \"\"\"Convert string to PascalCase.\"\"\"\n    s = re.sub(r'[^a-zA-Z0-9]', ' ', s)",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "to_pascal_case",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def to_pascal_case(s: str) -> str:\n    \"\"\"Convert string to PascalCase.\"\"\"\n    s = re.sub(r'[^a-zA-Z0-9]', ' ', s)\n    return ''.join(w.capitalize() for w in s.split())\ndef extract_path_params(path: str) -> List[str]:\n    \"\"\"Extract path parameters from OpenAPI path.\"\"\"\n    return re.findall(r'\\{(\\w+)\\}', path)\ndef openapi_path_to_express(path: str) -> str:\n    \"\"\"Convert OpenAPI path to Express path format.\"\"\"\n    return re.sub(r'\\{(\\w+)\\}', r':\\1', path)",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "extract_path_params",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def extract_path_params(path: str) -> List[str]:\n    \"\"\"Extract path parameters from OpenAPI path.\"\"\"\n    return re.findall(r'\\{(\\w+)\\}', path)\ndef openapi_path_to_express(path: str) -> str:\n    \"\"\"Convert OpenAPI path to Express path format.\"\"\"\n    return re.sub(r'\\{(\\w+)\\}', r':\\1', path)\nclass APIScaffolder:\n    \"\"\"Generate Express.js routes from OpenAPI specification.\"\"\"\n    SUPPORTED_FRAMEWORKS = ['express', 'fastify', 'koa']\n    def __init__(self, spec_path: str, output_dir: str, framework: str = 'express',",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "openapi_path_to_express",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def openapi_path_to_express(path: str) -> str:\n    \"\"\"Convert OpenAPI path to Express path format.\"\"\"\n    return re.sub(r'\\{(\\w+)\\}', r':\\1', path)\nclass APIScaffolder:\n    \"\"\"Generate Express.js routes from OpenAPI specification.\"\"\"\n    SUPPORTED_FRAMEWORKS = ['express', 'fastify', 'koa']\n    def __init__(self, spec_path: str, output_dir: str, framework: str = 'express',\n                 types_only: bool = False, verbose: bool = False):\n        self.spec_path = Path(spec_path)\n        self.output_dir = Path(output_dir)",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "description": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "peekOfCode": "def main():\n    \"\"\"CLI entry point.\"\"\"\n    parser = argparse.ArgumentParser(\n        description='Generate Express.js routes from OpenAPI specification',\n        formatter_class=argparse.RawDescriptionHelpFormatter,\n        epilog='''\nExamples:\n  %(prog)s openapi.yaml --output src/routes/\n  %(prog)s spec.json --framework fastify --output src/api/\n  %(prog)s openapi.yaml --types-only --output src/types/",
-        "detail": ".claude.skills.senior-backend.scripts.api_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "Inputs",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "class Inputs:\n    team_size: int\n    qps_p99: int\n    read_write_ratio: float\n    tenancy: str\n    data_sensitivity: str\n    pattern_preference: str\n    language_preference: str\n    has_platform_team: bool\n    needs_admin_panel: bool",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "Match",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "class Match:\n    profile_name: str\n    score: float\n    matched_constraints: list[str] = field(default_factory=list)\n    violated_constraints: list[str] = field(default_factory=list)\n    profile_data: dict[str, Any] = field(default_factory=dict)\ndef load_profiles() -> dict[str, dict[str, Any]]:\n    profiles: dict[str, dict[str, Any]] = {}\n    if not PROFILES_DIR.exists():\n        return profiles",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "load_profiles",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "def load_profiles() -> dict[str, dict[str, Any]]:\n    profiles: dict[str, dict[str, Any]] = {}\n    if not PROFILES_DIR.exists():\n        return profiles\n    for p in sorted(PROFILES_DIR.glob(\"*.json\")):\n        with p.open() as f:\n            data = json.load(f)\n        profiles[data.get(\"profile_name\", p.stem)] = data\n    return profiles\ndef score_profile(profile: dict[str, Any], inputs: Inputs) -> Match:",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "score_profile",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "def score_profile(profile: dict[str, Any], inputs: Inputs) -> Match:\n    name = profile.get(\"profile_name\", \"unknown\")\n    c = profile.get(\"constraints\", {})\n    matched: list[str] = []\n    violated: list[str] = []\n    w_total = 0.0\n    w_matched = 0.0\n    def check(label: str, ok: bool, weight: float) -> None:\n        nonlocal w_total, w_matched\n        w_total += weight",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "rank",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "def rank(profiles: dict[str, dict[str, Any]], inputs: Inputs) -> list[Match]:\n    matches = [score_profile(p, inputs) for p in profiles.values()]\n    matches.sort(key=lambda m: m.score, reverse=True)\n    return matches\ndef render_markdown(inputs: Inputs, matches: list[Match], kills: list[str]) -> str:\n    L: list[str] = []\n    L.append(\"# Backend Stack Decision\")\n    L.append(\"\")\n    L.append(\"## Inputs (your assumptions, Karpathy #1)\")\n    L.append(\"\")",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "render_markdown",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "def render_markdown(inputs: Inputs, matches: list[Match], kills: list[str]) -> str:\n    L: list[str] = []\n    L.append(\"# Backend Stack Decision\")\n    L.append(\"\")\n    L.append(\"## Inputs (your assumptions, Karpathy #1)\")\n    L.append(\"\")\n    for k, v in asdict(inputs).items():\n        L.append(f\"- **{k}**: `{v}`\")\n    L.append(\"\")\n    if kills:",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "render_json",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "def render_json(inputs: Inputs, matches: list[Match], kills: list[str]) -> str:\n    return json.dumps(\n        {\n            \"inputs\": asdict(inputs),\n            \"kill_criteria_tripped\": kills,\n            \"ranked_matches\": [\n                {\n                    \"profile_name\": m.profile_name,\n                    \"score\": round(m.score, 4),\n                    \"matched_constraints\": m.matched_constraints,",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "build_parser",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "def build_parser() -> argparse.ArgumentParser:\n    p = argparse.ArgumentParser(\n        description=\"Deterministic backend pattern + stack picker. Surfaces tradeoffs + SLO floor + named approvers. Never auto-approves.\",\n        epilog=\"See ../references/forcing_questions.md for the 7-question grill.\",\n    )\n    p.add_argument(\"--team-size\", type=int, help=\"Backend engineers on this service.\")\n    p.add_argument(\"--qps-p99\", type=int, help=\"Year-1 p99 QPS forecast.\")\n    p.add_argument(\"--read-write-ratio\", type=float, help=\"Reads per write.\")\n    p.add_argument(\n        \"--tenancy\",",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "def main(argv: list[str] | None = None) -> int:\n    parser = build_parser()\n    args = parser.parse_args(argv)\n    profiles = load_profiles()\n    if args.list_profiles:\n        if not profiles:\n            print(\"No profiles found in\", PROFILES_DIR, file=sys.stderr)\n            return 1\n        for name, data in profiles.items():\n            print(f\"{name}: {data.get('description', '')[:120]}\")",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "SCRIPT_DIR",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "SCRIPT_DIR = Path(__file__).resolve().parent\nPROFILES_DIR = SCRIPT_DIR.parent / \"profiles\"\n@dataclass\nclass Inputs:\n    team_size: int\n    qps_p99: int\n    read_write_ratio: float\n    tenancy: str\n    data_sensitivity: str\n    pattern_preference: str",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "PROFILES_DIR",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "description": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "peekOfCode": "PROFILES_DIR = SCRIPT_DIR.parent / \"profiles\"\n@dataclass\nclass Inputs:\n    team_size: int\n    qps_p99: int\n    read_write_ratio: float\n    tenancy: str\n    data_sensitivity: str\n    pattern_preference: str\n    language_preference: str",
-        "detail": ".claude.skills.senior-backend.scripts.backend_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "Column",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class Column:\n    \"\"\"Database column definition.\"\"\"\n    name: str\n    data_type: str\n    nullable: bool = True\n    default: Optional[str] = None\n    primary_key: bool = False\n    unique: bool = False\n    references: Optional[str] = None\n@dataclass",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "Index",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class Index:\n    \"\"\"Database index definition.\"\"\"\n    name: str\n    table: str\n    columns: List[str]\n    unique: bool = False\n    partial: Optional[str] = None\n@dataclass\nclass Table:\n    \"\"\"Database table definition.\"\"\"",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "Table",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class Table:\n    \"\"\"Database table definition.\"\"\"\n    name: str\n    columns: Dict[str, Column] = field(default_factory=dict)\n    indexes: List[Index] = field(default_factory=list)\n    primary_key: List[str] = field(default_factory=list)\n    foreign_keys: List[Dict] = field(default_factory=list)\n@dataclass\nclass Issue:\n    \"\"\"Schema issue or recommendation.\"\"\"",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "Issue",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class Issue:\n    \"\"\"Schema issue or recommendation.\"\"\"\n    severity: str  # 'error', 'warning', 'info'\n    category: str  # 'index', 'naming', 'type', 'constraint'\n    table: str\n    message: str\n    suggestion: Optional[str] = None\nclass SQLParser:\n    \"\"\"Parse SQL DDL statements.\"\"\"\n    # Common patterns",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "SQLParser",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class SQLParser:\n    \"\"\"Parse SQL DDL statements.\"\"\"\n    # Common patterns\n    CREATE_TABLE_PATTERN = re.compile(\n        r'CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?[\"`]?(\\w+)[\"`]?\\s*\\((.*?)\\)\\s*;',\n        re.IGNORECASE | re.DOTALL\n    )\n    CREATE_INDEX_PATTERN = re.compile(\n        r'CREATE\\s+(UNIQUE\\s+)?INDEX\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?[\"`]?(\\w+)[\"`]?\\s+'\n        r'ON\\s+[\"`]?(\\w+)[\"`]?\\s*\\(([^)]+)\\)(?:\\s+WHERE\\s+(.+?))?;',",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "SchemaAnalyzer",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class SchemaAnalyzer:\n    \"\"\"Analyze database schema for issues and optimizations.\"\"\"\n    # Columns that typically need indexes (foreign keys)\n    FK_COLUMN_PATTERNS = ['_id', 'Id', '_ID']\n    # Columns that typically need indexes for filtering\n    FILTER_COLUMN_PATTERNS = ['status', 'state', 'type', 'category', 'active', 'enabled', 'deleted']\n    # Columns that typically need indexes for sorting/ordering\n    SORT_COLUMN_PATTERNS = ['created_at', 'updated_at', 'date', 'timestamp', 'order', 'position']\n    def __init__(self, tables: Dict[str, Table]):\n        self.tables = tables",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "MigrationGenerator",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class MigrationGenerator:\n    \"\"\"Generate migration scripts from schema differences.\"\"\"\n    def __init__(self, old_tables: Dict[str, Table], new_tables: Dict[str, Table]):\n        self.old_tables = old_tables\n        self.new_tables = new_tables\n    def generate(self) -> Tuple[str, str]:\n        \"\"\"Generate UP and DOWN migration scripts.\"\"\"\n        up_statements = []\n        down_statements = []\n        # Find new tables",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "DatabaseMigrationTool",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "class DatabaseMigrationTool:\n    \"\"\"Main tool for database migration analysis.\"\"\"\n    def __init__(self, schema_path: str, compare_path: Optional[str] = None,\n                 output_dir: Optional[str] = None, verbose: bool = False):\n        self.schema_path = Path(schema_path)\n        self.compare_path = Path(compare_path) if compare_path else None\n        self.output_dir = Path(output_dir) if output_dir else None\n        self.verbose = verbose\n        self.parser = SQLParser()\n    def run(self, mode: str = 'analyze') -> Dict:",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "description": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "peekOfCode": "def main():\n    \"\"\"CLI entry point.\"\"\"\n    parser = argparse.ArgumentParser(\n        description='Analyze SQL schemas and generate migrations',\n        formatter_class=argparse.RawDescriptionHelpFormatter,\n        epilog='''\nExamples:\n  %(prog)s schema.sql --analyze\n  %(prog)s old.sql --compare new.sql --output migrations/\n  %(prog)s schema.sql --suggest-indexes --output migrations/",
-        "detail": ".claude.skills.senior-backend.scripts.database_migration_tool",
-        "documentation": {}
-    },
-    {
         "label": "load_package_json",
         "kind": 2,
         "importPath": ".claude.skills.senior-frontend.scripts.bundle_analyzer",
@@ -2877,663 +1826,6 @@
         "description": ".claude.skills.senior-frontend.scripts.frontend_scaffolder",
         "peekOfCode": "module.exports = nextConfig;\n''',\n        \"vite.config.ts\": '''import { defineConfig } from 'vite';\nimport react from '@vitejs/plugin-react';\nimport path from 'path';\nexport default defineConfig({\n  plugins: [react()],\n  resolve: {\n    alias: {\n      '@': path.resolve(__dirname, './src'),",
         "detail": ".claude.skills.senior-frontend.scripts.frontend_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "should_skip",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def should_skip(path: Path) -> bool:\n    \"\"\"Check if path should be skipped.\"\"\"\n    return any(skip in path.parts for skip in SKIP_DIRS)\ndef count_lines(filepath: Path) -> Tuple[int, int, int]:\n    \"\"\"Count total lines, code lines, and comment lines.\"\"\"\n    try:\n        with open(filepath, \"r\", encoding=\"utf-8\", errors=\"ignore\") as f:\n            lines = f.readlines()\n    except Exception:\n        return 0, 0, 0",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "count_lines",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def count_lines(filepath: Path) -> Tuple[int, int, int]:\n    \"\"\"Count total lines, code lines, and comment lines.\"\"\"\n    try:\n        with open(filepath, \"r\", encoding=\"utf-8\", errors=\"ignore\") as f:\n            lines = f.readlines()\n    except Exception:\n        return 0, 0, 0\n    total = len(lines)\n    code = 0\n    comments = 0",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "calculate_complexity",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def calculate_complexity(content: str, language: str) -> Dict:\n    \"\"\"Calculate cyclomatic complexity estimate.\"\"\"\n    # Count decision points\n    decision_patterns = [\n        r\"\\bif\\b\", r\"\\belse\\b\", r\"\\belif\\b\", r\"\\bfor\\b\", r\"\\bwhile\\b\",\n        r\"\\bcase\\b\", r\"\\bcatch\\b\", r\"\\b\\?\\b\", r\"\\b&&\\b\", r\"\\b\\|\\|\\b\",\n        r\"\\band\\b\", r\"\\bor\\b\"\n    ]\n    complexity = 1  # Base complexity\n    for pattern in decision_patterns:",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "analyze_security",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def analyze_security(filepath: Path, content: str) -> List[Dict]:\n    \"\"\"Scan for security issues.\"\"\"\n    issues = []\n    lines = content.split(\"\\n\")\n    for pattern_name, pattern_info in SECURITY_PATTERNS.items():\n        regex = re.compile(pattern_info[\"pattern\"], re.IGNORECASE)\n        for line_num, line in enumerate(lines, 1):\n            if regex.search(line):\n                issues.append({\n                    \"file\": str(filepath),",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "analyze_dependencies",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def analyze_dependencies(project_path: Path) -> Dict:\n    \"\"\"Analyze project dependencies for issues.\"\"\"\n    findings = {\n        \"package_managers\": [],\n        \"total_deps\": 0,\n        \"outdated\": [],\n        \"vulnerable\": [],\n        \"recommendations\": []\n    }\n    # Check package.json",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "analyze_test_coverage",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def analyze_test_coverage(project_path: Path) -> Dict:\n    \"\"\"Estimate test coverage based on file analysis.\"\"\"\n    test_files = []\n    source_files = []\n    for filepath in project_path.rglob(\"*\"):\n        if should_skip(filepath) or not filepath.is_file():\n            continue\n        if filepath.suffix in ALL_CODE_EXTENSIONS:\n            name = filepath.stem.lower()\n            if \"test\" in name or \"spec\" in name or \"_test\" in name:",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "analyze_documentation",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def analyze_documentation(project_path: Path) -> Dict:\n    \"\"\"Analyze documentation quality.\"\"\"\n    docs = {\n        \"has_readme\": False,\n        \"has_contributing\": False,\n        \"has_license\": False,\n        \"has_changelog\": False,\n        \"api_docs\": [],\n        \"score\": 0\n    }",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "analyze_project",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def analyze_project(project_path: Path) -> Dict:\n    \"\"\"Perform full project analysis.\"\"\"\n    results = {\n        \"summary\": {\n            \"files_analyzed\": 0,\n            \"total_lines\": 0,\n            \"code_lines\": 0,\n            \"comment_lines\": 0\n        },\n        \"languages\": defaultdict(lambda: {\"files\": 0, \"lines\": 0}),",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "generate_recommendations",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def generate_recommendations(analysis: Dict) -> List[Dict]:\n    \"\"\"Generate prioritized recommendations.\"\"\"\n    recs = []\n    # Critical security issues\n    for issue in analysis[\"security\"][\"critical\"][:3]:\n        recs.append({\n            \"priority\": \"P0\",\n            \"category\": \"security\",\n            \"issue\": issue[\"message\"],\n            \"file\": issue[\"file\"],",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "print_report",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def print_report(analysis: Dict, verbose: bool = False) -> None:\n    \"\"\"Print human-readable report.\"\"\"\n    print(\"=\" * 60)\n    print(\"CODE QUALITY ANALYSIS REPORT\")\n    print(\"=\" * 60)\n    print()\n    # Summary\n    summary = analysis[\"summary\"]\n    print(f\"Overall Score: {analysis['overall_score']}/100 (Grade: {analysis['grade']})\")\n    print(f\"Files Analyzed: {summary['files_analyzed']}\")",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "def main():\n    parser = argparse.ArgumentParser(\n        description=\"Analyze fullstack codebase for quality issues\",\n        formatter_class=argparse.RawDescriptionHelpFormatter,\n        epilog=\"\"\"\nExamples:\n  %(prog)s /path/to/project\n  %(prog)s . --verbose\n  %(prog)s /path/to/project --json --output report.json\n        \"\"\"",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "FRONTEND_EXTENSIONS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "FRONTEND_EXTENSIONS = {\".ts\", \".tsx\", \".js\", \".jsx\", \".vue\", \".svelte\"}\nBACKEND_EXTENSIONS = {\".py\", \".go\", \".java\", \".rb\", \".php\", \".cs\"}\nCONFIG_EXTENSIONS = {\".json\", \".yaml\", \".yml\", \".toml\", \".env\"}\nALL_CODE_EXTENSIONS = FRONTEND_EXTENSIONS | BACKEND_EXTENSIONS\n# Skip patterns\nSKIP_DIRS = {\"node_modules\", \"vendor\", \".git\", \"__pycache__\", \"dist\", \"build\",\n             \".next\", \".venv\", \"venv\", \"env\", \"coverage\", \".pytest_cache\"}\n# Security patterns to detect\nSECURITY_PATTERNS = {\n    \"hardcoded_secret\": {",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "BACKEND_EXTENSIONS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "BACKEND_EXTENSIONS = {\".py\", \".go\", \".java\", \".rb\", \".php\", \".cs\"}\nCONFIG_EXTENSIONS = {\".json\", \".yaml\", \".yml\", \".toml\", \".env\"}\nALL_CODE_EXTENSIONS = FRONTEND_EXTENSIONS | BACKEND_EXTENSIONS\n# Skip patterns\nSKIP_DIRS = {\"node_modules\", \"vendor\", \".git\", \"__pycache__\", \"dist\", \"build\",\n             \".next\", \".venv\", \"venv\", \"env\", \"coverage\", \".pytest_cache\"}\n# Security patterns to detect\nSECURITY_PATTERNS = {\n    \"hardcoded_secret\": {\n        \"pattern\": r\"(?:password|secret|api_key|apikey|token|auth)[\\s]*[=:][\\s]*['\\\"][^'\\\"]{8,}['\\\"]\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "CONFIG_EXTENSIONS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "CONFIG_EXTENSIONS = {\".json\", \".yaml\", \".yml\", \".toml\", \".env\"}\nALL_CODE_EXTENSIONS = FRONTEND_EXTENSIONS | BACKEND_EXTENSIONS\n# Skip patterns\nSKIP_DIRS = {\"node_modules\", \"vendor\", \".git\", \"__pycache__\", \"dist\", \"build\",\n             \".next\", \".venv\", \"venv\", \"env\", \"coverage\", \".pytest_cache\"}\n# Security patterns to detect\nSECURITY_PATTERNS = {\n    \"hardcoded_secret\": {\n        \"pattern\": r\"(?:password|secret|api_key|apikey|token|auth)[\\s]*[=:][\\s]*['\\\"][^'\\\"]{8,}['\\\"]\",\n        \"severity\": \"critical\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "ALL_CODE_EXTENSIONS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "ALL_CODE_EXTENSIONS = FRONTEND_EXTENSIONS | BACKEND_EXTENSIONS\n# Skip patterns\nSKIP_DIRS = {\"node_modules\", \"vendor\", \".git\", \"__pycache__\", \"dist\", \"build\",\n             \".next\", \".venv\", \"venv\", \"env\", \"coverage\", \".pytest_cache\"}\n# Security patterns to detect\nSECURITY_PATTERNS = {\n    \"hardcoded_secret\": {\n        \"pattern\": r\"(?:password|secret|api_key|apikey|token|auth)[\\s]*[=:][\\s]*['\\\"][^'\\\"]{8,}['\\\"]\",\n        \"severity\": \"critical\",\n        \"message\": \"Potential hardcoded secret detected\"",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "SKIP_DIRS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "SKIP_DIRS = {\"node_modules\", \"vendor\", \".git\", \"__pycache__\", \"dist\", \"build\",\n             \".next\", \".venv\", \"venv\", \"env\", \"coverage\", \".pytest_cache\"}\n# Security patterns to detect\nSECURITY_PATTERNS = {\n    \"hardcoded_secret\": {\n        \"pattern\": r\"(?:password|secret|api_key|apikey|token|auth)[\\s]*[=:][\\s]*['\\\"][^'\\\"]{8,}['\\\"]\",\n        \"severity\": \"critical\",\n        \"message\": \"Potential hardcoded secret detected\"\n    },\n    \"sql_injection\": {",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "SECURITY_PATTERNS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "SECURITY_PATTERNS = {\n    \"hardcoded_secret\": {\n        \"pattern\": r\"(?:password|secret|api_key|apikey|token|auth)[\\s]*[=:][\\s]*['\\\"][^'\\\"]{8,}['\\\"]\",\n        \"severity\": \"critical\",\n        \"message\": \"Potential hardcoded secret detected\"\n    },\n    \"sql_injection\": {\n        \"pattern\": r\"(?:execute|query|raw)\\s*\\(\\s*[f'\\\"].*\\{.*\\}|%s|%d|\\$\\d\",\n        \"severity\": \"high\",\n        \"message\": \"Potential SQL injection vulnerability\"",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "CODE_SMELL_PATTERNS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "CODE_SMELL_PATTERNS = {\n    \"long_function\": {\n        \"description\": \"Function exceeds recommended length\",\n        \"threshold\": 50\n    },\n    \"deep_nesting\": {\n        \"description\": \"Excessive nesting depth\",\n        \"threshold\": 4\n    },\n    \"large_file\": {",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "KNOWN_VULNERABLE_DEPS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "description": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "peekOfCode": "KNOWN_VULNERABLE_DEPS = {\n    \"lodash\": {\"vulnerable_below\": \"4.17.21\", \"cve\": \"CVE-2021-23337\"},\n    \"axios\": {\"vulnerable_below\": \"0.21.2\", \"cve\": \"CVE-2021-3749\"},\n    \"minimist\": {\"vulnerable_below\": \"1.2.6\", \"cve\": \"CVE-2021-44906\"},\n    \"jsonwebtoken\": {\"vulnerable_below\": \"9.0.0\", \"cve\": \"CVE-2022-23529\"},\n}\ndef should_skip(path: Path) -> bool:\n    \"\"\"Check if path should be skipped.\"\"\"\n    return any(skip in path.parts for skip in SKIP_DIRS)\ndef count_lines(filepath: Path) -> Tuple[int, int, int]:",
-        "detail": ".claude.skills.senior-fullstack.scripts.code_quality_analyzer",
-        "documentation": {}
-    },
-    {
-        "label": "Inputs",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "class Inputs:\n    team_size: int\n    team_size_12mo: int\n    cadence: str\n    user_facing: bool\n    budget_usd_monthly: int\n    traffic_p99_rps: int\n    data_sensitivity: str\n    read_write_ratio: float\n    def kill_criteria_check(self) -> list[str]:",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "Match",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "class Match:\n    profile_name: str\n    score: float\n    matched_constraints: list[str] = field(default_factory=list)\n    violated_constraints: list[str] = field(default_factory=list)\n    profile_data: dict[str, Any] = field(default_factory=dict)\ndef load_profiles() -> dict[str, dict[str, Any]]:\n    profiles: dict[str, dict[str, Any]] = {}\n    if not PROFILES_DIR.exists():\n        return profiles",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "load_profiles",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "def load_profiles() -> dict[str, dict[str, Any]]:\n    profiles: dict[str, dict[str, Any]] = {}\n    if not PROFILES_DIR.exists():\n        return profiles\n    for p in sorted(PROFILES_DIR.glob(\"*.json\")):\n        with p.open() as f:\n            data = json.load(f)\n        profiles[data.get(\"profile_name\", p.stem)] = data\n    return profiles\ndef score_profile(profile: dict[str, Any], inputs: Inputs) -> Match:",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "score_profile",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "def score_profile(profile: dict[str, Any], inputs: Inputs) -> Match:\n    \"\"\"Score how well a profile fits the inputs. 0.0–1.0.\"\"\"\n    name = profile.get(\"profile_name\", \"unknown\")\n    constraints = profile.get(\"constraints\", {})\n    matched: list[str] = []\n    violated: list[str] = []\n    w_total = 0.0\n    w_matched = 0.0\n    def check(label: str, ok: bool, weight: float) -> None:\n        nonlocal w_total, w_matched",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "rank",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "def rank(profiles: dict[str, dict[str, Any]], inputs: Inputs) -> list[Match]:\n    matches = [score_profile(p, inputs) for p in profiles.values()]\n    matches.sort(key=lambda m: m.score, reverse=True)\n    return matches\ndef render_markdown(inputs: Inputs, matches: list[Match], kills: list[str]) -> str:\n    lines: list[str] = []\n    lines.append(\"# Fullstack Stack Decision\")\n    lines.append(\"\")\n    lines.append(\"## Inputs (your assumptions, Karpathy #1)\")\n    lines.append(\"\")",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "render_markdown",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "def render_markdown(inputs: Inputs, matches: list[Match], kills: list[str]) -> str:\n    lines: list[str] = []\n    lines.append(\"# Fullstack Stack Decision\")\n    lines.append(\"\")\n    lines.append(\"## Inputs (your assumptions, Karpathy #1)\")\n    lines.append(\"\")\n    for k, v in asdict(inputs).items():\n        lines.append(f\"- **{k}**: `{v}`\")\n    lines.append(\"\")\n    if kills:",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "render_json",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "def render_json(inputs: Inputs, matches: list[Match], kills: list[str]) -> str:\n    out = {\n        \"inputs\": asdict(inputs),\n        \"kill_criteria_tripped\": kills,\n        \"ranked_matches\": [\n            {\n                \"profile_name\": m.profile_name,\n                \"score\": round(m.score, 4),\n                \"matched_constraints\": m.matched_constraints,\n                \"violated_constraints\": m.violated_constraints,",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "build_parser",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "def build_parser() -> argparse.ArgumentParser:\n    p = argparse.ArgumentParser(\n        description=\"Deterministic fullstack-stack picker. Matches inputs against profile JSON files; surfaces tradeoffs + kill criteria + named approvers. Never auto-approves.\",\n        epilog=\"See ../references/forcing_questions.md for the 7-question grill that must be walked before this tool is run.\",\n    )\n    p.add_argument(\"--team-size\", type=int, help=\"Engineers today.\")\n    p.add_argument(\"--team-size-12mo\", type=int, help=\"Credible engineer count in 12 months.\")\n    p.add_argument(\n        \"--cadence\",\n        choices=[\"per-pr\", \"daily\", \"weekly\", \"quarterly\", \"on-demand\"],",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "def main(argv: list[str] | None = None) -> int:\n    parser = build_parser()\n    args = parser.parse_args(argv)\n    profiles = load_profiles()\n    if args.list_profiles:\n        if not profiles:\n            print(\"No profiles found in\", PROFILES_DIR, file=sys.stderr)\n            return 1\n        for name, data in profiles.items():\n            print(f\"{name}: {data.get('description', '')[:120]}\")",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "SCRIPT_DIR",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "SCRIPT_DIR = Path(__file__).resolve().parent\nPROFILES_DIR = SCRIPT_DIR.parent / \"profiles\"\n@dataclass\nclass Inputs:\n    team_size: int\n    team_size_12mo: int\n    cadence: str\n    user_facing: bool\n    budget_usd_monthly: int\n    traffic_p99_rps: int",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "PROFILES_DIR",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "description": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "peekOfCode": "PROFILES_DIR = SCRIPT_DIR.parent / \"profiles\"\n@dataclass\nclass Inputs:\n    team_size: int\n    team_size_12mo: int\n    cadence: str\n    user_facing: bool\n    budget_usd_monthly: int\n    traffic_p99_rps: int\n    data_sensitivity: str",
-        "detail": ".claude.skills.senior-fullstack.scripts.fullstack_decision_engine",
-        "documentation": {}
-    },
-    {
-        "label": "Settings",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class Settings(BaseSettings):\n    DATABASE_URL: str = \"postgresql://user:pass@localhost:5432/db\"\n    ALLOWED_ORIGINS: List[str] = [\"http://localhost:3000\", \"http://localhost:5173\"]\n    SECRET_KEY: str = \"change-me-in-production\"  # ⚠️ SCAFFOLDING PLACEHOLDER — replace before deployment\n    class Config:\n        env_file = \".env\"\nsettings = Settings()\n''',\n        \"database.py\": '''from sqlalchemy import create_engine\nfrom sqlalchemy.ext.declarative import declarative_base",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "User",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class User(Base):\n    __tablename__ = \"users\"\n    id = Column(Integer, primary_key=True)\n    email = Column(String, unique=True, nullable=False)\n    name = Column(String)\n    created_at = Column(DateTime(timezone=True), server_default=func.now())\n''',\n        \"requirements.txt\": '''fastapi>=0.104.0\nuvicorn[standard]>=0.24.0\nsqlalchemy>=2.0.0",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "User",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class User(AbstractUser):\n    email = models.EmailField(unique=True)\n    USERNAME_FIELD = \"email\"\n    REQUIRED_FIELDS = [\"username\"]\n''',\n        \"serializers.py\": '''from rest_framework import serializers\nfrom .models import User\nclass UserSerializer(serializers.ModelSerializer):\n    class Meta:\n        model = User",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "UserSerializer",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class UserSerializer(serializers.ModelSerializer):\n    class Meta:\n        model = User\n        fields = [\"id\", \"email\", \"username\", \"date_joined\"]\n''',\n        \"views.py\": '''from rest_framework import viewsets\nfrom .models import User\nfrom .serializers import UserSerializer\nclass UserViewSet(viewsets.ModelViewSet):\n    queryset = User.objects.all()",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "UserViewSet",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class UserViewSet(viewsets.ModelViewSet):\n    queryset = User.objects.all()\n    serializer_class = UserSerializer\n''',\n        \"manage.py\": '''#!/usr/bin/env python\nimport os\nimport sys\ndef main():\n    os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"config.settings\")\n    from django.core.management import execute_from_command_line",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "UserBase",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class UserBase(BaseModel):\n    email: EmailStr\n    name: Optional[str] = None\nclass UserCreate(UserBase):\n    password: str\nclass UserResponse(UserBase):\n    id: int\n    created_at: datetime\n    class Config:\n        from_attributes = True",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "UserCreate",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class UserCreate(UserBase):\n    password: str\nclass UserResponse(UserBase):\n    id: int\n    created_at: datetime\n    class Config:\n        from_attributes = True\n'''\n    if \"users\" in filepath and filename == \"urls.py\":\n        return '''from django.urls import path, include",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "UserResponse",
-        "kind": 6,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "class UserResponse(UserBase):\n    id: int\n    created_at: datetime\n    class Config:\n        from_attributes = True\n'''\n    if \"users\" in filepath and filename == \"urls.py\":\n        return '''from django.urls import path, include\nfrom rest_framework.routers import DefaultRouter\nfrom .views import UserViewSet",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "get_file_content",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def get_file_content(template: str, filepath: str, project_name: str) -> str:\n    \"\"\"Generate file content based on template and file type.\"\"\"\n    filename = Path(filepath).name\n    contents = {\n        # Next.js files\n        \"layout.tsx\": f'''import type {{ Metadata }} from \"next\";\nimport \"./globals.css\";\nexport const metadata: Metadata = {{\n  title: \"{project_name}\",\n  description: \"Generated by project scaffolder\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "get_db",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n''',\n        \"routes.py\": '''from fastapi import APIRouter, Depends, HTTPException\nfrom sqlalchemy.orm import Session\nfrom app.database import get_db",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "get_current_user",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def get_current_user():\n    # Implement authentication\n    pass\n''',\n        \"user.py\": '''from sqlalchemy import Column, Integer, String, DateTime\nfrom sqlalchemy.sql import func\nfrom app.database import Base\nclass User(Base):\n    __tablename__ = \"users\"\n    id = Column(Integer, primary_key=True)",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def main():\n    os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"config.settings\")\n    from django.core.management import execute_from_command_line\n    execute_from_command_line(sys.argv)\nif __name__ == \"__main__\":\n    main()\n''',\n        # Config files\n        \"package.json\": f'''{{\"name\": \"{project_name}\", \"version\": \"0.1.0\", \"private\": true,\n  \"scripts\": {{\"dev\": \"next dev\", \"build\": \"next build\", \"start\": \"next start\", \"lint\": \"next lint\"}},",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "create_project",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def create_project(template_name: str, project_name: str, output_dir: Path) -> Dict:\n    \"\"\"Create project from template.\"\"\"\n    if template_name not in TEMPLATES:\n        return {\n            \"success\": False,\n            \"error\": f\"Unknown template: {template_name}\",\n            \"available\": list(TEMPLATES.keys())\n        }\n    template = TEMPLATES[template_name]\n    project_dir = output_dir / project_name",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "get_next_steps",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def get_next_steps(template: str, name: str) -> List[str]:\n    \"\"\"Get setup instructions for template.\"\"\"\n    steps = {\n        \"nextjs\": [f\"cd {name}\", \"npm install\", \"cp .env.example .env.local\", \"npm run dev\"],\n        \"fastapi-react\": [\n            f\"cd {name}\",\n            \"docker-compose up -d db\",\n            \"cd backend && pip install -r requirements.txt && uvicorn app.main:app --reload\",\n            \"cd frontend && npm install && npm run dev\"\n        ],",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "list_templates",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def list_templates() -> Dict:\n    \"\"\"List available templates.\"\"\"\n    return {\n        \"templates\": [\n            {\"name\": k, \"display_name\": v[\"name\"], \"description\": v[\"description\"]}\n            for k, v in TEMPLATES.items()\n        ]\n    }\ndef print_result(result: Dict, as_json: bool = False) -> None:\n    \"\"\"Print result.\"\"\"",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "print_result",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def print_result(result: Dict, as_json: bool = False) -> None:\n    \"\"\"Print result.\"\"\"\n    if as_json:\n        print(json.dumps(result, indent=2))\n        return\n    if \"templates\" in result:\n        print(\"\\nAvailable Templates:\")\n        print(\"=\" * 50)\n        for t in result[\"templates\"]:\n            print(f\"\\n  {t['name']}\")",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "def main():\n    parser = argparse.ArgumentParser(\n        description=\"Generate fullstack project scaffolding\",\n        epilog=\"Examples:\\n  %(prog)s nextjs my-app\\n  %(prog)s fastapi-react my-api\\n  %(prog)s --list-templates\",\n        formatter_class=argparse.RawDescriptionHelpFormatter\n    )\n    parser.add_argument(\"template\", nargs=\"?\", help=\"Project template\")\n    parser.add_argument(\"project_name\", nargs=\"?\", help=\"Project name\")\n    parser.add_argument(\"--output\", \"-o\", default=\".\", help=\"Output directory\")\n    parser.add_argument(\"--list-templates\", \"-l\", action=\"store_true\", help=\"List templates\")",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "TEMPLATES",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "TEMPLATES = {\n    \"nextjs\": {\n        \"name\": \"Next.js Full Stack\",\n        \"description\": \"Next.js 14+ with App Router, TypeScript, Tailwind CSS\",\n        \"structure\": {\n            \"src/app\": [\"layout.tsx\", \"page.tsx\", \"globals.css\", \"api/health/route.ts\"],\n            \"src/components/ui\": [\"Button.tsx\", \"Card.tsx\", \"Input.tsx\"],\n            \"src/components/layout\": [\"Header.tsx\", \"Footer.tsx\"],\n            \"src/lib\": [\"utils.ts\", \"db.ts\"],\n            \"src/types\": [\"index.ts\"],",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "Button.displayName",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "Button.displayName = \"Button\";\n''',\n        \"Card.tsx\": '''interface CardProps extends React.HTMLAttributes<HTMLDivElement> {}\nexport function Card({ className = \"\", children, ...props }: CardProps) {\n  return (\n    <div className={`rounded-lg border bg-white p-6 shadow-sm ${className}`} {...props}>\n      {children}\n    </div>\n  );\n}",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "Input.displayName",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "Input.displayName = \"Input\";\n''',\n        \"Header.tsx\": f'''import Link from \"next/link\";\nexport function Header() {{\n  return (\n    <header className=\"border-b\">\n      <nav className=\"mx-auto flex max-w-7xl items-center justify-between p-4\">\n        <Link href=\"/\" className=\"text-xl font-bold\">{project_name}</Link>\n        <div className=\"flex gap-4\">\n          <Link href=\"/about\" className=\"hover:text-blue-600\">About</Link>",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "app",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "app = FastAPI(title=\"{project_name}\", openapi_url=\"/api/openapi.json\")\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=settings.ALLOWED_ORIGINS,\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\napp.include_router(router, prefix=\"/api\")\n@app.get(\"/health\")",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "settings",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "settings = Settings()\n''',\n        \"database.py\": '''from sqlalchemy import create_engine\nfrom sqlalchemy.ext.declarative import declarative_base\nfrom sqlalchemy.orm import sessionmaker\nfrom app.config import settings\nengine = create_engine(settings.DATABASE_URL)\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\ndef get_db():",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "engine",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "engine = create_engine(settings.DATABASE_URL)\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n''',",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "SessionLocal",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n''',\n        \"routes.py\": '''from fastapi import APIRouter, Depends, HTTPException",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "Base",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "Base = declarative_base()\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n''',\n        \"routes.py\": '''from fastapi import APIRouter, Depends, HTTPException\nfrom sqlalchemy.orm import Session",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "router",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "router = APIRouter()\n@router.get(\"/users\")\nasync def get_users(db: Session = Depends(get_db)):\n    return {\"users\": []}\n@router.post(\"/users\")\nasync def create_user(db: Session = Depends(get_db)):\n    return {\"message\": \"User created\"}\n''',\n        \"deps.py\": '''from typing import Generator\nfrom fastapi import Depends",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "script_location",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "script_location = alembic\nsqlalchemy.url = driver://user:pass@localhost/dbname\n''',\n        # Express files\n        \"index.ts\": '''import express from \"express\";\nimport cors from \"cors\";\nimport helmet from \"helmet\";\nimport routes from \"./routes\";\nconst app = express();\nconst PORT = process.env.PORT || 8000;",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "sqlalchemy.url",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "sqlalchemy.url = driver://user:pass@localhost/dbname\n''',\n        # Express files\n        \"index.ts\": '''import express from \"express\";\nimport cors from \"cors\";\nimport helmet from \"helmet\";\nimport routes from \"./routes\";\nconst app = express();\nconst PORT = process.env.PORT || 8000;\napp.use(helmet());",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "BASE_DIR",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "BASE_DIR = Path(__file__).resolve().parent.parent\nSECRET_KEY = os.environ.get(\"DJANGO_SECRET_KEY\", \"change-me\")\nDEBUG = os.environ.get(\"DEBUG\", \"True\") == \"True\"\nALLOWED_HOSTS = [\"localhost\", \"127.0.0.1\"]\nINSTALLED_APPS = [\n    \"django.contrib.admin\",\n    \"django.contrib.auth\",\n    \"django.contrib.contenttypes\",\n    \"django.contrib.sessions\",\n    \"django.contrib.messages\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "SECRET_KEY",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "SECRET_KEY = os.environ.get(\"DJANGO_SECRET_KEY\", \"change-me\")\nDEBUG = os.environ.get(\"DEBUG\", \"True\") == \"True\"\nALLOWED_HOSTS = [\"localhost\", \"127.0.0.1\"]\nINSTALLED_APPS = [\n    \"django.contrib.admin\",\n    \"django.contrib.auth\",\n    \"django.contrib.contenttypes\",\n    \"django.contrib.sessions\",\n    \"django.contrib.messages\",\n    \"django.contrib.staticfiles\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "DEBUG",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "DEBUG = os.environ.get(\"DEBUG\", \"True\") == \"True\"\nALLOWED_HOSTS = [\"localhost\", \"127.0.0.1\"]\nINSTALLED_APPS = [\n    \"django.contrib.admin\",\n    \"django.contrib.auth\",\n    \"django.contrib.contenttypes\",\n    \"django.contrib.sessions\",\n    \"django.contrib.messages\",\n    \"django.contrib.staticfiles\",\n    \"rest_framework\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "ALLOWED_HOSTS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "ALLOWED_HOSTS = [\"localhost\", \"127.0.0.1\"]\nINSTALLED_APPS = [\n    \"django.contrib.admin\",\n    \"django.contrib.auth\",\n    \"django.contrib.contenttypes\",\n    \"django.contrib.sessions\",\n    \"django.contrib.messages\",\n    \"django.contrib.staticfiles\",\n    \"rest_framework\",\n    \"corsheaders\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "INSTALLED_APPS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "INSTALLED_APPS = [\n    \"django.contrib.admin\",\n    \"django.contrib.auth\",\n    \"django.contrib.contenttypes\",\n    \"django.contrib.sessions\",\n    \"django.contrib.messages\",\n    \"django.contrib.staticfiles\",\n    \"rest_framework\",\n    \"corsheaders\",\n    \"apps.users\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "MIDDLEWARE",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "MIDDLEWARE = [\n    \"corsheaders.middleware.CorsMiddleware\",\n    \"django.middleware.security.SecurityMiddleware\",\n    \"django.contrib.sessions.middleware.SessionMiddleware\",\n    \"django.middleware.common.CommonMiddleware\",\n    \"django.middleware.csrf.CsrfViewMiddleware\",\n    \"django.contrib.auth.middleware.AuthenticationMiddleware\",\n    \"django.contrib.messages.middleware.MessageMiddleware\",\n]\nROOT_URLCONF = \"config.urls\"",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "ROOT_URLCONF",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "ROOT_URLCONF = \"config.urls\"\nWSGI_APPLICATION = \"config.wsgi.application\"\nDATABASES = {{\n    \"default\": {{\n        \"ENGINE\": \"django.db.backends.postgresql\",\n        \"NAME\": os.environ.get(\"DB_NAME\", \"app\"),\n        \"USER\": os.environ.get(\"DB_USER\", \"user\"),\n        \"PASSWORD\": os.environ.get(\"DB_PASSWORD\", \"password\"),\n        \"HOST\": os.environ.get(\"DB_HOST\", \"localhost\"),\n        \"PORT\": \"5432\",",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "WSGI_APPLICATION",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "WSGI_APPLICATION = \"config.wsgi.application\"\nDATABASES = {{\n    \"default\": {{\n        \"ENGINE\": \"django.db.backends.postgresql\",\n        \"NAME\": os.environ.get(\"DB_NAME\", \"app\"),\n        \"USER\": os.environ.get(\"DB_USER\", \"user\"),\n        \"PASSWORD\": os.environ.get(\"DB_PASSWORD\", \"password\"),\n        \"HOST\": os.environ.get(\"DB_HOST\", \"localhost\"),\n        \"PORT\": \"5432\",\n    }}",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "DATABASES",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "DATABASES = {{\n    \"default\": {{\n        \"ENGINE\": \"django.db.backends.postgresql\",\n        \"NAME\": os.environ.get(\"DB_NAME\", \"app\"),\n        \"USER\": os.environ.get(\"DB_USER\", \"user\"),\n        \"PASSWORD\": os.environ.get(\"DB_PASSWORD\", \"password\"),\n        \"HOST\": os.environ.get(\"DB_HOST\", \"localhost\"),\n        \"PORT\": \"5432\",\n    }}\n}}",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "CORS_ALLOWED_ORIGINS",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "CORS_ALLOWED_ORIGINS = [\"http://localhost:5173\"]\n''',\n        \"urls.py\": '''from django.contrib import admin\nfrom django.urls import path, include\nurlpatterns = [\n    path(\"admin/\", admin.site.urls),\n    path(\"api/\", include(\"apps.users.urls\")),\n]\n''',\n        \"wsgi.py\": '''import os",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "urlpatterns",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "urlpatterns = [\n    path(\"admin/\", admin.site.urls),\n    path(\"api/\", include(\"apps.users.urls\")),\n]\n''',\n        \"wsgi.py\": '''import os\nfrom django.core.wsgi import get_wsgi_application\nos.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"config.settings\")\napplication = get_wsgi_application()\n''',",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "application",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "application = get_wsgi_application()\n''',\n        \"models.py\": '''from django.contrib.auth.models import AbstractUser\nfrom django.db import models\nclass User(AbstractUser):\n    email = models.EmailField(unique=True)\n    USERNAME_FIELD = \"email\"\n    REQUIRED_FIELDS = [\"username\"]\n''',\n        \"serializers.py\": '''from rest_framework import serializers",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "module.exports",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "module.exports = { reactStrictMode: true };\n''',\n        \".env.example\": '''DATABASE_URL=\"postgresql://user:password@localhost:5432/dbname\"\nSECRET_KEY=\"your-secret-here\"  # ⚠️ SCAFFOLDING PLACEHOLDER — replace before deployment\n''',\n        \".gitignore\": '''node_modules/\n.next/\ndist/\nbuild/\n.env",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "router",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "router = DefaultRouter()\nrouter.register(\"users\", UserViewSet)\nurlpatterns = [path(\"\", include(router.urls))]\n'''\n    return contents.get(filename, f\"// {filename}\\n\")\ndef create_project(template_name: str, project_name: str, output_dir: Path) -> Dict:\n    \"\"\"Create project from template.\"\"\"\n    if template_name not in TEMPLATES:\n        return {\n            \"success\": False,",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "documentation": {}
-    },
-    {
-        "label": "urlpatterns",
-        "kind": 5,
-        "importPath": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "description": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
-        "peekOfCode": "urlpatterns = [path(\"\", include(router.urls))]\n'''\n    return contents.get(filename, f\"// {filename}\\n\")\ndef create_project(template_name: str, project_name: str, output_dir: Path) -> Dict:\n    \"\"\"Create project from template.\"\"\"\n    if template_name not in TEMPLATES:\n        return {\n            \"success\": False,\n            \"error\": f\"Unknown template: {template_name}\",\n            \"available\": list(TEMPLATES.keys())",
-        "detail": ".claude.skills.senior-fullstack.scripts.project_scaffolder",
         "documentation": {}
     },
     {
@@ -3939,6 +2231,42 @@
         "description": ".claude.skills.senior-security.scripts.threat_modeler",
         "peekOfCode": "COMPONENT_MAPPING = {\n    \"authentication\": [\"authentication\"],\n    \"login\": [\"authentication\"],\n    \"auth\": [\"authentication\"],\n    \"api\": [\"api\"],\n    \"api gateway\": [\"api\", \"network\"],\n    \"rest api\": [\"api\"],\n    \"graphql\": [\"api\"],\n    \"database\": [\"database\"],\n    \"db\": [\"database\"],",
         "detail": ".claude.skills.senior-security.scripts.threat_modeler",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i\ndef _object_keys(value):\n    for key in value:\n        yield key\ndef _is_array(value):",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "frontend.node_modules.flatted.python.flatted",
         "documentation": {}
     }
 ]

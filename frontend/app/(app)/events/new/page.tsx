@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChipIco } from "@/components/ui/chip-ico";
 import { Progress } from "@/components/ui/progress";
@@ -286,16 +287,12 @@ export default function CreateEventPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="date">Date</Label>
-                  <div className="relative">
-                    <Calendar size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--text-faint)" }} />
-                    <Input
-                      id="date"
-                      type="date"
-                      value={form.date}
-                      onChange={(e) => set("date", e.target.value)}
-                      className="pl-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                    />
-                  </div>
+                  <DatePicker
+                    id="date"
+                    value={form.date}
+                    onChange={(v) => set("date", v)}
+                    placeholder="Select a date"
+                  />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="time">Start time</Label>

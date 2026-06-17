@@ -28,7 +28,7 @@ export const ROUTE_RULES: RouteRule[] = [
   { test: /^\/events\/[^/]+\/form-builder(\/|$)/, roles: ['admin', 'subadmin'] },
   { test: /^\/events\/[^/]+\/workspace(\/|$)/, roles: ['admin', 'subadmin'] },
   { test: /^\/events\/[^/]+\/guests(\/|$)/, roles: ['admin', 'subadmin'] },
-  { test: /^\/events\/new(\/|$)/, roles: ['admin', 'subadmin'] },
+  { test: /^\/events\/new(\/|$)/, roles: ['admin'] }, // create + publish are Admin-only (spec §5)
   // Handlers reach the events list and the read-only event detail (`/events/[id]`);
   // both are single-segment. Deeper `/events/[id]/edit` etc. fall through to the
   // generic admin/subadmin rule below.

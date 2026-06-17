@@ -782,7 +782,10 @@ export default function WorkspacePage() {
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm"><Eye size={14} /> Public page</Button>
             <Button asChild variant="ghost" size="sm"><Link href={`/events/${event.id}/edit`}><Pencil size={14} /> Edit</Link></Button>
-            <Button variant="ghost" size="sm" onClick={handleDelete} className="hover:bg-[var(--danger-soft)]" style={{ color: "var(--danger)" }}><Trash2 size={14} /> Delete</Button>
+            {/* Delete event is Admin-only (spec §5) — Sub-admins manage but cannot delete. */}
+            {isAdmin && (
+              <Button variant="ghost" size="sm" onClick={handleDelete} className="hover:bg-[var(--danger-soft)]" style={{ color: "var(--danger)" }}><Trash2 size={14} /> Delete</Button>
+            )}
           </div>
         </div>
       </div>
