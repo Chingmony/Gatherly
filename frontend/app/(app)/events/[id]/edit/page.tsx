@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getEvent, updateEvent } from "@/lib/api/events";
@@ -183,7 +184,7 @@ export default function EditEventPage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="time">Start time</Label>
-                <Input id="time" type="time" value={form.time} onChange={(e) => set("time", e.target.value)} />
+                <TimePicker id="time" value={form.time} onChange={(v) => set("time", v)} placeholder="Select a time" />
               </div>
             </div>
           </CardContent>

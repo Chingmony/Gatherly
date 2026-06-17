@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AvatarUser } from "@/components/ui/avatar-user";
@@ -395,13 +396,12 @@ export default function SettingsPage() {
 
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="s-dob">Date of birth</Label>
-                <Input
+                <DatePicker
                   id="s-dob"
-                  type="date"
-                  className="text-base h-11"
                   value={dob}
-                  onChange={(e) => setDob(e.target.value)}
+                  onChange={setDob}
                   disabled={loading}
+                  placeholder="Select your date of birth"
                 />
               </div>
 

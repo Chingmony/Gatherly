@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Calendar,
-  Clock,
   MapPin,
   ChevronRight,
   ChevronLeft,
@@ -24,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
+import { TimePicker } from "@/components/ui/time-picker";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChipIco } from "@/components/ui/chip-ico";
 import { Progress } from "@/components/ui/progress";
@@ -296,16 +296,12 @@ export default function CreateEventPage() {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="time">Start time</Label>
-                  <div className="relative">
-                    <Clock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--text-faint)" }} />
-                    <Input
-                      id="time"
-                      type="time"
-                      value={form.time}
-                      onChange={(e) => set("time", e.target.value)}
-                      className="pl-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                    />
-                  </div>
+                  <TimePicker
+                    id="time"
+                    value={form.time}
+                    onChange={(v) => set("time", v)}
+                    placeholder="Select a time"
+                  />
                 </div>
               </div>
 

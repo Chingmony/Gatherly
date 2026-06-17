@@ -16,30 +16,38 @@ function PublicHeader() {
   const pathname = usePathname() ?? "/";
 
   return (
-    <header className="mx-auto flex h-[72px] max-w-[1200px] items-center gap-6 px-6 md:px-10">
-      <Link href="/" aria-label="Gatherly home" className="flex-1">
-        <Logo size={28} />
-      </Link>
-      <nav className="hidden items-center justify-center gap-8 md:flex">
-        {NAV.map((item) => {
-          const active = item.match === "/" ? pathname === "/" : pathname.startsWith(item.match);
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="text-sm font-semibold transition-colors hover:text-[var(--text-strong)]"
-              style={{ color: active ? "var(--text-strong)" : "var(--text-muted)" }}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-      <div className="flex flex-1 items-center justify-end gap-3">
-        <ThemeToggle />
-        <Button asChild variant="outline" size="sm">
-          <Link href="/login">Organizer sign in</Link>
-        </Button>
+    <header
+      className="sticky top-0 z-40 w-full border-b backdrop-blur-md"
+      style={{
+        borderColor: "var(--border-hex,#ecedf4)",
+        background: "color-mix(in srgb, var(--bg) 82%, transparent)",
+      }}
+    >
+      <div className="mx-auto flex h-[72px] max-w-[1200px] items-center gap-6 px-6 md:px-10">
+        <Link href="/" aria-label="Gatherly home" className="flex-1">
+          <Logo size={28} />
+        </Link>
+        <nav className="hidden items-center justify-center gap-8 md:flex">
+          {NAV.map((item) => {
+            const active = item.match === "/" ? pathname === "/" : pathname.startsWith(item.match);
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="text-sm font-semibold transition-colors hover:text-[var(--text-strong)]"
+                style={{ color: active ? "var(--text-strong)" : "var(--text-muted)" }}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="flex flex-1 items-center justify-end gap-3">
+          <ThemeToggle />
+          <Button asChild variant="outline" size="sm">
+            <Link href="/login">Organizer sign in</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );

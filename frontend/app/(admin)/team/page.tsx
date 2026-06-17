@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AvatarUser } from "@/components/ui/avatar-user";
@@ -443,7 +444,7 @@ export default function TeamPage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="edit-dob">Date of birth</Label>
-                <Input id="edit-dob" type="date" value={editForm.dateOfBirth} onChange={(e) => setEditForm((f) => ({ ...f, dateOfBirth: e.target.value }))} />
+                <DatePicker id="edit-dob" value={editForm.dateOfBirth} onChange={(v) => setEditForm((f) => ({ ...f, dateOfBirth: v }))} placeholder="Select a date" />
               </div>
             </div>
             <div className="flex flex-col gap-1.5">

@@ -584,10 +584,10 @@ function EventCard({ ev }: { ev: PublicEvent }) {
         </h3>
 
         <div className="flex items-center gap-2 text-[13px]" style={{ color: "var(--text-muted)" }}>
-          <span className="inline-flex items-center gap-1.5">
-            <Calendar size={13} /> {fmtDate(ev.startsAt)}
+          <span className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap">
+            <Calendar size={13} className="flex-shrink-0" /> {fmtDate(ev.startsAt)}
           </span>
-          <span style={{ color: "var(--text-faint)" }}>·</span>
+          <span className="flex-shrink-0" style={{ color: "var(--text-faint)" }}>·</span>
           <span className="inline-flex min-w-0 items-center gap-1.5">
             <MapPin size={13} className="flex-shrink-0" />
             <span className="truncate">{ev.venue ?? "Venue TBA"}</span>

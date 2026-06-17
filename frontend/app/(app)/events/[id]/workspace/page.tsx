@@ -40,6 +40,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { TimePicker } from "@/components/ui/time-picker";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "@/components/ui/toast";
 
@@ -1295,8 +1296,7 @@ function AgendaSessionDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="agenda-time">Start time</Label>
-              <Input id="agenda-time" type="time" value={time}
-                onChange={(e) => setTime(e.target.value)} />
+              <TimePicker id="agenda-time" value={time} onChange={setTime} step={5} placeholder="Select a time" />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="agenda-mins">Duration (min)</Label>
