@@ -51,6 +51,7 @@ public class RegistrationServiceImpl implements RegistrationService {
   private final com.gatherly.integration.qr.QrService qrService;
   private final OpsNotificationService opsNotificationService;
   private final ObjectMapper objectMapper;
+  private final com.gatherly.integration.rustfs.RustfsClient rustfs;
   private final SecureRandom random = new SecureRandom();
 
   public RegistrationServiceImpl(
@@ -62,7 +63,8 @@ public class RegistrationServiceImpl implements RegistrationService {
       QrTicketDispatcher dispatcher,
       com.gatherly.integration.qr.QrService qrService,
       OpsNotificationService opsNotificationService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      com.gatherly.integration.rustfs.RustfsClient rustfs) {
     this.eventRepository = eventRepository;
     this.formRepository = formRepository;
     this.submissionRepository = submissionRepository;
@@ -72,6 +74,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     this.qrService = qrService;
     this.opsNotificationService = opsNotificationService;
     this.objectMapper = objectMapper;
+    this.rustfs = rustfs;
   }
 
   @Override
@@ -212,7 +215,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
   // ── helpers ───────────────────────────────────────────────────────────────
 
-  private static PublicEventResponse toPublicEvent(Event event, long registeredCount) {
+  private PublicEventResponse toPublicEvent(Event event, long registeredCount) {
     return new PublicEventResponse(
         event.getId(),
         event.getSlug(),
@@ -221,11 +224,26 @@ public class RegistrationServiceImpl implements RegistrationService {
         event.getDescription(),
         event.getVenue(),
         event.getCoverColor(),
-        event.getCoverImageUrl(),
+        resolveCoverImageUrl(event.getCoverImageUrl()),
         event.getStartsAt(),
         event.getEndsAt(),
         event.getCapacity(),
         registeredCount);
+  }
+
+  /**
+   * Resolves the stored cover to a browser-renderable URL: an uploaded object key becomes a
+   * short-lived presigned GET URL; an already-absolute URL (legacy / externally-hosted) is returned
+   * as-is; blank/null yields {@code null}. Mirrors {@code EventMapper#coverImageUrl}.
+   */
+  private String resolveCoverImageUrl(String stored) {
+    if (stored == null || stored.isBlank()) {
+      return null;
+    }
+    if (stored.startsWith("http://") || stored.startsWith("https://")) {
+      return stored;
+    }
+    return rustfs.presignGet(stored);
   }
 
   private static String blankToNull(String s) {

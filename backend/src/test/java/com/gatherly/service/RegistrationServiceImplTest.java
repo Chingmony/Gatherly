@@ -45,6 +45,7 @@ class RegistrationServiceImplTest {
   @Mock private QrTicketDispatcher dispatcher;
   @Mock private QrService qrService;
   @Mock private OpsNotificationService opsNotificationService;
+  @Mock private com.gatherly.integration.rustfs.RustfsClient rustfs;
 
   private final FormSchemaCodec codec = new FormSchemaCodec(new JsonMapper());
   private RegistrationServiceImpl service;
@@ -61,7 +62,8 @@ class RegistrationServiceImplTest {
             dispatcher,
             qrService,
             opsNotificationService,
-            new JsonMapper());
+            new JsonMapper(),
+            rustfs);
   }
 
   private Event event(EventStatus status) {
